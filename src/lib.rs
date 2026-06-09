@@ -69,13 +69,13 @@ impl Err<()> {
 
 impl<D> Err<D> {
     #[must_use]
-    pub fn prefix(mut self, prefix: &'static str) -> Self {
+    pub fn set_prefix(mut self, prefix: &'static str) -> Self {
         self.prefix = Some(prefix);
         self
     }
 
     #[must_use]
-    pub fn source<E>(mut self, source: E) -> Self
+    pub fn set_source<E>(mut self, source: E) -> Self
     where
         E: Error + Send + Sync + 'static,
     {
@@ -84,7 +84,7 @@ impl<D> Err<D> {
     }
 
     #[must_use]
-    pub fn tag<T>(mut self, tag: T) -> Self
+    pub fn set_tag<T>(mut self, tag: T) -> Self
     where
         T: Into<Cow<'static, str>>,
     {
@@ -93,7 +93,7 @@ impl<D> Err<D> {
     }
 
     #[must_use]
-    pub fn tags<I, T>(mut self, tags: I) -> Self
+    pub fn set_tags<I, T>(mut self, tags: I) -> Self
     where
         I: IntoIterator<Item = T>,
         T: Into<Cow<'static, str>>,
@@ -103,7 +103,7 @@ impl<D> Err<D> {
     }
 
     #[must_use]
-    pub fn data<T>(self, data: T) -> Err<T> {
+    pub fn set_data<T>(self, data: T) -> Err<T> {
         Err {
             id: self.id,
             message: self.message,
@@ -130,19 +130,19 @@ impl<D> Err<D> {
         &self.message
     }
 
-    pub fn prefix_ref(&self) -> Option<&'static str> {
+    pub fn prefix(&self) -> Option<&'static str> {
         self.prefix
     }
 
-    pub fn source_ref(&self) -> Option<&BoxError> {
+    pub fn source(&self) -> Option<&BoxError> {
         self.source.as_ref()
     }
 
-    pub fn tags_ref(&self) -> &[Cow<'static, str>] {
+    pub fn tags(&self) -> &[Cow<'static, str>] {
         &self.tags
     }
 
-    pub fn data_ref(&self) -> &D {
+    pub fn data(&self) -> &D {
         &self.data
     }
 
