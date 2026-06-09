@@ -27,4 +27,13 @@ all-features = true
 name = "test"
 path = "tests/test.rs"
 
+[features]
+default = ["uuid"]
+uuid = ["dep:uuid"]
+serde = ["dep:serde"]
+backtrace = ["std"]
+std = []
+
 [dependencies]
+uuid = { version = "1", default-features = false, features = ["v4"], optional = true }
+serde = { version = "1", default-features = false , features = ["derive"], optional = true }
