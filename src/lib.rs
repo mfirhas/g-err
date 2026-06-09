@@ -18,9 +18,6 @@ use std::backtrace::Backtrace;
 #[cfg(feature = "uuid")]
 pub type Id = uuid::Uuid;
 
-#[cfg(not(feature = "uuid"))]
-pub type Id = u128;
-
 pub type BoxError = Box<dyn Error + Send + Sync + 'static>;
 
 pub type GErr = Err<()>;
@@ -193,13 +190,4 @@ impl<D: Debug> Error for Err<D> {
 #[cfg(feature = "uuid")]
 fn generate_id() -> Id {
     uuid::Uuid::new_v4()
-}
-
-#[cfg(not(feature = "uuid"))]
-fn generate_id() -> Id {
-    use core::sync::atomic::{AtomicU128, Ordering};
-
-    static NEXT: AtomicU128 = AtomicU128::new(1);
-
-    NEXT.fetch_add(1, Ordering::Relaxed)
 }
