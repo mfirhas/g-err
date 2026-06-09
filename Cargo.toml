@@ -1,0 +1,30 @@
+[package]
+name = "g-err"
+version = "0.0.0"
+edition = "2024"
+authors = ["Muhammad Fathir Irhas <fathir.irhas@gmail.com>"]
+description = "Error type"
+license = "MIT"
+repository = "https://github.com/mfirhas/g-err"
+documentation = "https://docs.rs/g-err"
+keywords = ["error", "error-handling", "macro"]
+categories = ["rust-patterns", "data-structures"]
+exclude = [
+  "**/*_test.rs",
+  "tests/**",
+  "benches/**",
+  "examples/**",
+  ".github/**",
+  ".gitignore",
+  "Makefile",
+  "AGENTS.md",
+]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[[test]]
+name = "test"
+path = "tests/test.rs"
+
+[dependencies]
