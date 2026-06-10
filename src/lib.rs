@@ -24,6 +24,10 @@ impl Id for () {
     fn id() {}
 }
 
+pub trait SetField<K, V> {
+    fn set_field(&mut self, key: K, value: V);
+}
+
 pub type BoxError = Box<dyn Error + Send + Sync + 'static>;
 
 pub struct Err<ID = (), D = ()> {
@@ -170,6 +174,16 @@ impl<ID, D> Err<ID, D> {
     #[inline]
     pub fn location(&self) -> &'static Location<'static> {
         self.location
+    }
+}
+
+impl<ID, D> Err<ID, D> {
+    pub fn set_field<K, V>(mut self, key: K, value: V) -> Self
+    where
+        D: SetField<K, V>,
+    {
+        self.data.set_field(key, value);
+        self
     }
 }
 
