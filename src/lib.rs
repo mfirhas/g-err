@@ -309,8 +309,6 @@ where
 {
     /// Returns an iterator over this error and all of its sources.
     ///
-    /// The first item yielded is `self`, followed by each source in turn.
-    ///
     /// # Examples
     ///
     /// ```rust
