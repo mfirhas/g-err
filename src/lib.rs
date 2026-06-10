@@ -171,8 +171,8 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
     }
 
     #[inline]
-    pub fn source(&self) -> Option<&BoxError> {
-        self.source.as_ref()
+    pub fn source(&self) -> Option<&(dyn Error + 'static)> {
+        self.source.as_deref().map(|e| e as &(dyn Error + 'static))
     }
 
     #[inline]
@@ -192,6 +192,8 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
 }
 
 impl<ID, P: Prefix, D> Err<ID, P, D> {
+    #[must_use]
+    #[inline]
     pub fn set_field<K, V>(mut self, key: K, value: V) -> Self
     where
         D: SetField<K, V>,
