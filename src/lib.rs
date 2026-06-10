@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-use alloc::{borrow::Cow, boxed::Box, string::ToString, vec::Vec};
+use alloc::{borrow::Cow, boxed::Box, vec::Vec};
 use core::{
     error::Error,
     fmt::{self, Debug, Display},
@@ -15,15 +15,10 @@ extern crate std;
 #[cfg(feature = "backtrace")]
 use std::backtrace::Backtrace;
 
-#[cfg(feature = "uuid")]
-pub type Id = uuid::Uuid;
-
 pub type BoxError = Box<dyn Error + Send + Sync + 'static>;
 
-pub type GErr = Err<()>;
-
-pub struct Err<D = ()> {
-    id: Id,
+pub struct Err<ID = (), D = ()> {
+    id: ID,
     message: Cow<'static, str>,
 
     prefix: Option<&'static str>,
@@ -39,14 +34,14 @@ pub struct Err<D = ()> {
     backtrace: Backtrace,
 }
 
-impl Err<()> {
+impl Err<(), ()> {
     #[track_caller]
     pub fn new<M>(message: M) -> Self
     where
         M: Into<Cow<'static, str>>,
     {
         Self {
-            id: generate_id(),
+            id: (),
             message: message.into(),
 
             prefix: None,
@@ -64,7 +59,7 @@ impl Err<()> {
     }
 }
 
-impl<D> Err<D> {
+impl<ID, D> Err<ID, D> {
     #[must_use]
     pub fn set_prefix(mut self, prefix: &'static str) -> Self {
         self.prefix = Some(prefix);
@@ -100,7 +95,7 @@ impl<D> Err<D> {
     }
 
     #[must_use]
-    pub fn set_data<T>(self, data: T) -> Err<T> {
+    pub fn set_data<T>(self, data: T) -> Err<ID, T> {
         Err {
             id: self.id,
             message: self.message,
@@ -119,7 +114,7 @@ impl<D> Err<D> {
         }
     }
 
-    pub fn id(&self) -> &Id {
+    pub fn id(&self) -> &ID {
         &self.id
     }
 
@@ -148,7 +143,7 @@ impl<D> Err<D> {
     }
 }
 
-impl<D> Display for Err<D> {
+impl<ID, D> Display for Err<ID, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match (&self.prefix, &self.source) {
             (None, None) => {
@@ -167,13 +162,13 @@ impl<D> Display for Err<D> {
     }
 }
 
-impl<D: Debug> Debug for Err<D> {
+impl<ID: Debug, D: Debug> Debug for Err<ID, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Err")
             .field("id", &self.id)
             .field("message", &self.message)
             .field("prefix", &self.prefix)
-            .field("source", &self.source.as_ref().map(ToString::to_string))
+            .field("source", &self.source)
             .field("tags", &self.tags)
             .field("data", &self.data)
             .field("location", &self.location)
@@ -181,13 +176,8 @@ impl<D: Debug> Debug for Err<D> {
     }
 }
 
-impl<D: Debug> Error for Err<D> {
+impl<ID: Debug, D: Debug> Error for Err<ID, D> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.source.as_deref().map(|e| e as &(dyn Error + 'static))
     }
-}
-
-#[cfg(feature = "uuid")]
-fn generate_id() -> Id {
-    uuid::Uuid::new_v4()
 }
