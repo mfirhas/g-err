@@ -34,7 +34,7 @@ pub struct Err<ID = (), D = ()> {
     backtrace: Backtrace,
 }
 
-impl Err<(), ()> {
+impl Err {
     #[track_caller]
     pub fn new<M>(message: M) -> Self
     where
