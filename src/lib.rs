@@ -49,27 +49,13 @@ impl<ID: Id> Err<ID> {
     where
         M: Into<Cow<'static, str>>,
     {
-        Self {
-            id: ID::id(),
-            message: message.into(),
-
-            prefix: None,
-            source: None,
-
-            tags: Vec::new(),
-
-            data: (),
-
-            location: Location::caller(),
-
-            #[cfg(feature = "backtrace")]
-            backtrace: Backtrace::capture(),
-        }
+        Self::with_id(ID::id(), message.into())
     }
 }
 
 impl<ID> Err<ID> {
     #[track_caller]
+    #[inline]
     pub fn with_id<M>(id: ID, message: M) -> Self
     where
         M: Into<Cow<'static, str>>,
