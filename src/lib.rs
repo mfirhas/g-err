@@ -256,12 +256,14 @@ impl<ID: Debug, P: Prefix, D: Debug> Error for Err<ID, P, D> {
 
 // --- Result Extension
 pub trait ResultExt<T> {
+    #[must_use]
     #[track_caller]
     fn err<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
     where
         ID: Id,
         P: Prefix;
 
+    #[must_use]
     #[track_caller]
     fn wrap<ID, P: Prefix, D>(self, err: Err<ID, P, D>) -> Result<T, ID, P, D>;
 }
