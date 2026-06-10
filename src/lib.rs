@@ -283,7 +283,9 @@ where
         ID: Id,
         P: Prefix,
     {
-        self.map_err(|source| Err::<ID, P>::new(message.into()).set_source(source))
+        let message = message.into();
+
+        self.map_err(|source| Err::<ID, P>::new(message).set_source(source))
     }
 
     #[track_caller]
@@ -292,8 +294,10 @@ where
         message: impl Into<Cow<'static, str>>,
         data: D,
     ) -> Result<T, ID, P, D> {
+        let message = message.into();
+
         self.map_err(|source| {
-            Err::<ID, P, D>::new(message.into())
+            Err::<ID, P, D>::new(message)
                 .set_source(source)
                 .set_data(data)
         })
