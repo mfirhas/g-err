@@ -263,13 +263,6 @@ pub trait ResultExt<T> {
         P: Prefix;
 
     #[track_caller]
-    fn err_with_data<ID: Id, P: Prefix, D>(
-        self,
-        message: impl Into<Cow<'static, str>>,
-        data: D,
-    ) -> Result<T, ID, P, D>;
-
-    #[track_caller]
     fn wrap<ID, P: Prefix, D>(self, err: Err<ID, P, D>) -> Result<T, ID, P, D>;
 }
 
@@ -286,21 +279,6 @@ where
         let message = message.into();
 
         self.map_err(|source| Err::<ID, P>::new(message).set_source(source))
-    }
-
-    #[track_caller]
-    fn err_with_data<ID: Id, P: Prefix, D>(
-        self,
-        message: impl Into<Cow<'static, str>>,
-        data: D,
-    ) -> Result<T, ID, P, D> {
-        let message = message.into();
-
-        self.map_err(|source| {
-            Err::<ID, P, D>::new(message)
-                .set_source(source)
-                .set_data(data)
-        })
     }
 
     #[track_caller]
