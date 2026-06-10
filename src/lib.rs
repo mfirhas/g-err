@@ -226,15 +226,21 @@ impl<ID, P: Prefix, D> Display for Err<ID, P, D> {
 
 impl<ID: Debug, P: Prefix, D: Debug> Debug for Err<ID, P, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Err")
+        let mut debug = f.debug_struct("Err");
+
+        debug
             .field("id", &self.id)
             .field("prefix", &self.prefix.or(P::PREFIX))
             .field("message", &self.message)
             .field("source", &self.source)
             .field("tags", &self.tags)
             .field("data", &self.data)
-            .field("location", &self.location)
-            .finish()
+            .field("location", &self.location);
+
+        #[cfg(feature = "backtrace")]
+        debug.field("backtrace", &self.backtrace);
+
+        debug.finish()
     }
 }
 
