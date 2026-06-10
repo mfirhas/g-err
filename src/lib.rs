@@ -303,7 +303,7 @@ impl<'a> Iterator for Chain<'a> {
     }
 }
 
-impl<ID, D, P> Err<ID, D, P>
+impl<ID, P, D> Err<ID, P, D>
 where
     Self: Error + 'static,
 {
@@ -327,8 +327,11 @@ where
     /// Returns the deepest source in the error chain.
     ///
     /// If this error has no source, returns `self`.
-    pub fn root_cause(&self) -> Option<&(dyn Error + 'static)> {
-        self.chain().last()
+    pub fn root_cause(&self) -> &(dyn Error + 'static) {
+        if let Some(root) = self.chain().last() {
+            return root;
+        }
+        self
     }
 }
 
@@ -336,17 +339,21 @@ impl<ID, P: Prefix, D> Err<ID, P, D>
 where
     Self: Error + 'static,
 {
+    fn find_in_chain<T: Error + 'static>(&self) -> Option<&T> {
+        self.chain().find_map(|e| e.downcast_ref::<T>())
+    }
+
     pub fn is<T>(&self) -> bool
     where
         T: Error + 'static,
     {
-        self.chain().any(|e| e.is::<T>())
+        self.find_in_chain::<T>().is_some()
     }
 
     pub fn downcast_ref<T>(&self) -> Option<&T>
     where
         T: Error + 'static,
     {
-        self.chain().find_map(|e| e.downcast_ref::<T>())
+        self.find_in_chain::<T>()
     }
 }
