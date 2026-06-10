@@ -328,10 +328,13 @@ where
     ///
     /// If this error has no source, returns `self`.
     pub fn root_cause(&self) -> &(dyn Error + 'static) {
-        if let Some(root) = self.chain().last() {
-            return root;
+        let mut current: &(dyn Error + 'static) = self;
+
+        while let Some(src) = current.source() {
+            current = src;
         }
-        self
+
+        current
     }
 }
 
