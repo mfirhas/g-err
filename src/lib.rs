@@ -200,11 +200,10 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
     #[inline]
     pub fn set_field<K, V>(mut self, key: K, value: V) -> Self
     where
-        D: SetField<K, V>,
+        D: Default + SetField<K, V>,
     {
-        if let Some(ref mut data) = self.data {
-            data.set_field(key, value);
-        }
+        let data = self.data.get_or_insert_with(Default::default);
+        data.set_field(key, value);
         self
     }
 }
