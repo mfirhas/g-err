@@ -28,10 +28,10 @@ name = "test"
 path = "tests/test.rs"
 
 [features]
-default = []
+default = ["std"]
+std = []
 serde = ["dep:serde"]
 backtrace = ["std"]
-std = []
 
 [dependencies]
 # uuid = { version = "1", default-features = false, features = ["v4"], optional = true }
