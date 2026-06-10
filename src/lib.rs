@@ -349,4 +349,12 @@ where
     {
         self.chain().find_map(|e| e.downcast_ref::<T>())
     }
+
+    #[inline]
+    pub fn find_source<T>(&self) -> Option<&T>
+    where
+        T: Error + 'static,
+    {
+        self.chain().find_map(|err| err.downcast_ref::<T>())
+    }
 }
