@@ -136,7 +136,14 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
 
     #[must_use]
     #[inline]
-    pub fn set_data<T>(self, data: T) -> Err<ID, P, T> {
+    pub fn set_data(mut self, data: D) -> Self {
+        self.data = Some(data);
+        self
+    }
+
+    #[must_use]
+    #[inline]
+    pub fn with_data<T>(self, data: T) -> Err<ID, P, T> {
         Err {
             id: self.id,
             message: self.message,
@@ -260,7 +267,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Error for Err<ID, P, D> {
 pub trait ResultExt<T> {
     #[must_use]
     #[track_caller]
-    fn err<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    fn err<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix;
@@ -275,14 +282,14 @@ where
     E: Error + Send + Sync + 'static,
 {
     #[track_caller]
-    fn err<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    fn err<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
     {
         let message = message.into();
 
-        self.map_err(|source| Err::<ID, P>::new(message).set_source(source))
+        self.map_err(|source| Err::<ID, P, D>::new(message).set_source(source))
     }
 
     #[track_caller]
