@@ -320,7 +320,7 @@ where
     /// ```
     pub fn chain(&self) -> Chain<'_> {
         Chain {
-            current: Some(self),
+            current: self.source(),
         }
     }
 
