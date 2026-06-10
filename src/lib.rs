@@ -82,13 +82,6 @@ impl<ID> Err<ID> {
 impl<ID, D> Err<ID, D> {
     #[must_use]
     #[inline]
-    pub fn set_id(mut self, id: ID) -> Self {
-        self.id = id;
-        self
-    }
-
-    #[must_use]
-    #[inline]
     pub fn set_prefix(mut self, prefix: &'static str) -> Self {
         self.prefix = Some(prefix);
         self
