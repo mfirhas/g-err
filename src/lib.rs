@@ -15,6 +15,15 @@ extern crate std;
 #[cfg(feature = "backtrace")]
 use std::backtrace::Backtrace;
 
+pub trait Id {
+    fn id() -> Self;
+}
+
+impl Id for () {
+    #[inline]
+    fn id() {}
+}
+
 pub type BoxError = Box<dyn Error + Send + Sync + 'static>;
 
 pub struct Err<ID = (), D = ()> {
@@ -34,14 +43,39 @@ pub struct Err<ID = (), D = ()> {
     backtrace: Backtrace,
 }
 
-impl Err {
+impl<ID: Id> Err<ID> {
     #[track_caller]
     pub fn new<M>(message: M) -> Self
     where
         M: Into<Cow<'static, str>>,
     {
         Self {
-            id: (),
+            id: ID::id(),
+            message: message.into(),
+
+            prefix: None,
+            source: None,
+
+            tags: Vec::new(),
+
+            data: (),
+
+            location: Location::caller(),
+
+            #[cfg(feature = "backtrace")]
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+impl<ID> Err<ID> {
+    #[track_caller]
+    pub fn with_id<M>(id: ID, message: M) -> Self
+    where
+        M: Into<Cow<'static, str>>,
+    {
+        Self {
+            id,
             message: message.into(),
 
             prefix: None,
@@ -61,12 +95,21 @@ impl Err {
 
 impl<ID, D> Err<ID, D> {
     #[must_use]
+    #[inline]
+    pub fn set_id(mut self, id: ID) -> Self {
+        self.id = id;
+        self
+    }
+
+    #[must_use]
+    #[inline]
     pub fn set_prefix(mut self, prefix: &'static str) -> Self {
         self.prefix = Some(prefix);
         self
     }
 
     #[must_use]
+    #[inline]
     pub fn set_source<E>(mut self, source: E) -> Self
     where
         E: Error + Send + Sync + 'static,
@@ -95,6 +138,7 @@ impl<ID, D> Err<ID, D> {
     }
 
     #[must_use]
+    #[inline]
     pub fn set_data<T>(self, data: T) -> Err<ID, T> {
         Err {
             id: self.id,
@@ -114,30 +158,37 @@ impl<ID, D> Err<ID, D> {
         }
     }
 
+    #[inline]
     pub fn id(&self) -> &ID {
         &self.id
     }
 
+    #[inline]
     pub fn message(&self) -> &str {
         &self.message
     }
 
+    #[inline]
     pub fn prefix(&self) -> Option<&'static str> {
         self.prefix
     }
 
+    #[inline]
     pub fn source(&self) -> Option<&BoxError> {
         self.source.as_ref()
     }
 
+    #[inline]
     pub fn tags(&self) -> &[Cow<'static, str>] {
         &self.tags
     }
 
+    #[inline]
     pub fn data(&self) -> &D {
         &self.data
     }
 
+    #[inline]
     pub fn location(&self) -> &'static Location<'static> {
         self.location
     }
