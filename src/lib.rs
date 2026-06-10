@@ -7,6 +7,7 @@ use alloc::{borrow::Cow, boxed::Box, vec::Vec};
 use core::{
     error::Error,
     fmt::{self, Debug, Display},
+    marker::PhantomData,
     panic::Location,
 };
 
@@ -25,13 +26,19 @@ impl Id for () {
     fn id() {}
 }
 
+pub trait Prefix {
+    const PREFIX: Option<&'static str> = None;
+}
+
+impl Prefix for () {}
+
 pub trait SetField<K, V> {
     fn set_field(&mut self, key: K, value: V);
 }
 
 pub type BoxError = Box<dyn Error + Send + Sync + 'static>;
 
-pub struct Err<ID = (), D = ()> {
+pub struct Err<ID = (), P = (), D = ()> {
     id: ID,
     message: Cow<'static, str>,
 
@@ -46,6 +53,8 @@ pub struct Err<ID = (), D = ()> {
 
     #[cfg(feature = "backtrace")]
     backtrace: Backtrace,
+
+    _static_prefix: PhantomData<P>,
 }
 
 impl<ID: Id> Err<ID> {
@@ -58,7 +67,7 @@ impl<ID: Id> Err<ID> {
     }
 }
 
-impl<ID> Err<ID> {
+impl<ID, P: Prefix> Err<ID, P> {
     #[track_caller]
     #[inline]
     pub fn with_id<M>(id: ID, message: M) -> Self
@@ -69,7 +78,7 @@ impl<ID> Err<ID> {
             id,
             message: message.into(),
 
-            prefix: None,
+            prefix: P::PREFIX,
             source: None,
 
             tags: Vec::new(),
@@ -80,11 +89,13 @@ impl<ID> Err<ID> {
 
             #[cfg(feature = "backtrace")]
             backtrace: Backtrace::capture(),
+
+            _static_prefix: PhantomData,
         }
     }
 }
 
-impl<ID, D> Err<ID, D> {
+impl<ID, P: Prefix, D> Err<ID, P, D> {
     #[must_use]
     #[inline]
     pub fn set_prefix(mut self, prefix: &'static str) -> Self {
@@ -123,7 +134,7 @@ impl<ID, D> Err<ID, D> {
 
     #[must_use]
     #[inline]
-    pub fn set_data<T>(self, data: T) -> Err<ID, T> {
+    pub fn set_data<T>(self, data: T) -> Err<ID, P, T> {
         Err {
             id: self.id,
             message: self.message,
@@ -139,6 +150,8 @@ impl<ID, D> Err<ID, D> {
 
             #[cfg(feature = "backtrace")]
             backtrace: self.backtrace,
+
+            _static_prefix: PhantomData,
         }
     }
 
@@ -154,7 +167,7 @@ impl<ID, D> Err<ID, D> {
 
     #[inline]
     pub fn prefix(&self) -> Option<&'static str> {
-        self.prefix
+        self.prefix.or(P::PREFIX)
     }
 
     #[inline]
@@ -178,7 +191,7 @@ impl<ID, D> Err<ID, D> {
     }
 }
 
-impl<ID, D> Err<ID, D> {
+impl<ID, P: Prefix, D> Err<ID, P, D> {
     pub fn set_field<K, V>(mut self, key: K, value: V) -> Self
     where
         D: SetField<K, V>,
@@ -188,31 +201,33 @@ impl<ID, D> Err<ID, D> {
     }
 }
 
-impl<ID, D> Display for Err<ID, D> {
+impl<ID, P: Prefix, D> Display for Err<ID, P, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match (&self.prefix, &self.source) {
+        let prefix = self.prefix.or(P::PREFIX);
+
+        match (prefix, &self.source) {
             (None, None) => {
                 write!(f, "{}", self.message)
             }
             (Some(prefix), None) => {
-                write!(f, "[{}] {}", prefix, self.message)
+                write!(f, "{} {}", prefix, self.message)
             }
             (None, Some(source)) => {
                 write!(f, "{}: {}", self.message, source)
             }
             (Some(prefix), Some(source)) => {
-                write!(f, "[{}] {}: {}", prefix, self.message, source)
+                write!(f, "{} {}: {}", prefix, self.message, source)
             }
         }
     }
 }
 
-impl<ID: Debug, D: Debug> Debug for Err<ID, D> {
+impl<ID: Debug, P: Prefix, D: Debug> Debug for Err<ID, P, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Err")
             .field("id", &self.id)
+            .field("prefix", &self.prefix.or(P::PREFIX))
             .field("message", &self.message)
-            .field("prefix", &self.prefix)
             .field("source", &self.source)
             .field("tags", &self.tags)
             .field("data", &self.data)
@@ -221,7 +236,7 @@ impl<ID: Debug, D: Debug> Debug for Err<ID, D> {
     }
 }
 
-impl<ID: Debug, D: Debug> Error for Err<ID, D> {
+impl<ID: Debug, P: Prefix, D: Debug> Error for Err<ID, P, D> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.source.as_deref().map(|e| e as &(dyn Error + 'static))
     }
