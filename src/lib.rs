@@ -49,7 +49,7 @@ pub struct Err<ID = (), P = (), D = ()> {
 
     tags: Vec<Cow<'static, str>>,
 
-    data: D,
+    data: Option<D>,
 
     location: &'static Location<'static>,
 
@@ -59,7 +59,7 @@ pub struct Err<ID = (), P = (), D = ()> {
     _static_prefix: PhantomData<P>,
 }
 
-impl<ID: Id, P: Prefix> Err<ID, P> {
+impl<ID: Id, P: Prefix, D> Err<ID, P, D> {
     #[track_caller]
     pub fn new<M>(message: M) -> Self
     where
@@ -69,7 +69,7 @@ impl<ID: Id, P: Prefix> Err<ID, P> {
     }
 }
 
-impl<ID, P: Prefix> Err<ID, P> {
+impl<ID, P: Prefix, D> Err<ID, P, D> {
     #[track_caller]
     #[inline]
     pub fn with_id<M>(id: ID, message: M) -> Self
@@ -85,7 +85,7 @@ impl<ID, P: Prefix> Err<ID, P> {
 
             tags: Vec::new(),
 
-            data: (),
+            data: None,
 
             location: Location::caller(),
 
@@ -146,7 +146,7 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
 
             tags: self.tags,
 
-            data,
+            data: Some(data),
 
             location: self.location,
 
@@ -183,8 +183,8 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
     }
 
     #[inline]
-    pub fn data(&self) -> &D {
-        &self.data
+    pub fn data(&self) -> Option<&D> {
+        self.data.as_ref()
     }
 
     #[inline]
@@ -200,7 +200,9 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
     where
         D: SetField<K, V>,
     {
-        self.data.set_field(key, value);
+        if let Some(ref mut data) = self.data {
+            data.set_field(key, value);
+        }
         self
     }
 }
@@ -249,5 +251,56 @@ impl<ID: Debug, P: Prefix, D: Debug> Debug for Err<ID, P, D> {
 impl<ID: Debug, P: Prefix, D: Debug> Error for Err<ID, P, D> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.source.as_deref().map(|e| e as &(dyn Error + 'static))
+    }
+}
+
+// --- Result Extension
+pub trait ResultExt<T> {
+    #[track_caller]
+    fn err<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    where
+        ID: Id,
+        P: Prefix;
+
+    #[track_caller]
+    fn err_with_data<ID: Id, P: Prefix, D>(
+        self,
+        message: impl Into<Cow<'static, str>>,
+        data: D,
+    ) -> Result<T, ID, P, D>;
+
+    #[track_caller]
+    fn wrap<ID, P: Prefix, D>(self, err: Err<ID, P, D>) -> Result<T, ID, P, D>;
+}
+
+impl<T, E> ResultExt<T> for core::result::Result<T, E>
+where
+    E: Error + Send + Sync + 'static,
+{
+    #[track_caller]
+    fn err<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    where
+        ID: Id,
+        P: Prefix,
+    {
+        self.map_err(|source| Err::<ID, P>::new(message.into()).set_source(source))
+    }
+
+    #[track_caller]
+    fn err_with_data<ID: Id, P: Prefix, D>(
+        self,
+        message: impl Into<Cow<'static, str>>,
+        data: D,
+    ) -> Result<T, ID, P, D> {
+        self.map_err(|source| {
+            Err::<ID, P, D>::new(message.into())
+                .set_source(source)
+                .set_data(data)
+        })
+    }
+
+    #[track_caller]
+    fn wrap<ID, P: Prefix, D>(self, err: Err<ID, P, D>) -> Result<T, ID, P, D> {
+        self.map_err(|source| err.set_source(source))
     }
 }
