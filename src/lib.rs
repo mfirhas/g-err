@@ -331,3 +331,22 @@ where
         self.chain().last()
     }
 }
+
+impl<ID, P: Prefix, D> Err<ID, P, D>
+where
+    Self: Error + 'static,
+{
+    pub fn is<T>(&self) -> bool
+    where
+        T: Error + 'static,
+    {
+        self.chain().any(|e| e.is::<T>())
+    }
+
+    pub fn downcast_ref<T>(&self) -> Option<&T>
+    where
+        T: Error + 'static,
+    {
+        self.chain().find_map(|e| e.downcast_ref::<T>())
+    }
+}
