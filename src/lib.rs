@@ -288,3 +288,46 @@ where
         self.map_err(|source| err.set_source(source))
     }
 }
+
+pub struct Chain<'a> {
+    current: Option<&'a (dyn Error + 'static)>,
+}
+
+impl<'a> Iterator for Chain<'a> {
+    type Item = &'a (dyn Error + 'static);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let current = self.current?;
+        self.current = current.source();
+        Some(current)
+    }
+}
+
+impl<ID, D, P> Err<ID, D, P>
+where
+    Self: Error + 'static,
+{
+    /// Returns an iterator over this error and all of its sources.
+    ///
+    /// The first item yielded is `self`, followed by each source in turn.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// for err in my_err.chain() {
+    ///     println!("{err}");
+    /// }
+    /// ```
+    pub fn chain(&self) -> Chain<'_> {
+        Chain {
+            current: Some(self),
+        }
+    }
+
+    /// Returns the deepest source in the error chain.
+    ///
+    /// If this error has no source, returns `self`.
+    pub fn root_cause(&self) -> Option<&(dyn Error + 'static)> {
+        self.chain().last()
+    }
+}
