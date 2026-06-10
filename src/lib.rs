@@ -17,6 +17,8 @@ extern crate std;
 #[cfg(feature = "backtrace")]
 use std::backtrace::Backtrace;
 
+pub type Result<T, ID = (), P = (), D = ()> = core::result::Result<T, Err<ID, P, D>>;
+
 pub trait Id {
     fn id() -> Self;
 }
