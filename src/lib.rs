@@ -136,13 +136,6 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
 
     #[must_use]
     #[inline]
-    pub fn set_data(mut self, data: D) -> Self {
-        self.data = Some(data);
-        self
-    }
-
-    #[must_use]
-    #[inline]
     pub fn with_data<T>(self, data: T) -> Err<ID, P, T> {
         Err {
             id: self.id,
