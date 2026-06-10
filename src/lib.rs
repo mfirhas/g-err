@@ -157,6 +157,8 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
         }
     }
 
+    // --- getter ---
+
     #[inline]
     pub fn id(&self) -> &ID {
         &self.id
