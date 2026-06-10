@@ -57,7 +57,7 @@ pub struct Err<ID = (), P = (), D = ()> {
     _static_prefix: PhantomData<P>,
 }
 
-impl<ID: Id> Err<ID> {
+impl<ID: Id, P: Prefix> Err<ID, P> {
     #[track_caller]
     pub fn new<M>(message: M) -> Self
     where
