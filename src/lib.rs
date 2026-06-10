@@ -320,7 +320,7 @@ where
     /// ```
     pub fn chain(&self) -> Chain<'_> {
         Chain {
-            current: self.source(),
+            current: Some(self as &(dyn Error + 'static)),
         }
     }
 
