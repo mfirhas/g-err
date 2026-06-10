@@ -260,7 +260,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Error for Err<ID, P, D> {
 pub trait ResultExt<T> {
     #[must_use]
     #[track_caller]
-    fn err<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
+    fn err<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
     where
         ID: Id,
         P: Prefix;
@@ -275,14 +275,14 @@ where
     E: Error + Send + Sync + 'static,
 {
     #[track_caller]
-    fn err<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
+    fn err<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
     where
         ID: Id,
         P: Prefix,
     {
         let message = message.into();
 
-        self.map_err(|source| Err::<ID, P, D>::new(message).set_source(source))
+        self.map_err(|source| Err::<ID, P, ()>::new(message).set_source(source))
     }
 
     #[track_caller]
