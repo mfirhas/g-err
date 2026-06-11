@@ -97,6 +97,13 @@ where
             let _ = writeln!(out);
         }
 
+        if let Some(data) = &self.data {
+            let _ = writeln!(out, "## Data\n");
+
+            let _ = writeln!(out, "{data:?}");
+            let _ = writeln!(out);
+        }
+
         let causes: Vec<_> = self.chain().skip(1).collect();
 
         if !causes.is_empty() {
