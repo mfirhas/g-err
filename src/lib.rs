@@ -18,6 +18,7 @@ extern crate std;
 use std::backtrace::Backtrace;
 
 mod report;
+mod serde;
 
 pub type Result<T, ID = (), P = (), D = ()> = core::result::Result<T, Err<ID, P, D>>;
 
@@ -266,7 +267,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Error for Err<ID, P, D> {
 pub trait ResultExt<T> {
     #[must_use]
     #[track_caller]
-    fn err<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    fn gerr<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
     where
         ID: Id,
         P: Prefix;
@@ -281,7 +282,7 @@ where
     E: Error + Send + Sync + 'static,
 {
     #[track_caller]
-    fn err<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    fn gerr<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
     where
         ID: Id,
         P: Prefix,
@@ -319,7 +320,7 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```ignore
     /// for err in my_err.chain() {
     ///     println!("{err}");
     /// }
