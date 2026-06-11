@@ -315,9 +315,10 @@ where
         P: Prefix,
     {
         let message = message.into();
+        let location = Location::caller();
 
         self.map_err(|source| {
-            GErr::<ID, P, ()>::new_untracked(message, Location::caller()).set_source(source)
+            GErr::<ID, P, ()>::new_untracked(message, location).set_source(source)
         })
     }
 
