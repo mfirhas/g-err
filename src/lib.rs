@@ -18,6 +18,8 @@ extern crate std;
 use std::backtrace::Backtrace;
 
 mod report;
+
+#[cfg(feature = "serde")]
 mod serde;
 
 pub type Result<T, ID = (), P = (), D = ()> = core::result::Result<T, Err<ID, P, D>>;
