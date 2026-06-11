@@ -22,7 +22,7 @@ mod report;
 #[cfg(feature = "serde")]
 mod serde;
 
-pub type Result<T, ID = (), P = (), D = ()> = core::result::Result<T, Err<ID, P, D>>;
+pub type Result<T, ID = (), P = (), D = ()> = core::result::Result<T, GErr<ID, P, D>>;
 
 pub trait Id {
     fn id() -> Self;
@@ -45,7 +45,7 @@ pub trait SetField<K, V> {
 
 pub type BoxError = Box<dyn Error + Send + Sync + 'static>;
 
-pub struct Err<ID = (), P = (), D = ()> {
+pub struct GErr<ID = (), P = (), D = ()> {
     id: ID,
     message: Cow<'static, str>,
 
@@ -64,7 +64,7 @@ pub struct Err<ID = (), P = (), D = ()> {
     _static_prefix: PhantomData<P>,
 }
 
-impl<ID: Id, P: Prefix, D> Err<ID, P, D> {
+impl<ID: Id, P: Prefix, D> GErr<ID, P, D> {
     #[track_caller]
     #[inline]
     pub fn new<M>(message: M) -> Self
@@ -83,7 +83,7 @@ impl<ID: Id, P: Prefix, D> Err<ID, P, D> {
     }
 }
 
-impl<ID, P: Prefix, D> Err<ID, P, D> {
+impl<ID, P: Prefix, D> GErr<ID, P, D> {
     #[track_caller]
     #[inline]
     pub fn with_id<M>(id: ID, message: M) -> Self
@@ -123,7 +123,7 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
     }
 }
 
-impl<ID, P: Prefix, D> Err<ID, P, D> {
+impl<ID, P: Prefix, D> GErr<ID, P, D> {
     #[must_use]
     #[inline]
     pub fn set_prefix(mut self, prefix: &'static str) -> Self {
@@ -162,8 +162,8 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
 
     #[must_use]
     #[inline]
-    pub fn with_data<T>(self, data: T) -> Err<ID, P, T> {
-        Err {
+    pub fn with_data<T>(self, data: T) -> GErr<ID, P, T> {
+        GErr {
             id: self.id,
             message: self.message,
 
@@ -222,11 +222,11 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
 
     #[inline]
     pub fn result_err<T>(self) -> self::Result<T, ID, P, D> {
-        Err(self)
+        Result::Err(self)
     }
 }
 
-impl<ID, P: Prefix, D> Err<ID, P, D> {
+impl<ID, P: Prefix, D> GErr<ID, P, D> {
     #[must_use]
     #[inline]
     pub fn set_field<K, V>(mut self, key: K, value: V) -> Self
@@ -239,7 +239,7 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
     }
 }
 
-impl<ID, P: Prefix, D> Display for Err<ID, P, D> {
+impl<ID, P: Prefix, D> Display for GErr<ID, P, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let prefix = self.prefix.or(P::PREFIX);
 
@@ -260,7 +260,7 @@ impl<ID, P: Prefix, D> Display for Err<ID, P, D> {
     }
 }
 
-impl<ID: Debug, P: Prefix, D: Debug> Debug for Err<ID, P, D> {
+impl<ID: Debug, P: Prefix, D: Debug> Debug for GErr<ID, P, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug = f.debug_struct("Err");
 
@@ -280,7 +280,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Debug for Err<ID, P, D> {
     }
 }
 
-impl<ID: Debug, P: Prefix, D: Debug> Error for Err<ID, P, D> {
+impl<ID: Debug, P: Prefix, D: Debug> Error for GErr<ID, P, D> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.source.as_deref().map(|e| e as &(dyn Error + 'static))
     }
@@ -297,7 +297,7 @@ pub trait ResultExt<T> {
 
     #[must_use]
     #[track_caller]
-    fn wrap<ID, P: Prefix, D>(self, err: Err<ID, P, D>) -> Result<T, ID, P, D>;
+    fn wrap<ID, P: Prefix, D>(self, err: GErr<ID, P, D>) -> Result<T, ID, P, D>;
 }
 
 impl<T, E> ResultExt<T> for core::result::Result<T, E>
@@ -313,12 +313,12 @@ where
         let message = message.into();
 
         self.map_err(|source| {
-            Err::<ID, P, ()>::new_untracked(message, Location::caller()).set_source(source)
+            GErr::<ID, P, ()>::new_untracked(message, Location::caller()).set_source(source)
         })
     }
 
     #[track_caller]
-    fn wrap<ID, P: Prefix, D>(self, err: Err<ID, P, D>) -> Result<T, ID, P, D> {
+    fn wrap<ID, P: Prefix, D>(self, err: GErr<ID, P, D>) -> Result<T, ID, P, D> {
         self.map_err(|source| err.set_source(source))
     }
 }
@@ -337,7 +337,7 @@ impl<'a> Iterator for Chain<'a> {
     }
 }
 
-impl<ID, P, D> Err<ID, P, D>
+impl<ID, P, D> GErr<ID, P, D>
 where
     Self: Error + 'static,
 {
@@ -370,7 +370,7 @@ where
     }
 }
 
-impl<ID, P: Prefix, D> Err<ID, P, D>
+impl<ID, P: Prefix, D> GErr<ID, P, D>
 where
     Self: Error + 'static,
 {

@@ -6,9 +6,9 @@ use core::error::Error;
 use core::fmt::Debug;
 use core::fmt::Write;
 
-use crate::{Err, Prefix};
+use crate::{GErr, Prefix};
 
-impl<ID: Debug, P: Prefix, D: Debug> Err<ID, P, D>
+impl<ID: Debug, P: Prefix, D: Debug> GErr<ID, P, D>
 where
     Self: Error + 'static,
 {
@@ -168,7 +168,7 @@ mod json_data {
 }
 
 #[cfg(feature = "serde")]
-impl<ID, P: Prefix, D> Err<ID, P, D>
+impl<ID, P: Prefix, D> GErr<ID, P, D>
 where
     ID: serde::Serialize,
     D: serde::Serialize,
