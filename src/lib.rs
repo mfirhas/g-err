@@ -22,6 +22,8 @@ mod report;
 #[cfg(feature = "serde")]
 mod serde;
 
+mod macros;
+
 pub type Result<T, ID = (), P = (), D = ()> = core::result::Result<T, GErr<ID, P, D>>;
 
 pub trait Id {
