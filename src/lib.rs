@@ -64,11 +64,20 @@ pub struct Err<ID = (), P = (), D = ()> {
 
 impl<ID: Id, P: Prefix, D> Err<ID, P, D> {
     #[track_caller]
+    #[inline]
     pub fn new<M>(message: M) -> Self
     where
         M: Into<Cow<'static, str>>,
     {
-        Self::with_id(ID::id(), message.into())
+        Self::new_untracked(message, Location::caller())
+    }
+
+    #[inline]
+    pub(crate) fn new_untracked<M>(message: M, location: &'static Location<'static>) -> Self
+    where
+        M: Into<Cow<'static, str>>,
+    {
+        Self::with_id_untracked(ID::id(), message.into(), location)
     }
 }
 
@@ -76,6 +85,18 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
     #[track_caller]
     #[inline]
     pub fn with_id<M>(id: ID, message: M) -> Self
+    where
+        M: Into<Cow<'static, str>>,
+    {
+        Self::with_id_untracked(id, message, Location::caller())
+    }
+
+    #[inline]
+    pub(crate) fn with_id_untracked<M>(
+        id: ID,
+        message: M,
+        location: &'static Location<'static>,
+    ) -> Self
     where
         M: Into<Cow<'static, str>>,
     {
@@ -90,7 +111,7 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
 
             data: None,
 
-            location: Location::caller(),
+            location,
 
             #[cfg(feature = "backtrace")]
             backtrace: Backtrace::capture(),
@@ -289,7 +310,9 @@ where
     {
         let message = message.into();
 
-        self.map_err(|source| Err::<ID, P, ()>::new(message).set_source(source))
+        self.map_err(|source| {
+            Err::<ID, P, ()>::new_untracked(message, Location::caller()).set_source(source)
+        })
     }
 
     #[track_caller]
