@@ -201,11 +201,6 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     }
 
     #[inline]
-    pub fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.source.as_deref().map(|e| e as &(dyn Error + 'static))
-    }
-
-    #[inline]
     pub fn tags(&self) -> &[Cow<'static, str>] {
         &self.tags
     }
