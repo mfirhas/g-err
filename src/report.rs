@@ -100,7 +100,9 @@ where
         if let Some(data) = &self.data {
             let _ = writeln!(out, "## Data\n");
 
-            let _ = writeln!(out, "{data:?}");
+            let _ = writeln!(out, "```");
+            let _ = writeln!(out, "{data:#?}");
+            let _ = writeln!(out, "```");
             let _ = writeln!(out);
         }
 
