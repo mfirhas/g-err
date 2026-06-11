@@ -195,6 +195,11 @@ impl<ID, P: Prefix, D> Err<ID, P, D> {
     pub fn location(&self) -> &'static Location<'static> {
         self.location
     }
+
+    #[inline]
+    pub fn result_err<T>(self) -> self::Result<T, ID, P, D> {
+        Err(self)
+    }
 }
 
 impl<ID, P: Prefix, D> Err<ID, P, D> {
