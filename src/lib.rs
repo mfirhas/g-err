@@ -164,6 +164,13 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
     #[must_use]
     #[inline]
+    pub fn set_data(mut self, data: D) -> Self {
+        self.data = Some(data);
+        self
+    }
+
+    #[must_use]
+    #[inline]
     pub fn with_data<T>(self, data: T) -> GErr<ID, P, T> {
         GErr {
             id: self.id,
