@@ -12,7 +12,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Err<ID, P, D>
 where
     Self: Error + 'static,
 {
-    pub fn report(&self) -> String {
+    pub fn pretty(&self) -> String {
         let mut out = String::new();
 
         let _ = writeln!(out, "Error Report");
@@ -133,66 +133,76 @@ where
 }
 
 #[cfg(feature = "serde")]
+mod json_data {
+    use super::*;
+
+    #[derive(serde::Serialize)]
+    pub struct DisplayJsonReport<'a, ID, D> {
+        pub id: &'a ID,
+        pub prefix: Option<&'static str>,
+        pub message: &'a str,
+        pub tags: &'a [Cow<'static, str>],
+        pub data: &'a Option<D>,
+    }
+
+    #[derive(serde::Serialize)]
+    pub struct LocationReport<'a> {
+        pub file: &'a str,
+        pub line: u32,
+        pub column: u32,
+    }
+
+    #[derive(serde::Serialize)]
+    pub struct JsonReport<'a, ID, D> {
+        pub id: &'a ID,
+        pub prefix: Option<&'static str>,
+        pub message: &'a str,
+        pub tags: &'a [Cow<'static, str>],
+        pub data: &'a Option<D>,
+        pub location: LocationReport<'a>,
+        pub chain: Vec<String>,
+
+        #[cfg(feature = "backtrace")]
+        pub backtrace: String,
+    }
+}
+
+#[cfg(feature = "serde")]
 impl<ID, P: Prefix, D> Err<ID, P, D>
 where
     ID: serde::Serialize,
     D: serde::Serialize,
     Self: Error + 'static,
 {
+    #[inline]
+    pub fn display_json_data(&self) -> json_data::DisplayJsonReport<'_, ID, D> {
+        json_data::DisplayJsonReport {
+            id: &self.id,
+            prefix: self.prefix(),
+            message: self.message(),
+            tags: &self.tags,
+            data: &self.data,
+        }
+    }
+
     pub fn display_json(&self) -> serde_json::Result<String>
     where
         ID: serde::Serialize,
         D: serde::Serialize,
     {
-        #[derive(serde::Serialize)]
-        struct DisplayJsonReport<'a, ID, D> {
-            id: &'a ID,
-            prefix: Option<&'static str>,
-            message: &'a str,
-            tags: &'a [Cow<'static, str>],
-            data: &'a Option<D>,
-        }
-
-        serde_json::to_string_pretty(&DisplayJsonReport {
-            id: &self.id,
-            prefix: self.prefix(),
-            message: self.message(),
-            tags: &self.tags,
-            data: &self.data,
-        })
+        serde_json::to_string_pretty(&self.display_json_data())
     }
 
-    pub fn json(&self) -> serde_json::Result<String> {
-        #[derive(serde::Serialize)]
-        struct LocationReport<'a> {
-            file: &'a str,
-            line: u32,
-            column: u32,
-        }
-
-        #[derive(serde::Serialize)]
-        struct JsonReport<'a, ID, D> {
-            id: &'a ID,
-            prefix: Option<&'static str>,
-            message: &'a str,
-            tags: &'a [Cow<'static, str>],
-            data: &'a Option<D>,
-            location: LocationReport<'a>,
-            chain: Vec<String>,
-
-            #[cfg(feature = "backtrace")]
-            backtrace: String,
-        }
-
+    pub fn json_data(&self) -> json_data::JsonReport<'_, ID, D> {
         let chain = self.chain().skip(1).map(ToString::to_string).collect();
 
-        let report = JsonReport {
+        let report = json_data::JsonReport {
             id: &self.id,
             prefix: self.prefix(),
             message: self.message(),
             tags: &self.tags,
             data: &self.data,
-            location: LocationReport {
+            location: json_data::LocationReport {
                 file: self.location.file(),
                 line: self.location.line(),
                 column: self.location.column(),
@@ -203,6 +213,10 @@ where
             backtrace: format!("{:?}", self.backtrace),
         };
 
-        serde_json::to_string_pretty(&report)
+        report
+    }
+
+    pub fn json(&self) -> serde_json::Result<String> {
+        serde_json::to_string_pretty(&self.json_data())
     }
 }
