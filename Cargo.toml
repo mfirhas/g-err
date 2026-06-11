@@ -30,9 +30,11 @@ path = "tests/test.rs"
 [features]
 default = ["std"]
 std = []
+json = ["dep:serde_json"]
 serde = ["dep:serde"]
 backtrace = ["std"]
 
 [dependencies]
 # uuid = { version = "1", default-features = false, features = ["v4"], optional = true }
 serde = { version = "1", default-features = false , features = ["derive"], optional = true }
+serde_json = { version = "1", default-features = false, features = ["alloc"], optional = true }
