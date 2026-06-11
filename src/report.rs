@@ -18,13 +18,11 @@ where
         let _ = writeln!(out, "Error Report");
         let _ = writeln!(out, "============");
 
-        let _ = writeln!(out, "Message: {}", self.message);
-
+        let _ = writeln!(out, "ID: {:?}", self.id);
         if let Some(prefix) = self.prefix() {
             let _ = writeln!(out, "Prefix: {prefix}");
         }
-
-        let _ = writeln!(out, "ID: {:?}", self.id);
+        let _ = writeln!(out, "Message: {}", self.message);
 
         if !self.tags.is_empty() {
             let _ = writeln!(out, "Tags:");
@@ -76,6 +74,11 @@ where
         let mut out = String::new();
 
         let _ = writeln!(out, "# Error Report\n");
+
+        let _ = writeln!(out, "## ID: {:#?}\n", self.id());
+
+        let _ = writeln!(out, "## Prefix: {}\n", self.prefix().unwrap_or("-"));
+
         let _ = writeln!(out, "## Message\n");
         let _ = writeln!(out, "{}\n", self.message());
 
@@ -114,6 +117,16 @@ where
             for (i, cause) in causes.iter().enumerate() {
                 let _ = writeln!(out, "{}. {}", i + 1, cause);
             }
+
+            let _ = writeln!(out);
+        }
+
+        #[cfg(feature = "backtrace")]
+        {
+            let _ = writeln!(out, "## Backtrace\n");
+            let _ = writeln!(out, "```");
+            let _ = writeln!(out, "{:?}", self.backtrace);
+            let _ = writeln!(out, "```");
         }
 
         out
