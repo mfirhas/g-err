@@ -132,13 +132,36 @@ where
     }
 }
 
-#[cfg(feature = "json")]
+#[cfg(feature = "serde")]
 impl<ID, P: Prefix, D> Err<ID, P, D>
 where
     ID: serde::Serialize,
     D: serde::Serialize,
     Self: Error + 'static,
 {
+    pub fn display_json(&self) -> serde_json::Result<String>
+    where
+        ID: serde::Serialize,
+        D: serde::Serialize,
+    {
+        #[derive(serde::Serialize)]
+        struct DisplayJsonReport<'a, ID, D> {
+            id: &'a ID,
+            prefix: Option<&'static str>,
+            message: &'a str,
+            tags: &'a [Cow<'static, str>],
+            data: &'a Option<D>,
+        }
+
+        serde_json::to_string_pretty(&DisplayJsonReport {
+            id: &self.id,
+            prefix: self.prefix(),
+            message: self.message(),
+            tags: &self.tags,
+            data: &self.data,
+        })
+    }
+
     pub fn json(&self) -> serde_json::Result<String> {
         #[derive(serde::Serialize)]
         struct LocationReport<'a> {
@@ -148,7 +171,7 @@ where
         }
 
         #[derive(serde::Serialize)]
-        struct ErrorReport<'a, ID, D> {
+        struct JsonReport<'a, ID, D> {
             id: &'a ID,
             prefix: Option<&'static str>,
             message: &'a str,
@@ -163,7 +186,7 @@ where
 
         let chain = self.chain().skip(1).map(ToString::to_string).collect();
 
-        let report = ErrorReport {
+        let report = JsonReport {
             id: &self.id,
             prefix: self.prefix(),
             message: self.message(),
