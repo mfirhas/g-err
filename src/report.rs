@@ -24,9 +24,11 @@ where
         }
         let _ = writeln!(out, "Message: {}", self.message);
 
-        if !self.tags.is_empty() {
+        if let Some(tags) = self.tags()
+            && !tags.is_empty()
+        {
             let _ = writeln!(out, "Tags:");
-            for tag in &self.tags {
+            for tag in tags {
                 let _ = writeln!(out, "  - {tag}");
             }
         }
@@ -90,10 +92,12 @@ where
             self.location().column()
         );
 
-        if !self.tags().is_empty() {
+        if let Some(tags) = self.tags()
+            && !tags.is_empty()
+        {
             let _ = writeln!(out, "## Tags\n");
 
-            for tag in self.tags() {
+            for tag in tags {
                 let _ = writeln!(out, "- {tag}");
             }
 
@@ -163,7 +167,7 @@ mod json_data {
         pub id: &'a ID,
         pub prefix: Option<&'static str>,
         pub message: &'a str,
-        pub tags: &'a [Cow<'static, str>],
+        pub tags: Option<&'a [Cow<'static, str>]>,
         pub data: &'a Option<D>,
     }
 
@@ -179,7 +183,7 @@ mod json_data {
         pub id: &'a ID,
         pub prefix: Option<&'static str>,
         pub message: &'a str,
-        pub tags: &'a [Cow<'static, str>],
+        pub tags: Option<&'a [Cow<'static, str>]>,
         pub data: &'a Option<D>,
         pub location: LocationReport<'a>,
         pub chain: Vec<String>,
@@ -202,7 +206,7 @@ where
             id: &self.id,
             prefix: self.prefix(),
             message: self.message(),
-            tags: &self.tags,
+            tags: self.tags(),
             data: &self.data,
         }
     }
@@ -222,7 +226,7 @@ where
             id: &self.id,
             prefix: self.prefix(),
             message: self.message(),
-            tags: &self.tags,
+            tags: self.tags(),
             data: &self.data,
             location: json_data::LocationReport {
                 file: self.location.file(),

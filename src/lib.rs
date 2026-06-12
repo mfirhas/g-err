@@ -54,7 +54,7 @@ pub struct GErr<ID = (), P = (), D = ()> {
     prefix: Option<&'static str>,
     source: Option<BoxError>,
 
-    tags: Vec<Cow<'static, str>>,
+    tags: Option<Vec<Cow<'static, str>>>,
 
     data: Option<D>,
 
@@ -111,7 +111,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             prefix: P::PREFIX,
             source: None,
 
-            tags: Vec::new(),
+            tags: None,
 
             data: None,
 
@@ -148,7 +148,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         T: Into<Cow<'static, str>>,
     {
-        self.tags.push(tag.into());
+        self.tags.get_or_insert_default().push(tag.into());
         self
     }
 
@@ -158,7 +158,9 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
         I: IntoIterator<Item = T>,
         T: Into<Cow<'static, str>>,
     {
-        self.tags.extend(tags.into_iter().map(Into::into));
+        self.tags
+            .get_or_insert_default()
+            .extend(tags.into_iter().map(Into::into));
         self
     }
 
@@ -210,8 +212,8 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     }
 
     #[inline]
-    pub fn tags(&self) -> &[Cow<'static, str>] {
-        &self.tags
+    pub fn tags(&self) -> Option<&[Cow<'static, str>]> {
+        self.tags.as_deref()
     }
 
     #[inline]
