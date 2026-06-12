@@ -225,7 +225,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     }
 
     #[inline]
-    pub fn result_err<T>(self) -> self::Result<T, ID, P, D> {
+    pub fn result<T>(self) -> self::Result<T, ID, P, D> {
         Result::Err(self)
     }
 }
