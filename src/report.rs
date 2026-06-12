@@ -6,6 +6,7 @@ use core::error::Error;
 use core::fmt::Debug;
 use core::fmt::Write;
 
+use crate::GErrSource;
 use crate::{GErr, Prefix};
 
 impl<ID: Debug, P: Prefix, D: Debug> GErr<ID, P, D>
@@ -54,7 +55,41 @@ where
                 let _ = writeln!(out, "Caused by:");
 
                 for (i, err) in causes.iter().enumerate() {
-                    let _ = writeln!(out, "  {i}: {err}");
+                    let i = i + 1;
+                    if let Some(gerr) = err.downcast_ref::<GErrSource>() {
+                        match gerr.prefix {
+                            Some(prefix) => {
+                                let _ = writeln!(out, "  {i}: {prefix} {}", gerr.message);
+                            }
+                            None => {
+                                let _ = writeln!(out, "  {i}: {}", gerr.message);
+                            }
+                        }
+
+                        let _ = writeln!(out, "     id: {:?}", gerr.id);
+
+                        let _ = writeln!(
+                            out,
+                            "     at: {}:{}:{}",
+                            gerr.location.file(),
+                            gerr.location.line(),
+                            gerr.location.column()
+                        );
+
+                        if let Some(tags) = &gerr.tags
+                            && !tags.is_empty()
+                        {
+                            let _ = writeln!(out, "     tags: {}", tags.join(", "));
+                        }
+
+                        if let Some(data) = &gerr.data {
+                            let _ = writeln!(out, "     data: {data:?}");
+                        }
+
+                        let _ = writeln!(out);
+                    } else {
+                        let _ = writeln!(out, "  {i}: {err}");
+                    }
                 }
             }
         }
@@ -82,7 +117,7 @@ where
         let _ = writeln!(out, "## Prefix: {}\n", self.prefix().unwrap_or("-"));
 
         let _ = writeln!(out, "## Message\n");
-        let _ = writeln!(out, "{}\n", self.message());
+        let _ = writeln!(out, "> {}\n", self.message());
 
         let _ = writeln!(
             out,
@@ -118,8 +153,45 @@ where
         if !causes.is_empty() {
             let _ = writeln!(out, "## Causes\n");
 
-            for (i, cause) in causes.iter().enumerate() {
-                let _ = writeln!(out, "{}. {}", i + 1, cause);
+            for (i, err) in causes.iter().enumerate() {
+                let i = i + 1;
+
+                if let Some(gerr) = err.downcast_ref::<GErrSource>() {
+                    let msg = match gerr.prefix {
+                        Some(prefix) => format!("{prefix} {}", gerr.message),
+                        None => gerr.message.to_string(),
+                    };
+
+                    let _ = writeln!(out, "### {}. {}\n", i, msg);
+
+                    let _ = writeln!(out, "- **ID:** `{:?}`\n", gerr.id);
+
+                    let loc = &gerr.location;
+                    let _ = writeln!(
+                        out,
+                        "- **Location:** `{}:{}:{}`\n",
+                        loc.file(),
+                        loc.line(),
+                        loc.column()
+                    );
+
+                    if let Some(tags) = &gerr.tags
+                        && !tags.is_empty()
+                    {
+                        let _ = writeln!(out, "- **Tags:** *{}*\n", tags.join(", "));
+                    }
+
+                    if let Some(data) = &gerr.data {
+                        let _ = writeln!(out, "- **Data:**\n");
+                        let _ = writeln!(out, "```");
+                        let _ = writeln!(out, "{data:#?}");
+                        let _ = writeln!(out, "```");
+                    }
+
+                    let _ = writeln!(out);
+                } else {
+                    let _ = writeln!(out, "### {}. {}\n\n", i + 1, err);
+                }
             }
 
             let _ = writeln!(out);
@@ -129,7 +201,7 @@ where
         {
             let _ = writeln!(out, "## Backtrace\n");
             let _ = writeln!(out, "```");
-            let _ = writeln!(out, "{:?}", self.backtrace);
+            let _ = writeln!(out, "{:#?}", self.backtrace);
             let _ = writeln!(out, "```");
         }
 
@@ -140,17 +212,24 @@ where
     where
         Self: Error + 'static,
     {
-        use alloc::string::String;
-        use core::fmt::Write;
-
         let mut out = String::new();
 
         for (depth, err) in self.chain().enumerate() {
+            let err_msg = if let Some(gerr) = err.downcast_ref::<GErrSource>() {
+                if let Some(prefix) = gerr.prefix {
+                    format!("{} {} ({:?})", prefix, gerr.message, gerr.id)
+                } else {
+                    format!("{} ({:?})", gerr.message, gerr.id)
+                }
+            } else {
+                format!("{err}")
+            };
+
             if depth == 0 {
-                let _ = writeln!(out, "{err}");
+                let _ = writeln!(out, "{err_msg}");
             } else {
                 let indent = "   ".repeat(depth - 1);
-                let _ = writeln!(out, "{indent}└─ {err}");
+                let _ = writeln!(out, "{indent}└─ {err_msg}");
             }
         }
 
