@@ -352,6 +352,15 @@ pub trait ResultExt<T> {
 
     #[must_use]
     #[track_caller]
+    fn gerr_with<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
+    where
+        ID: Id,
+        P: Prefix,
+        F: FnOnce() -> M,
+        M: Into<Cow<'static, str>>;
+
+    #[must_use]
+    #[track_caller]
     fn wrap<ID, P: Prefix, D>(self, err: GErr<ID, P, D>) -> Result<T, ID, P, D>;
 }
 
@@ -366,6 +375,22 @@ where
         P: Prefix,
     {
         let message = message.into();
+        let location = Location::caller();
+
+        self.map_err(|source| {
+            GErr::<ID, P, ()>::new_untracked(message, location).set_source(source)
+        })
+    }
+
+    #[track_caller]
+    fn gerr_with<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
+    where
+        ID: Id,
+        P: Prefix,
+        F: FnOnce() -> M,
+        M: Into<Cow<'static, str>>,
+    {
+        let message = func().into();
         let location = Location::caller();
 
         self.map_err(|source| {
