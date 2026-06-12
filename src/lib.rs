@@ -88,7 +88,7 @@ impl<ID: Id, P: Prefix, D> GErr<ID, P, D> {
 impl<ID, P: Prefix, D> GErr<ID, P, D> {
     #[track_caller]
     #[inline]
-    pub fn with_id<M>(id: ID, message: M) -> Self
+    pub fn new_with_id<M>(id: ID, message: M) -> Self
     where
         M: Into<Cow<'static, str>>,
     {
@@ -171,6 +171,55 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
         self
     }
 
+    /// Override ID value and probably type.
+    #[must_use]
+    #[inline]
+    pub fn with_id<T>(self, id: T) -> GErr<T, P, D> {
+        GErr {
+            id,
+            message: self.message,
+
+            prefix: self.prefix,
+            source: self.source,
+
+            tags: self.tags,
+
+            data: self.data,
+
+            location: self.location,
+
+            #[cfg(feature = "backtrace")]
+            backtrace: self.backtrace,
+
+            _static_prefix: PhantomData,
+        }
+    }
+
+    /// Override Prefix(P) value and probably type.
+    #[must_use]
+    #[inline]
+    pub fn with_prefix<T: Prefix>(self) -> GErr<ID, T, D> {
+        GErr {
+            id: self.id,
+            message: self.message,
+
+            prefix: T::PREFIX,
+            source: self.source,
+
+            tags: self.tags,
+
+            data: self.data,
+
+            location: self.location,
+
+            #[cfg(feature = "backtrace")]
+            backtrace: self.backtrace,
+
+            _static_prefix: PhantomData,
+        }
+    }
+
+    /// Override Data(D) value and probably type.
     #[must_use]
     #[inline]
     pub fn with_data<T>(self, data: T) -> GErr<ID, P, T> {
