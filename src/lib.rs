@@ -24,6 +24,10 @@ mod serde;
 
 mod macros;
 
+mod sealed {
+    pub trait Sealed {}
+}
+
 pub type Result<T, ID = (), P = (), D = ()> = core::result::Result<T, GErr<ID, P, D>>;
 
 pub trait Id {
@@ -341,7 +345,9 @@ impl<ID: Debug, P: Prefix, D: Debug> Error for GErr<ID, P, D> {
 }
 
 // --- Result Extension
-pub trait ResultExt<T> {
+impl<T, E> sealed::Sealed for core::result::Result<T, E> {}
+
+pub trait ResultExt<T>: sealed::Sealed {
     #[must_use]
     #[track_caller]
     fn context<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
@@ -403,7 +409,7 @@ where
     }
 }
 
-pub trait GResultExt<T> {
+pub trait GResultExt<T>: sealed::Sealed {
     #[must_use]
     #[track_caller]
     fn gerr<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
