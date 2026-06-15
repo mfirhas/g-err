@@ -75,7 +75,7 @@ impl MarkdownReport {
                 let i = i + 1;
                 match src {
                     crate::Source::Err(e) => {
-                        let _ = writeln!(out, "### {}. {}\n\n", i, e);
+                        let _ = writeln!(out, "### {}. {}\n", i, e);
                     }
                     crate::Source::GErr(gerr) => {
                         let msg = match gerr.prefix {
