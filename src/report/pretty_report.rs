@@ -39,7 +39,7 @@ impl PrettyReport {
     }
     fn data<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
         if let Some(data) = err.data {
-            let _ = writeln!(out, "Data: {data:?}");
+            let _ = writeln!(out, "Data:\n {data:#?}");
         }
     }
     fn tags<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
