@@ -18,45 +18,32 @@ extern crate std;
 use std::backtrace::Backtrace;
 
 mod report;
+pub use report::{MarkdownReport, PrettyReport, TraceReport};
+
+#[cfg(feature = "serde")]
+pub use report::{DisplayJsonReport, JsonReport};
 
 #[cfg(feature = "serde")]
 mod serde;
 
 mod macros;
 
+mod types;
+pub use types::*;
+
+mod result_ext;
+pub use result_ext::{GResultExt, ResultExt};
+
 mod sealed {
     pub trait Sealed {}
 }
 
-pub type Result<T, ID = (), P = (), D = ()> = core::result::Result<T, GErr<ID, P, D>>;
-
-pub trait Id {
-    fn id() -> Self;
-}
-
-impl Id for () {
-    #[inline]
-    fn id() {}
-}
-
-pub trait Prefix {
-    const PREFIX: Option<&'static str> = None;
-}
-
-impl Prefix for () {}
-
-pub trait SetField<K, V> {
-    fn set_field(&mut self, key: K, value: V);
-}
-
-pub type BoxError = Box<dyn Error + Send + Sync + 'static>;
-
-pub struct GErr<ID = (), P = (), D = ()> {
+pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
     id: ID,
     message: Cow<'static, str>,
 
     prefix: Option<&'static str>,
-    source: Option<BoxError>,
+    source: Option<Vec<Source>>,
 
     tags: Option<Vec<Cow<'static, str>>>,
 
@@ -132,6 +119,13 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 impl<ID, P: Prefix, D> GErr<ID, P, D> {
     #[must_use]
     #[inline]
+    pub fn set_id(mut self, id: ID) -> Self {
+        self.id = id;
+        self
+    }
+
+    #[must_use]
+    #[inline]
     pub fn set_prefix(mut self, prefix: &'static str) -> Self {
         self.prefix = Some(prefix);
         self
@@ -143,7 +137,9 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         E: Error + Send + Sync + 'static,
     {
-        self.source = Some(Box::new(source));
+        self.source
+            .get_or_insert_default()
+            .push(Source::Err(Box::new(source)));
         self
     }
 
@@ -152,8 +148,9 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         E: Into<GErrSource> + Error + Send + Sync + 'static,
     {
-        let gerr_source = gerr.into();
-        self.source = Some(Box::new(gerr_source));
+        self.source
+            .get_or_insert_default()
+            .push(Source::GErr(Box::new(gerr.into())));
         self
     }
 
@@ -340,134 +337,15 @@ impl<ID: Debug, P: Prefix, D: Debug> Debug for GErr<ID, P, D> {
 
 impl<ID: Debug, P: Prefix, D: Debug> Error for GErr<ID, P, D> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.source.as_deref().map(|e| e as &(dyn Error + 'static))
-    }
-}
-
-// --- Result Extension
-impl<T, E> sealed::Sealed for core::result::Result<T, E> {}
-
-pub trait ResultExt<T>: sealed::Sealed {
-    #[must_use]
-    #[track_caller]
-    fn context<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
-    where
-        ID: Id,
-        P: Prefix;
-
-    #[must_use]
-    #[track_caller]
-    fn with_context<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
-    where
-        ID: Id,
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>;
-
-    #[must_use]
-    #[track_caller]
-    fn wrap_err<ID, P: Prefix, D>(self, err: GErr<ID, P, D>) -> Result<T, ID, P, D>;
-}
-
-impl<T, E> ResultExt<T> for core::result::Result<T, E>
-where
-    E: Error + Send + Sync + 'static,
-{
-    #[track_caller]
-    fn context<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
-    where
-        ID: Id,
-        P: Prefix,
-    {
-        let message = message.into();
-        let location = Location::caller();
-
-        self.map_err(|source| {
-            GErr::<ID, P, ()>::new_untracked(message, location).set_source(source)
-        })
-    }
-
-    #[track_caller]
-    fn with_context<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
-    where
-        ID: Id,
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>,
-    {
-        let message = func().into();
-        let location = Location::caller();
-
-        self.map_err(|source| {
-            GErr::<ID, P, ()>::new_untracked(message, location).set_source(source)
-        })
-    }
-
-    #[track_caller]
-    fn wrap_err<ID, P: Prefix, D>(self, err: GErr<ID, P, D>) -> Result<T, ID, P, D> {
-        self.map_err(|source| err.set_source(source))
-    }
-}
-
-pub trait GResultExt<T>: sealed::Sealed {
-    #[must_use]
-    #[track_caller]
-    fn gerr<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
-    where
-        ID: Id,
-        P: Prefix;
-
-    #[must_use]
-    #[track_caller]
-    fn with_gerr<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
-    where
-        ID: Id,
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>;
-
-    #[must_use]
-    #[track_caller]
-    fn wrap_gerr<ID, P: Prefix, D>(self, err: GErr<ID, P, D>) -> Result<T, ID, P, D>;
-}
-
-impl<T, E> GResultExt<T> for core::result::Result<T, E>
-where
-    E: Into<GErrSource> + Error + Send + Sync + 'static,
-{
-    #[track_caller]
-    fn gerr<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
-    where
-        ID: Id,
-        P: Prefix,
-    {
-        let message = message.into();
-        let location = Location::caller();
-
-        self.map_err(|source| {
-            GErr::<ID, P, ()>::new_untracked(message, location).set_source_gerr(source)
-        })
-    }
-
-    #[track_caller]
-    fn with_gerr<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
-    where
-        ID: Id,
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>,
-    {
-        let message = func().into();
-        let location = Location::caller();
-
-        self.map_err(|source| {
-            GErr::<ID, P, ()>::new_untracked(message, location).set_source_gerr(source)
-        })
-    }
-
-    #[track_caller]
-    fn wrap_gerr<ID, P: Prefix, D>(self, err: GErr<ID, P, D>) -> Result<T, ID, P, D> {
-        self.map_err(|source| err.set_source_gerr(source))
+        if let Some(ref sources) = self.source
+            && !sources.is_empty()
+        {
+            return sources.first().and_then(|s| match s {
+                Source::Err(e) => Some(&**e as &(dyn Error + 'static)),
+                Source::GErr(e) => Some(&**e as &(dyn Error + 'static)),
+            });
+        }
+        None
     }
 }
 
@@ -541,20 +419,30 @@ where
     }
 }
 
+pub trait IdSource: Debug + Display + Send + Sync {}
+
+impl<T> IdSource for T where T: Debug + Display + Send + Sync {}
+
 // --- GErrSource, before converting GErr to dyn Err
 #[derive(Debug)]
 pub struct GErrSource {
-    pub id: Box<dyn Debug + Send + Sync>,
+    pub id: Box<dyn IdSource>,
+
+    #[cfg(feature = "serde")]
+    pub id_json: serde_json::Value,
 
     pub message: Cow<'static, str>,
 
     pub prefix: Option<&'static str>,
 
-    pub source: Option<BoxError>,
+    pub source: Option<Vec<Source>>,
 
     pub tags: Option<Vec<Cow<'static, str>>>,
 
     pub data: Option<Box<dyn Debug + Send + Sync>>,
+
+    #[cfg(feature = "serde")]
+    pub data_json: Option<serde_json::Value>,
 
     pub location: &'static Location<'static>,
 }
@@ -571,13 +459,22 @@ impl Display for GErrSource {
 
 impl Error for GErrSource {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.source.as_deref().map(|e| e as &(dyn Error + 'static))
+        if let Some(ref sources) = self.source
+            && !sources.is_empty()
+        {
+            return sources.first().and_then(|s| match s {
+                Source::Err(e) => Some(&**e as &(dyn Error + 'static)),
+                Source::GErr(e) => Some(&**e as &(dyn Error + 'static)),
+            });
+        }
+        None
     }
 }
 
+#[cfg(not(feature = "serde"))]
 impl<ID, P, D> From<GErr<ID, P, D>> for GErrSource
 where
-    ID: Debug + Send + Sync + 'static,
+    ID: IdSource + 'static,
     D: Debug + Send + Sync + 'static,
 {
     fn from(gerr: GErr<ID, P, D>) -> Self {
@@ -586,6 +483,32 @@ where
             message: gerr.message,
             prefix: gerr.prefix,
             tags: gerr.tags,
+            data: gerr
+                .data
+                .map(|d| Box::new(d) as Box<dyn Debug + Send + Sync>),
+            location: gerr.location,
+            source: gerr.source,
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<ID, P, D> From<GErr<ID, P, D>> for GErrSource
+where
+    ID: ::serde::Serialize + IdSource + 'static,
+    D: ::serde::Serialize + Debug + Send + Sync + 'static,
+{
+    fn from(gerr: GErr<ID, P, D>) -> Self {
+        GErrSource {
+            id_json: serde_json::to_value(&gerr.id).unwrap_or_default(),
+            id: Box::new(gerr.id),
+            message: gerr.message,
+            prefix: gerr.prefix,
+            tags: gerr.tags,
+            data_json: gerr
+                .data
+                .as_ref()
+                .map(|d| serde_json::to_value(d).unwrap_or_default()),
             data: gerr
                 .data
                 .map(|d| Box::new(d) as Box<dyn Debug + Send + Sync>),
