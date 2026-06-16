@@ -22,25 +22,36 @@ impl Report for TraceReport {
 impl TraceReport {
     fn header<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
         if let Some(prefix) = err.prefix {
-            let _ = writeln!(out, "{prefix} {}", err.message);
+            let _ = writeln!(out, "{prefix} {} ({})", err.message, err.id);
         } else {
-            let _ = writeln!(out, "{}", err.message);
+            let _ = writeln!(out, "{} ({})", err.message, err.id);
         }
     }
 
     fn sources<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
         if let Some(sources) = err.sources {
-            Self::write_sources(sources, out, 0);
+            Self::write_sources(sources, out, &mut Vec::new());
         }
     }
 
-    fn write_sources(sources: &[crate::Source], out: &mut String, depth: usize) {
-        let indent = "   ".repeat(depth);
+    fn write_sources(
+        sources: &[crate::Source],
+        out: &mut String,
+        ancestors: &mut Vec<bool>, // true = ancestor was last child
+    ) {
+        for (idx, src) in sources.iter().enumerate() {
+            let is_last = idx + 1 == sources.len();
 
-        for src in sources {
+            // Draw ancestor guide lines.
+            for &ancestor_is_last in ancestors.iter() {
+                let _ = write!(out, "{}", if ancestor_is_last { "   " } else { "│  " });
+            }
+
+            let branch = if is_last { "└─ " } else { "├─ " };
+
             match src {
                 crate::Source::Err(e) => {
-                    let _ = writeln!(out, "{indent}└─ {e}");
+                    let _ = writeln!(out, "{branch}{e}");
                 }
 
                 crate::Source::GErr(ge) => {
@@ -49,10 +60,12 @@ impl TraceReport {
                         None => format!("{} ({})", ge.message, ge.id),
                     };
 
-                    let _ = writeln!(out, "{indent}└─ {msg}");
+                    let _ = writeln!(out, "{branch}{msg}");
 
                     if let Some(nested) = &ge.source {
-                        Self::write_sources(nested, out, depth + 1);
+                        ancestors.push(is_last);
+                        Self::write_sources(nested, out, ancestors);
+                        ancestors.pop();
                     }
                 }
             }
