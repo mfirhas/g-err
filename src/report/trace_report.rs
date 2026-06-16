@@ -3,14 +3,14 @@ use core::fmt::{Debug, Display, Write};
 
 pub struct TraceReport;
 
-impl crate::sealed::Sealed for TraceReport {}
-
 impl Report for TraceReport {
-    fn report<ID, D>(err: &super::GErrView<ID, D>) -> String
+    fn report<E, ID, D>(err: &E) -> String
     where
+        for<'a> &'a E: Into<super::GErrView<'a, ID, D>>,
         ID: Display,
         D: Debug,
     {
+        let err = &err.into();
         let mut out: String = String::new();
         Self::header(err, &mut out);
         Self::sources(err, &mut out);

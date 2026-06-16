@@ -7,14 +7,14 @@ use crate::{
 
 pub struct JsonReport;
 
-impl crate::sealed::Sealed for JsonReport {}
-
 impl Report for JsonReport {
-    fn report<ID, D>(err: &GErrView<ID, D>) -> String
+    fn report<E, ID, D>(err: &E) -> String
     where
-        ID: serde::Serialize,
-        D: serde::Serialize,
+        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
+        ID: std::fmt::Display + serde::Serialize,
+        D: std::fmt::Debug + serde::Serialize,
     {
+        let err = &err.into();
         let resp: JsonReportData = err.into();
         serde_json::to_string_pretty(&resp).unwrap_or("<invalid json format>".into())
     }
@@ -22,14 +22,14 @@ impl Report for JsonReport {
 
 pub struct DisplayJsonReport;
 
-impl crate::sealed::Sealed for DisplayJsonReport {}
-
 impl Report for DisplayJsonReport {
-    fn report<ID, D>(err: &GErrView<ID, D>) -> String
+    fn report<E, ID, D>(err: &E) -> String
     where
-        ID: serde::Serialize,
-        D: serde::Serialize,
+        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
+        ID: std::fmt::Display + serde::Serialize,
+        D: std::fmt::Debug + serde::Serialize,
     {
+        let err = &err.into();
         let resp: DisplayJsonReportData = err.into();
         serde_json::to_string_pretty(&resp).unwrap_or("<invalid json format>".into())
     }

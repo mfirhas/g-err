@@ -61,16 +61,18 @@ impl<'a, ID, P: Prefix, D> From<&'a GErr<ID, P, D>> for GErrView<'a, ID, D> {
     }
 }
 
-pub trait Report: crate::sealed::Sealed {
+pub trait Report {
     #[cfg(not(feature = "serde"))]
-    fn report<ID, D>(err: &GErrView<ID, D>) -> String
+    fn report<E, ID, D>(err: &E) -> String
     where
+        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
         ID: Display,
         D: Debug;
 
     #[cfg(feature = "serde")]
-    fn report<ID, D>(err: &GErrView<ID, D>) -> String
+    fn report<E, ID, D>(err: &E) -> String
     where
+        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
         ID: Display + serde::Serialize,
         D: Debug + serde::Serialize;
 }
@@ -83,14 +85,14 @@ where
     D: Debug,
 {
     pub fn report(&self) -> String {
-        PrettyReport::report::<ID, D>(&self.into())
+        PrettyReport::report::<_, ID, D>(self)
     }
 
     pub fn report_as<R>(&self) -> String
     where
         R: Report,
     {
-        R::report::<ID, D>(&self.into())
+        R::report::<_, ID, D>(self)
     }
 }
 
@@ -102,13 +104,13 @@ where
     D: Debug + serde::Serialize,
 {
     pub fn report(&self) -> String {
-        PrettyReport::report::<ID, D>(&self.into())
+        PrettyReport::report::<_, ID, D>(self)
     }
 
     pub fn report_as<R>(&self) -> String
     where
         R: Report,
     {
-        R::report::<ID, D>(&self.into())
+        R::report::<_, ID, D>(self)
     }
 }

@@ -3,14 +3,14 @@ use core::fmt::{Debug, Display, Write};
 
 pub struct MarkdownReport;
 
-impl crate::sealed::Sealed for MarkdownReport {}
-
 impl Report for MarkdownReport {
-    fn report<ID, D>(err: &super::GErrView<ID, D>) -> String
+    fn report<E, ID, D>(err: &E) -> String
     where
+        for<'a> &'a E: Into<super::GErrView<'a, ID, D>>,
         ID: Display,
         D: Debug,
     {
+        let err = &err.into();
         let mut out: String = String::new();
         Self::header::<ID, D>(&mut out);
         Self::preamble::<ID, D>(err, &mut out);
@@ -20,6 +20,7 @@ impl Report for MarkdownReport {
         Self::sources::<ID, D>(err, &mut out);
         #[cfg(feature = "backtrace")]
         Self::backtrace::<ID, D>(err, &mut out);
+
         out
     }
 }
