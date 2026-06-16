@@ -26,7 +26,10 @@ pub use trace_report::TraceReport;
 mod json_report;
 
 #[cfg(feature = "serde")]
-pub use json_report::{DisplayJsonReport, JsonReport};
+pub use json_report::{
+    DisplayJsonReport, JsonReport,
+    pub_json_data::{DisplayJsonData, JsonData, LocationJsonData, SourceJsonData},
+};
 
 pub struct GErrView<'a, ID, D> {
     pub id: &'a ID,
@@ -103,14 +106,26 @@ where
     P: Prefix,
     D: Debug + serde::Serialize,
 {
+    #[inline]
     pub fn report(&self) -> String {
         PrettyReport::report::<_, ID, D>(self)
     }
 
+    #[inline]
     pub fn report_as<R>(&self) -> String
     where
         R: Report,
     {
         R::report::<_, ID, D>(self)
+    }
+
+    #[inline]
+    pub fn json_data(&self) -> JsonData {
+        JsonReport::data(self)
+    }
+
+    #[inline]
+    pub fn display_json_data(&self) -> DisplayJsonData {
+        DisplayJsonReport::data(self)
     }
 }

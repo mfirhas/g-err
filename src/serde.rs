@@ -18,16 +18,72 @@ where
     }
 }
 
-/// Serialize into json.
-#[allow(unused)]
-pub fn json<S, ID, P, D>(err: &GErr<ID, P, D>, serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: serde::Serializer,
-    ID: core::fmt::Display + serde::Serialize,
-    P: Prefix,
-    D: core::fmt::Debug + serde::Serialize,
-    GErr<ID, P, D>: Error + 'static,
-{
-    err.report_as::<crate::DisplayJsonReport>()
-        .serialize(serializer)
+/// Serialize and deserialize into/from json for internal.
+///
+/// Attribute:
+///
+/// `#[serde(with = "g_err::serde::json")]`
+pub mod json {
+    use crate::JsonData;
+
+    use super::*;
+
+    pub fn serialize<S, ID, P, D>(err: &GErr<ID, P, D>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+        ID: core::fmt::Display + serde::Serialize,
+        P: Prefix,
+        D: core::fmt::Debug + serde::Serialize,
+        GErr<ID, P, D>: Error + 'static,
+    {
+        err.json_data().serialize(serializer)
+    }
+
+    pub fn deserialize<'de, De, ID, P, D>(deserializer: De) -> Result<GErr<ID, P, D>, De::Error>
+    where
+        De: serde::Deserializer<'de>,
+        ID: for<'a> serde::Deserialize<'a>,
+        P: Prefix,
+        D: for<'a> serde::Deserialize<'a>,
+    {
+        Ok(<JsonData as serde::Deserialize>::deserialize(deserializer)?
+            .try_into()
+            .map_err(::serde::de::Error::custom)?)
+    }
+}
+
+/// Serialize and deserialize into/from json for public.
+///
+/// Attribute:
+///
+/// `#[serde(with = "g_err::serde::display_json")]`
+pub mod display_json {
+    use crate::DisplayJsonData;
+
+    use super::*;
+
+    pub fn serialize<S, ID, P, D>(err: &GErr<ID, P, D>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+        ID: core::fmt::Display + serde::Serialize,
+        P: Prefix,
+        D: core::fmt::Debug + serde::Serialize,
+        GErr<ID, P, D>: Error + 'static,
+    {
+        err.display_json_data().serialize(serializer)
+    }
+
+    pub fn deserialize<'de, De, ID, P, D>(deserializer: De) -> Result<GErr<ID, P, D>, De::Error>
+    where
+        De: serde::Deserializer<'de>,
+        ID: for<'a> serde::Deserialize<'a>,
+        P: Prefix,
+        D: for<'a> serde::Deserialize<'a>,
+    {
+        Ok(
+            <DisplayJsonData as serde::Deserialize>::deserialize(deserializer)?
+                .try_into()
+                .map_err(::serde::de::Error::custom)?,
+        )
+    }
 }

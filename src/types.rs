@@ -8,7 +8,6 @@ pub trait Id {
     fn id() -> Self;
 }
 
-#[cfg_attr(feature = "serde", derive(::serde::Serialize))]
 #[derive(Debug)]
 pub struct NoID;
 
@@ -25,6 +24,27 @@ impl Id for NoID {
     }
 }
 
+#[cfg(feature = "serde")]
+impl ::serde::Serialize for NoID {
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_unit()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> ::serde::Deserialize<'de> for NoID {
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        <()>::deserialize(deserializer)?;
+        Ok(NoID)
+    }
+}
+
 pub trait Prefix {
     const PREFIX: Option<&'static str> = None;
 }
@@ -34,9 +54,29 @@ pub struct NoPrefix;
 
 impl Prefix for NoPrefix {}
 
-#[cfg_attr(feature = "serde", derive(::serde::Serialize))]
 #[derive(Debug)]
 pub struct NoData;
+
+#[cfg(feature = "serde")]
+impl ::serde::Serialize for NoData {
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_unit()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> ::serde::Deserialize<'de> for NoData {
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        <()>::deserialize(deserializer)?;
+        Ok(NoData)
+    }
+}
 
 pub trait SetField<K, V> {
     fn set_field(&mut self, key: K, value: V);

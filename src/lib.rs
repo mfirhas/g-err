@@ -21,10 +21,12 @@ mod report;
 pub use report::{MarkdownReport, PrettyReport, TraceReport};
 
 #[cfg(feature = "serde")]
-pub use report::{DisplayJsonReport, JsonReport};
+pub use report::{
+    DisplayJsonData, DisplayJsonReport, JsonData, JsonReport, LocationJsonData, SourceJsonData,
+};
 
 #[cfg(feature = "serde")]
-mod serde;
+pub mod serde;
 
 mod macros;
 
