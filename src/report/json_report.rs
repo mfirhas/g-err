@@ -1,3 +1,4 @@
+use crate::NoID;
 use crate::{
     Source,
     report::{GErrView, Report},
@@ -357,7 +358,7 @@ pub mod pub_json_data {
 
 #[derive(serde::Serialize)]
 struct DisplayJsonReportData<'a> {
-    pub id: Option<serde_json::Value>,
+    pub id: serde_json::Value,
     pub prefix: Option<&'static str>,
     pub message: &'a str,
     pub tags: Option<&'a [Cow<'static, str>]>,
@@ -366,7 +367,7 @@ struct DisplayJsonReportData<'a> {
 
 #[derive(serde::Serialize)]
 struct JsonReportData<'a> {
-    pub id: Option<serde_json::Value>,
+    pub id: serde_json::Value,
     pub prefix: Option<&'static str>,
     pub message: &'a str,
     pub tags: Option<&'a [Cow<'static, str>]>,
@@ -387,7 +388,7 @@ struct LocationJson<'a> {
 
 #[derive(serde::Serialize)]
 struct SourceJson<'a> {
-    pub id: Option<&'a serde_json::Value>,
+    pub id: &'a serde_json::Value,
     pub prefix: Option<&'static str>,
     pub message: String,
     pub tags: Option<&'a [Cow<'static, str>]>,
@@ -403,7 +404,8 @@ where
 {
     fn from(value: &'a GErrView<ID, D>) -> Self {
         Self {
-            id: serde_json::to_value(value.id).ok(),
+            id: serde_json::to_value(value.id)
+                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
             prefix: value.prefix,
             message: value.message,
             tags: value.tags,
@@ -419,7 +421,8 @@ where
 {
     fn from(value: &'a GErrView<ID, D>) -> Self {
         Self {
-            id: serde_json::to_value(value.id).ok(),
+            id: serde_json::to_value(value.id)
+                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
             prefix: value.prefix,
             message: value.message,
             tags: value.tags,
@@ -437,11 +440,13 @@ where
     }
 }
 
+pub static NO_ID_JSON: serde_json::Value = serde_json::Value::Null;
+
 impl<'a> From<&'a Source> for SourceJson<'a> {
     fn from(value: &'a Source) -> Self {
         match value {
             Source::Err(err) => Self {
-                id: None,
+                id: &NO_ID_JSON,
                 prefix: None,
                 message: err.to_string(),
                 tags: None,
@@ -450,7 +455,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
                 sources: None,
             },
             Source::GErr(gerr) => Self {
-                id: Some(&gerr.id_json),
+                id: &gerr.id_json,
                 prefix: gerr.prefix,
                 message: gerr.message.to_string(),
                 tags: gerr.tags.as_deref(),
