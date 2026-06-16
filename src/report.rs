@@ -34,7 +34,7 @@ pub use json_report::{
 pub struct GErrView<'a, ID, D> {
     pub id: &'a ID,
     pub message: &'a str,
-    pub prefix: Option<&'static str>,
+    pub prefix: Option<&'a str>,
     pub data: Option<&'a D>,
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub sources: Option<&'a [Source]>,

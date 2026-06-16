@@ -72,7 +72,7 @@ impl PrettyReport {
                         let _ = writeln!(out, "  {i}: {e}");
                     }
                     crate::Source::GErr(gerr) => {
-                        match gerr.prefix {
+                        match gerr.prefix.as_deref() {
                             Some(prefix) => {
                                 let _ = writeln!(out, "  {i}: {prefix} {}", gerr.message);
                             }

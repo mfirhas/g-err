@@ -79,7 +79,7 @@ impl MarkdownReport {
                         let _ = writeln!(out, "### {}. {}\n", i, e);
                     }
                     crate::Source::GErr(gerr) => {
-                        let msg = match gerr.prefix {
+                        let msg = match gerr.prefix.as_deref() {
                             Some(prefix) => format!("{prefix} {}", gerr.message),
                             None => gerr.message.to_string(),
                         };

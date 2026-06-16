@@ -55,7 +55,7 @@ impl TraceReport {
                 }
 
                 crate::Source::GErr(ge) => {
-                    let msg = match ge.prefix {
+                    let msg = match ge.prefix.as_deref() {
                         Some(prefix) => format!("{prefix} {} ({})", ge.message, ge.id),
                         None => format!("{} ({})", ge.message, ge.id),
                     };

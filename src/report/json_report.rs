@@ -185,7 +185,7 @@ pub mod pub_json_data {
             }
 
             if let Some(prefix) = prefix {
-                err = err.set_prefix("TODO");
+                err = err.set_prefix(prefix);
             }
 
             if let Some(tags) = tags {
@@ -227,7 +227,7 @@ pub mod pub_json_data {
             }
 
             if let Some(prefix) = prefix {
-                err = err.set_prefix("TODO");
+                err = err.set_prefix(prefix);
             }
 
             if let Some(tags) = tags {
@@ -247,7 +247,7 @@ pub mod pub_json_data {
                 },
                 Source::GErr(gerr) => Self {
                     id: gerr.id_json.clone(),
-                    prefix: gerr.prefix.map(|s| s.into()),
+                    prefix: gerr.prefix.as_deref().map(|s| s.into()),
                     message: gerr.message.to_string(),
                     tags: gerr
                         .tags
@@ -329,7 +329,7 @@ pub mod pub_json_data {
 
                 message: message.into(),
 
-                prefix: Some("TODO"),
+                prefix: prefix.map(|s| Cow::Owned(s)),
 
                 source: sources.map(|sources| {
                     sources
@@ -359,7 +359,7 @@ pub mod pub_json_data {
 #[derive(serde::Serialize)]
 struct DisplayJsonReportData<'a> {
     pub id: serde_json::Value,
-    pub prefix: Option<&'static str>,
+    pub prefix: Option<&'a str>,
     pub message: &'a str,
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub data: Option<serde_json::Value>,
@@ -368,7 +368,7 @@ struct DisplayJsonReportData<'a> {
 #[derive(serde::Serialize)]
 struct JsonReportData<'a> {
     pub id: serde_json::Value,
-    pub prefix: Option<&'static str>,
+    pub prefix: Option<&'a str>,
     pub message: &'a str,
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub data: Option<serde_json::Value>,
@@ -389,7 +389,7 @@ struct LocationJson<'a> {
 #[derive(serde::Serialize)]
 struct SourceJson<'a> {
     pub id: &'a serde_json::Value,
-    pub prefix: Option<&'static str>,
+    pub prefix: Option<&'a str>,
     pub message: String,
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub data: Option<&'a serde_json::Value>,
@@ -456,7 +456,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
             },
             Source::GErr(gerr) => Self {
                 id: &gerr.id_json,
-                prefix: gerr.prefix,
+                prefix: gerr.prefix.as_deref(),
                 message: gerr.message.to_string(),
                 tags: gerr.tags.as_deref(),
                 data: gerr.data_json.as_ref(),

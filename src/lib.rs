@@ -47,7 +47,7 @@ pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
     id: ID,
     message: Cow<'static, str>,
 
-    prefix: Option<&'static str>,
+    prefix: Option<Cow<'static, str>>,
     source: Option<Vec<Source>>,
 
     tags: Option<Vec<Cow<'static, str>>>,
@@ -104,7 +104,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             id,
             message: message.into(),
 
-            prefix: P::PREFIX,
+            prefix: P::PREFIX.map(Cow::Borrowed),
             source: None,
 
             tags: None,
@@ -131,8 +131,11 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
     #[must_use]
     #[inline]
-    pub fn set_prefix(mut self, prefix: &'static str) -> Self {
-        self.prefix = Some(prefix);
+    pub fn set_prefix<T>(mut self, prefix: T) -> Self
+    where
+        T: Into<Cow<'static, str>>,
+    {
+        self.prefix = Some(prefix.into());
         self
     }
 
@@ -219,7 +222,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             id: self.id,
             message: self.message,
 
-            prefix: T::PREFIX,
+            prefix: T::PREFIX.map(Cow::Borrowed),
             source: self.source,
 
             tags: self.tags,
@@ -272,8 +275,8 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     }
 
     #[inline]
-    pub fn prefix(&self) -> Option<&'static str> {
-        self.prefix.or(P::PREFIX)
+    pub fn prefix(&self) -> Option<&str> {
+        self.prefix.as_deref().or(P::PREFIX.as_deref())
     }
 
     #[inline]
@@ -312,7 +315,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
 impl<ID, P: Prefix, D> Display for GErr<ID, P, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(prefix) = self.prefix.or(P::PREFIX) {
+        if let Some(prefix) = self.prefix.as_deref().or(P::PREFIX.as_deref()) {
             write!(f, "{prefix} {}", self.message())
         } else {
             write!(f, "{}", self.message())
@@ -326,7 +329,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Debug for GErr<ID, P, D> {
 
         debug
             .field("id", &self.id)
-            .field("prefix", &self.prefix.or(P::PREFIX))
+            .field("prefix", &self.prefix.as_deref().or(P::PREFIX.as_deref()))
             .field("message", &self.message)
             .field("source", &self.source)
             .field("tags", &self.tags)
@@ -438,7 +441,7 @@ pub struct GErrSource {
 
     pub message: Cow<'static, str>,
 
-    pub prefix: Option<&'static str>,
+    pub prefix: Option<Cow<'static, str>>,
 
     pub source: Option<Vec<Source>>,
 
@@ -454,7 +457,7 @@ pub struct GErrSource {
 
 impl Display for GErrSource {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(prefix) = self.prefix {
+        if let Some(prefix) = self.prefix.as_deref() {
             write!(f, "{prefix} {}", self.message)
         } else {
             write!(f, "{}", self.message)
