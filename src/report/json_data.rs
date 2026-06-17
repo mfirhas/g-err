@@ -2,7 +2,7 @@ use alloc::borrow::Cow;
 use core::panic::Location;
 
 use crate::{
-    GErr, GErrSource, IdSource, NoData, NoID, NoPrefix, Prefix, ResultExt, Source, report::GErrView,
+    GErr, GErrSource, NoData, NoID, NoPrefix, Prefix, ResultExt, Source, report::GErrView,
 };
 
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
@@ -217,50 +217,8 @@ impl From<SourceJsonData> for GErrSource {
             sources,
         } = value;
 
-        let de_id = {
-            let ret = match id.clone() {
-                ::serde_json::Value::Null => Box::new(NoID) as Box<dyn IdSource>,
-                ::serde_json::Value::Bool(_) => Box::new(NoID) as Box<dyn IdSource>,
-                ::serde_json::Value::Number(n) => {
-                    Box::new(n.as_i64().unwrap_or_default()) as Box<dyn IdSource>
-                }
-                ::serde_json::Value::String(s) => Box::new(s) as Box<dyn IdSource>,
-                ::serde_json::Value::Array(_) => Box::new(NoID) as Box<dyn IdSource>,
-                ::serde_json::Value::Object(_) => Box::new(NoID) as Box<dyn IdSource>,
-            };
-            ret
-        };
-        let de_data = {
-            if let Some(d) = data.clone() {
-                let ret = match d {
-                    ::serde_json::Value::Null => {
-                        Some(Box::new(NoID) as Box<dyn core::fmt::Debug + Send + Sync>)
-                    }
-                    ::serde_json::Value::Bool(b) => {
-                        Some(Box::new(b) as Box<dyn core::fmt::Debug + Send + Sync>)
-                    }
-                    ::serde_json::Value::Number(n) => {
-                        Some(Box::new(n.as_i64().unwrap_or_default())
-                            as Box<dyn core::fmt::Debug + Send + Sync>)
-                    }
-                    ::serde_json::Value::String(s) => {
-                        Some(Box::new(s) as Box<dyn core::fmt::Debug + Send + Sync>)
-                    }
-                    ::serde_json::Value::Array(a) => {
-                        Some(Box::new(a) as Box<dyn core::fmt::Debug + Send + Sync>)
-                    }
-                    ::serde_json::Value::Object(obj) => {
-                        Some(Box::new(obj) as Box<dyn core::fmt::Debug + Send + Sync>)
-                    }
-                };
-                ret
-            } else {
-                None
-            }
-        };
-
         Self {
-            id: de_id,
+            id: Box::new(id.to_string()),
 
             id_json: id,
 
@@ -277,7 +235,9 @@ impl From<SourceJsonData> for GErrSource {
 
             tags: tags.map(|tags| tags.into_iter().map(Cow::Owned).collect()),
 
-            data: de_data,
+            data: data
+                .as_ref()
+                .map(|v| Box::new(v.to_string()) as Box<dyn core::fmt::Debug + Send + Sync>),
 
             data_json: data,
 
