@@ -26,10 +26,13 @@ pub use trace_report::TraceReport;
 mod json_report;
 
 #[cfg(feature = "serde")]
-pub use json_report::{
-    DisplayJsonReport, JsonReport,
-    pub_json_data::{DisplayJsonData, JsonData, LocationJsonData, SourceJsonData},
-};
+mod json_data;
+
+#[cfg(feature = "serde")]
+pub use json_data::{DisplayJsonData, JsonData, LocationJsonData, SourceJsonData};
+
+#[cfg(feature = "serde")]
+pub use json_report::{DisplayJsonReport, JsonReport};
 
 pub struct GErrView<'a, ID, D> {
     pub id: &'a ID,
