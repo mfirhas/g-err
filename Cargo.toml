@@ -34,6 +34,10 @@ serde = ["dep:serde", "dep:serde_json"]
 backtrace = ["std"]
 
 [dependencies]
-# uuid = { version = "1", default-features = false, features = ["v4"], optional = true }
 serde = { version = "1", default-features = false , features = ["derive"], optional = true }
 serde_json = { version = "1", default-features = false, features = ["alloc"], optional = true }
+
+[dev-dependencies]
+uuid = { version = "1", default-features = false, features = ["v4", "serde"] }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+
