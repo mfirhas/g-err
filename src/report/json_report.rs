@@ -194,7 +194,7 @@ pub mod pub_json_data {
 
             if let Some(sources) = sources {
                 let gerr_sources: Vec<Source> = sources.into_iter().map(Into::into).collect();
-                err.source = Some(gerr_sources);
+                err.sources = Some(gerr_sources);
             }
 
             Ok(err)
@@ -255,7 +255,7 @@ pub mod pub_json_data {
                         .map(|t| t.iter().map(|t| t.to_string()).collect()),
                     data: gerr.data_json.clone(),
                     sources: gerr
-                        .source
+                        .sources
                         .as_ref()
                         .map(|s| s.iter().map(|s| Box::new(s.into())).collect()),
                     location: Some(LocationJsonData {
@@ -331,7 +331,7 @@ pub mod pub_json_data {
 
                 prefix: prefix.map(|s| Cow::Owned(s)),
 
-                source: sources.map(|sources| {
+                sources: sources.map(|sources| {
                     sources
                         .into_iter()
                         .map(|s| Source::GErr(Box::new((*s).into())))
@@ -466,7 +466,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
                     column: gerr.location.column(),
                 }),
                 sources: gerr
-                    .source
+                    .sources
                     .as_deref()
                     .map(|ref s| s.iter().map(|src| Box::new(src.into())).collect()),
             },

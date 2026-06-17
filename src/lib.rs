@@ -48,7 +48,7 @@ pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
     message: Cow<'static, str>,
 
     prefix: Option<Cow<'static, str>>,
-    source: Option<Vec<Source>>,
+    sources: Option<Vec<Source>>,
 
     tags: Option<Vec<Cow<'static, str>>>,
 
@@ -105,7 +105,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             message: message.into(),
 
             prefix: P::PREFIX.map(Cow::Borrowed),
-            source: None,
+            sources: None,
 
             tags: None,
 
@@ -145,7 +145,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         E: Error + Send + Sync + 'static,
     {
-        self.source
+        self.sources
             .get_or_insert_default()
             .push(Source::Err(Box::new(source)));
         self
@@ -156,7 +156,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         E: Into<GErrSource> + Error + Send + Sync + 'static,
     {
-        self.source
+        self.sources
             .get_or_insert_default()
             .push(Source::GErr(Box::new(gerr.into())));
         self
@@ -199,7 +199,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             message: self.message,
 
             prefix: self.prefix,
-            source: self.source,
+            sources: self.sources,
 
             tags: self.tags,
 
@@ -223,7 +223,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             message: self.message,
 
             prefix: T::PREFIX.map(Cow::Borrowed),
-            source: self.source,
+            sources: self.sources,
 
             tags: self.tags,
 
@@ -247,7 +247,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             message: self.message,
 
             prefix: self.prefix,
-            source: self.source,
+            sources: self.sources,
 
             tags: self.tags,
 
@@ -331,7 +331,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Debug for GErr<ID, P, D> {
             .field("id", &self.id)
             .field("prefix", &self.prefix.as_deref().or(P::PREFIX.as_deref()))
             .field("message", &self.message)
-            .field("source", &self.source)
+            .field("source", &self.sources)
             .field("tags", &self.tags)
             .field("data", &self.data)
             .field("location", &self.location);
@@ -345,7 +345,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Debug for GErr<ID, P, D> {
 
 impl<ID: Debug, P: Prefix, D: Debug> Error for GErr<ID, P, D> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        if let Some(ref sources) = self.source
+        if let Some(ref sources) = self.sources
             && !sources.is_empty()
         {
             return sources.first().and_then(|s| match s {
@@ -443,7 +443,7 @@ pub struct GErrSource {
 
     pub prefix: Option<Cow<'static, str>>,
 
-    pub source: Option<Vec<Source>>,
+    pub sources: Option<Vec<Source>>,
 
     pub tags: Option<Vec<Cow<'static, str>>>,
 
@@ -467,7 +467,7 @@ impl Display for GErrSource {
 
 impl Error for GErrSource {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        if let Some(ref sources) = self.source
+        if let Some(ref sources) = self.sources
             && !sources.is_empty()
         {
             return sources.first().and_then(|s| match s {
@@ -495,7 +495,7 @@ where
                 .data
                 .map(|d| Box::new(d) as Box<dyn Debug + Send + Sync>),
             location: gerr.location,
-            source: gerr.source,
+            sources: gerr.sources,
         }
     }
 }
@@ -521,7 +521,7 @@ where
                 .data
                 .map(|d| Box::new(d) as Box<dyn Debug + Send + Sync>),
             location: gerr.location,
-            source: gerr.source,
+            sources: gerr.sources,
         }
     }
 }

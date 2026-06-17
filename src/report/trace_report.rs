@@ -62,7 +62,7 @@ impl TraceReport {
 
                     let _ = writeln!(out, "{branch}{msg}");
 
-                    if let Some(nested) = &ge.source {
+                    if let Some(nested) = &ge.sources {
                         ancestors.push(is_last);
                         Self::write_sources(nested, out, ancestors);
                         ancestors.pop();

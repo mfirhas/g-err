@@ -54,7 +54,7 @@ impl<'a, ID, P: Prefix, D> From<&'a GErr<ID, P, D>> for GErrView<'a, ID, D> {
 
             tags: err.tags.as_deref(),
 
-            sources: err.source.as_deref(),
+            sources: err.sources.as_deref(),
 
             location: err.location,
 
