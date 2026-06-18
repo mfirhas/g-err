@@ -474,7 +474,7 @@ pub struct GErrSource {
 }
 
 impl Display for GErrSource {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         if let Some(prefix) = self.prefix.as_deref() {
             write!(f, "{prefix} {}", self.message)
         } else {

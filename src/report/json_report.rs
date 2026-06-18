@@ -5,6 +5,7 @@ use crate::{
     report::{GErrView, Report},
 };
 use alloc::borrow::Cow;
+use core::fmt::{Debug, Display};
 
 pub struct JsonReport;
 
@@ -12,8 +13,8 @@ impl JsonReport {
     pub fn data<E, ID, D>(err: &E) -> JsonData
     where
         for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: std::fmt::Display + serde::Serialize,
-        D: std::fmt::Debug + serde::Serialize,
+        ID: Display + serde::Serialize,
+        D: Debug + serde::Serialize,
     {
         let err = &err.into();
         err.into()
@@ -24,8 +25,8 @@ impl Report for JsonReport {
     fn report<E, ID, D>(err: &E) -> String
     where
         for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: std::fmt::Display + serde::Serialize,
-        D: std::fmt::Debug + serde::Serialize,
+        ID: Display + serde::Serialize,
+        D: Debug + serde::Serialize,
     {
         let err = &err.into();
         let resp: JsonReportData = err.into();
@@ -39,8 +40,8 @@ impl DisplayJsonReport {
     pub fn data<E, ID, D>(err: &E) -> DisplayJsonData
     where
         for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: std::fmt::Display + serde::Serialize,
-        D: std::fmt::Debug + serde::Serialize,
+        ID: Display + serde::Serialize,
+        D: Debug + serde::Serialize,
     {
         let err = &err.into();
         err.into()
@@ -51,8 +52,8 @@ impl Report for DisplayJsonReport {
     fn report<E, ID, D>(err: &E) -> String
     where
         for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: std::fmt::Display + serde::Serialize,
-        D: std::fmt::Debug + serde::Serialize,
+        ID: Display + serde::Serialize,
+        D: Debug + serde::Serialize,
     {
         let err = &err.into();
         let resp: DisplayJsonReportData = err.into();

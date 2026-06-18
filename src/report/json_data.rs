@@ -1,6 +1,6 @@
 use alloc::borrow::Cow;
 use core::panic::Location;
-use std::str::FromStr;
+use core::str::FromStr;
 
 use crate::{
     GErr, GErrSource, NoData, NoID, NoPrefix, Prefix, ResultExt, Source, report::GErrView,
