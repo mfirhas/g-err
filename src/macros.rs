@@ -1,38 +1,77 @@
 #[macro_export]
 macro_rules! gerr {
-    // plain message
+    // --------------------------------------------------
+    // Message only
+    // --------------------------------------------------
+
     ($message:expr $(,)?) => {
-        $crate::GErr::new($message)
+        $crate::GErr::<
+            $crate::NoID,
+            $crate::NoPrefix,
+            $crate::NoData,
+        >::new($message)
     };
 
-    // formatted message, no builder args
+    // --------------------------------------------------
+    // Formatted message only
+    // --------------------------------------------------
+
     ($fmt:expr, $($arg:expr),+ $(,)?) => {
-        $crate::GErr::new(format!($fmt, $($arg),+))
+        $crate::GErr::<
+            $crate::NoID,
+            $crate::NoPrefix,
+            $crate::NoData,
+        >::new(format!($fmt, $($arg),+))
     };
 
-    // plain message + builder args
+    // --------------------------------------------------
+    // Message + builder args
+    // --------------------------------------------------
+
     (
         $message:expr ;
         $($rest:tt)*
     ) => {{
-        let err = $crate::GErr::new($message);
+        let err = $crate::GErr::<
+            $crate::NoID,
+            $crate::NoPrefix,
+            $crate::NoData,
+        >::new($message);
+
         $crate::gerr!(@build err, $($rest)*)
     }};
 
-    // formatted message + builder args
+    // --------------------------------------------------
+    // Formatted message + builder args
+    // --------------------------------------------------
+
     (
         $fmt:expr,
         $($arg:expr),+ ;
         $($rest:tt)*
     ) => {{
-        let err = $crate::GErr::new(format!($fmt, $($arg),+));
+        let err = $crate::GErr::<
+            $crate::NoID,
+            $crate::NoPrefix,
+            $crate::NoData,
+        >::new(format!($fmt, $($arg),+));
+
         $crate::gerr!(@build err, $($rest)*)
     }};
 
-    (@build $err:ident,) => { $err };
-    (@build $err:ident) => { $err };
+    // --------------------------------------------------
+    // End recursion
+    // --------------------------------------------------
 
-    (@build $err:ident,
+    (@build $err:ident) => { $err };
+    (@build $err:ident,) => { $err };
+
+    // --------------------------------------------------
+    // id = ...
+    // --------------------------------------------------
+
+    (
+        @build $err:ident,
         id = $id:expr
         $(, $($rest:tt)*)?
     ) => {{
@@ -40,23 +79,12 @@ macro_rules! gerr {
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
-    (@build $err:ident,
-        data = $data:expr
-        $(, $($rest:tt)*)?
-    ) => {{
-        let err = $err.with_data($data);
-        $crate::gerr!(@build err $(, $($rest)*)?)
-    }};
+    // --------------------------------------------------
+    // prefix = ...
+    // --------------------------------------------------
 
-    (@build $err:ident,
-        source = $source:expr
-        $(, $($rest:tt)*)?
-    ) => {{
-        let err = $err.set_source($source);
-        $crate::gerr!(@build err $(, $($rest)*)?)
-    }};
-
-    (@build $err:ident,
+    (
+        @build $err:ident,
         prefix = $prefix:expr
         $(, $($rest:tt)*)?
     ) => {{
@@ -64,15 +92,51 @@ macro_rules! gerr {
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
-    (@build $err:ident,
-        tag = $tag:expr
+    // --------------------------------------------------
+    // data = ...
+    // --------------------------------------------------
+
+    (
+        @build $err:ident,
+        data = $data:expr
         $(, $($rest:tt)*)?
     ) => {{
-        let err = $err.set_tag($tag);
+        let err = $err.with_data($data);
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
-    (@build $err:ident,
+    // --------------------------------------------------
+    // source = ...
+    // --------------------------------------------------
+
+    (
+        @build $err:ident,
+        source = $source:expr
+        $(, $($rest:tt)*)?
+    ) => {{
+        let err = $err.add_source($source);
+        $crate::gerr!(@build err $(, $($rest)*)?)
+    }};
+
+    // --------------------------------------------------
+    // tag = ...
+    // --------------------------------------------------
+
+    (
+        @build $err:ident,
+        tag = $tag:expr
+        $(, $($rest:tt)*)?
+    ) => {{
+        let err = $err.add_tag($tag);
+        $crate::gerr!(@build err $(, $($rest)*)?)
+    }};
+
+    // --------------------------------------------------
+    // tags = ...
+    // --------------------------------------------------
+
+    (
+        @build $err:ident,
         tags = $tags:expr
         $(, $($rest:tt)*)?
     ) => {{
