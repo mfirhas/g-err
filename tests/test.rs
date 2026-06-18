@@ -26,7 +26,7 @@ fn get_age_usecase(
     )?;
     let ret = u16::try_from(ret)
         .context::<NoID, PrefixB>("converting i32 to u16")
-        .map_err(|gerr| GErr::new("into u16").set_source_gerr(gerr))?;
+        .map_err(|gerr| GErr::new("into u16").add_source_gerr(gerr))?;
     Ok(ret)
 }
 
@@ -124,11 +124,11 @@ fn test() {
     let err4 = GErr::<NoID>::new("test4");
     let err4_2 = GErr::<u16>::new_with_id(123, "test4_2").with_id("XYZ");
     let err5 = GErr::<NoID>::new("test5").set_prefix("[ASD]");
-    let err4 = err4.set_source(err5);
-    let err2 = err2.set_source_gerr(err4);
-    let err2 = err2.set_source_gerr(err4_2);
+    let err4 = err4.add_source(err5);
+    let err2 = err2.add_source_gerr(err4);
+    let err2 = err2.add_source_gerr(err4_2);
 
-    let err = err.set_source_gerr(err2);
-    let err = err.set_source_gerr(err3);
+    let err = err.add_source_gerr(err2);
+    let err = err.add_source_gerr(err3);
     println!("{}", err.report_as::<g_err::TraceReport>());
 }

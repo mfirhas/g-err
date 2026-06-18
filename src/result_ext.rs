@@ -44,7 +44,7 @@ where
         let location = Location::caller();
 
         self.map_err(|source| {
-            GErr::<ID, P, NoData>::new_untracked(message, location).set_source(source)
+            GErr::<ID, P, NoData>::new_untracked(message, location).add_source(source)
         })
     }
 
@@ -60,13 +60,13 @@ where
         let location = Location::caller();
 
         self.map_err(|source| {
-            GErr::<ID, P, NoData>::new_untracked(message, location).set_source(source)
+            GErr::<ID, P, NoData>::new_untracked(message, location).add_source(source)
         })
     }
 
     #[track_caller]
     fn wrap_err<ID, P: Prefix, D>(self, err: GErr<ID, P, D>) -> Result<T, ID, P, D> {
-        self.map_err(|source| err.set_source(source))
+        self.map_err(|source| err.add_source(source))
     }
 }
 
@@ -106,7 +106,7 @@ where
         let location = Location::caller();
 
         self.map_err(|source| {
-            GErr::<ID, P, NoData>::new_untracked(message, location).set_source_gerr(source)
+            GErr::<ID, P, NoData>::new_untracked(message, location).add_source_gerr(source)
         })
     }
 
@@ -122,12 +122,12 @@ where
         let location = Location::caller();
 
         self.map_err(|source| {
-            GErr::<ID, P, NoData>::new_untracked(message, location).set_source_gerr(source)
+            GErr::<ID, P, NoData>::new_untracked(message, location).add_source_gerr(source)
         })
     }
 
     #[track_caller]
     fn wrap_gerr<ID, P: Prefix, D>(self, err: GErr<ID, P, D>) -> Result<T, ID, P, D> {
-        self.map_err(|source| err.set_source_gerr(source))
+        self.map_err(|source| err.add_source_gerr(source))
     }
 }

@@ -145,14 +145,34 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         E: Error + Send + Sync + 'static,
     {
+        self.sources = Some(vec![Source::Err(Box::new(source))]);
+        self
+    }
+
+    #[must_use]
+    #[inline]
+    pub fn add_source<E>(mut self, source: E) -> Self
+    where
+        E: Error + Send + Sync + 'static,
+    {
         self.sources
             .get_or_insert_default()
             .push(Source::Err(Box::new(source)));
         self
     }
 
+    #[must_use]
     #[inline]
-    pub fn set_source_gerr<E>(mut self, gerr: E) -> Self
+    pub fn set_source_gerr<E>(mut self, source: E) -> Self
+    where
+        E: Into<GErrSource> + Error + Send + Sync + 'static,
+    {
+        self.sources = Some(vec![Source::GErr(Box::new(source.into()))]);
+        self
+    }
+
+    #[inline]
+    pub fn add_source_gerr<E>(mut self, gerr: E) -> Self
     where
         E: Into<GErrSource> + Error + Send + Sync + 'static,
     {
