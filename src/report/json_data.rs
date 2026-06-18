@@ -1,5 +1,6 @@
 use alloc::borrow::Cow;
 use core::panic::Location;
+use std::str::FromStr;
 
 use crate::{
     GErr, GErrSource, NoData, NoID, NoPrefix, Prefix, ResultExt, Source, report::GErrView,
@@ -183,14 +184,48 @@ impl From<&Source> for SourceJsonData {
                 ..Default::default()
             },
             Source::GErr(gerr) => Self {
-                id: gerr.id_json.clone(),
+                id: serde_json::from_value({
+                    match &gerr.id_json {
+                        ::serde_json::Value::Number(num) => {
+                            serde_json::Value::from(num.as_i64().unwrap_or_default())
+                        }
+                        ::serde_json::Value::String(s) => {
+                            serde_json::Value::from_str(s).unwrap_or_default()
+                        }
+                        _ => serde_json::Value::Null,
+                    }
+                })
+                .unwrap_or_default(),
                 prefix: gerr.prefix.as_deref().map(|s| s.into()),
                 message: gerr.message.to_string(),
                 tags: gerr
                     .tags
                     .as_ref()
                     .map(|t| t.iter().map(|t| t.to_string()).collect()),
-                data: gerr.data_json.clone(),
+                data: serde_json::from_value({
+                    if let Some(json) = &gerr.data_json {
+                        match json {
+                            ::serde_json::Value::Bool(b) => ::serde_json::Value::from(*b),
+                            ::serde_json::Value::Number(num) => {
+                                ::serde_json::Value::from(num.as_i64().unwrap_or_default())
+                            }
+                            ::serde_json::Value::String(s) => {
+                                ::serde_json::Value::from_str(s).unwrap_or_default()
+                            }
+                            ::serde_json::Value::Array(arr) => {
+                                let slice: &[::serde_json::Value] = arr.as_ref();
+                                ::serde_json::Value::from(slice)
+                            }
+                            serde_json::Value::Object(obj) => {
+                                ::serde_json::Value::Object(obj.clone())
+                            }
+                            _ => ::serde_json::Value::Null,
+                        }
+                    } else {
+                        ::serde_json::Value::Null
+                    }
+                })
+                .unwrap_or_default(),
                 sources: gerr
                     .sources
                     .as_ref()
