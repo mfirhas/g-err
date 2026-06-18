@@ -102,6 +102,7 @@ where
 {
     type Error = GErr<NoID, NoPrefix, NoData>;
 
+    #[track_caller]
     fn try_from(value: JsonData) -> Result<Self, Self::Error> {
         let JsonData {
             id,
@@ -116,7 +117,7 @@ where
 
         let de_id: ID = serde_json::from_value(id).context("converting id")?;
 
-        let mut err = GErr::<ID, P, D>::new_with_id(de_id, message);
+        let mut err = GErr::<ID, P, D>::with_id_untracked(de_id, message, Location::caller());
 
         if let Some(data) = data {
             err = err.with_data(serde_json::from_value(data).context("converting data")?);
@@ -131,7 +132,10 @@ where
         }
 
         if let Some(sources) = sources {
-            let gerr_sources: Vec<Source> = sources.into_iter().map(Into::into).collect();
+            let gerr_sources: Vec<Source> = sources
+                .into_iter()
+                .map(|s| s.into_source(Location::caller()))
+                .collect();
             err.sources = Some(gerr_sources);
         }
 
@@ -147,6 +151,7 @@ where
 {
     type Error = GErr<NoID, NoPrefix, NoData>;
 
+    #[track_caller]
     fn try_from(value: DisplayJsonData) -> Result<Self, Self::Error> {
         let DisplayJsonData {
             id,
@@ -158,7 +163,7 @@ where
 
         let de_id: ID = serde_json::from_value(id).context("converting id")?;
 
-        let mut err = GErr::<ID, P, D>::new_with_id(de_id, message);
+        let mut err = GErr::<ID, P, D>::with_id_untracked(de_id, message, Location::caller());
 
         if let Some(data) = data {
             err = err.with_data(serde_json::from_value(data).context("converting data")?);
@@ -240,49 +245,43 @@ impl From<&Source> for SourceJsonData {
     }
 }
 
-impl From<SourceJsonData> for GErrSource {
-    fn from(value: SourceJsonData) -> Self {
-        let SourceJsonData {
-            id,
-            prefix,
-            message,
-            tags,
-            data,
-            location: _,
-            sources,
-        } = value;
+impl SourceJsonData {
+    fn into_source(self, location: &'static Location<'static>) -> Source {
+        let gerr_source = {
+            let SourceJsonData {
+                id,
+                prefix,
+                message,
+                tags,
+                data,
+                location: _,
+                sources,
+            } = self;
 
-        Self {
-            id: Box::new(id.to_string()),
+            GErrSource {
+                id: Box::new(id.to_string()),
 
-            id_json: id,
+                id_json: id,
 
-            message: message.into(),
+                message: message.into(),
 
-            prefix: prefix.map(|s| Cow::Owned(s)),
+                prefix: prefix.map(|s| Cow::Owned(s)),
 
-            sources: sources.map(|sources| {
-                sources
-                    .into_iter()
-                    .map(|s| Source::GErr(Box::new((*s).into())))
-                    .collect()
-            }),
+                sources: sources
+                    .map(|s| s.into_iter().map(|sj| sj.into_source(location)).collect()),
 
-            tags: tags.map(|tags| tags.into_iter().map(Cow::Owned).collect()),
+                tags: tags.map(|tags| tags.into_iter().map(Cow::Owned).collect()),
 
-            data: data
-                .as_ref()
-                .map(|v| Box::new(v.to_string()) as Box<dyn core::fmt::Debug + Send + Sync>),
+                data: data
+                    .as_ref()
+                    .map(|v| Box::new(v.to_string()) as Box<dyn core::fmt::Debug + Send + Sync>),
 
-            data_json: data,
+                data_json: data,
 
-            location: Location::caller(),
-        }
-    }
-}
+                location,
+            }
+        };
 
-impl From<SourceJsonData> for Source {
-    fn from(value: SourceJsonData) -> Self {
-        Source::GErr(Box::new(value.into()))
+        Source::GErr(Box::new(gerr_source))
     }
 }
