@@ -22,7 +22,7 @@ fn get_age_usecase(
     let ret = get_age(input).wrap_gerr(
         GErr::new("get age usecase")
             .set_data(("req_id", req_id))
-            .set_tag("usecase"),
+            .add_tag("usecase"),
     )?;
     let ret = u16::try_from(ret)
         .context::<NoID, PrefixB>("converting i32 to u16")

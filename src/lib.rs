@@ -183,7 +183,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     }
 
     #[must_use]
-    pub fn set_tag<T>(mut self, tag: T) -> Self
+    pub fn add_tag<T>(mut self, tag: T) -> Self
     where
         T: Into<Cow<'static, str>>,
     {
@@ -197,9 +197,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
         I: IntoIterator<Item = T>,
         T: Into<Cow<'static, str>>,
     {
-        self.tags
-            .get_or_insert_default()
-            .extend(tags.into_iter().map(Into::into));
+        self.tags = Some(tags.into_iter().map(Into::into).collect());
         self
     }
 
