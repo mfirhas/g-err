@@ -1,66 +1,36 @@
 #[macro_export]
 macro_rules! gerr {
     // --------------------------------------------------
-    // Message only
+    // format-style message only
     // --------------------------------------------------
 
-    ($message:expr $(,)?) => {
+    ($($msg:tt)+) => {
         $crate::GErr::<
             $crate::NoID,
             $crate::NoPrefix,
             $crate::NoData,
-        >::new($message)
+        >::new(format!($($msg)+))
     };
 
     // --------------------------------------------------
-    // Formatted message only
-    // --------------------------------------------------
-
-    ($fmt:expr, $($arg:expr),+ $(,)?) => {
-        $crate::GErr::<
-            $crate::NoID,
-            $crate::NoPrefix,
-            $crate::NoData,
-        >::new(format!($fmt, $($arg),+))
-    };
-
-    // --------------------------------------------------
-    // Message + builder args
+    // format-style message + builder args
     // --------------------------------------------------
 
     (
-        $message:expr ;
+        $($msg:tt)+ ;
         $($rest:tt)*
     ) => {{
         let err = $crate::GErr::<
             $crate::NoID,
             $crate::NoPrefix,
             $crate::NoData,
-        >::new($message);
+        >::new(format!($($msg)+));
 
         $crate::gerr!(@build err, $($rest)*)
     }};
 
     // --------------------------------------------------
-    // Formatted message + builder args
-    // --------------------------------------------------
-
-    (
-        $fmt:expr,
-        $($arg:expr),+ ;
-        $($rest:tt)*
-    ) => {{
-        let err = $crate::GErr::<
-            $crate::NoID,
-            $crate::NoPrefix,
-            $crate::NoData,
-        >::new(format!($fmt, $($arg),+));
-
-        $crate::gerr!(@build err, $($rest)*)
-    }};
-
-    // --------------------------------------------------
-    // End recursion
+    // end recursion
     // --------------------------------------------------
 
     (@build $err:ident) => { $err };
