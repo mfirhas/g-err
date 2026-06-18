@@ -1,4 +1,7 @@
+use crate::gerr_view::GErrView;
+
 use super::Report;
+use crate::gerr::Source;
 use core::fmt::{Debug, Display, Write};
 
 pub struct MarkdownReport;
@@ -6,7 +9,7 @@ pub struct MarkdownReport;
 impl Report for MarkdownReport {
     fn report<E, ID, D>(err: &E) -> String
     where
-        for<'a> &'a E: Into<super::GErrView<'a, ID, D>>,
+        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
         ID: Display,
         D: Debug,
     {
@@ -29,7 +32,7 @@ impl MarkdownReport {
     fn header<ID: Display, D: Debug>(out: &mut String) {
         let _ = writeln!(out, "# Error Report\n");
     }
-    fn preamble<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn preamble<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         let _ = writeln!(out, "## ID: {}\n", err.id);
 
         let _ = writeln!(out, "## Prefix: {}\n", err.prefix.unwrap_or("-"));
@@ -37,7 +40,7 @@ impl MarkdownReport {
         let _ = writeln!(out, "## Message\n");
         let _ = writeln!(out, "> {}\n", err.message);
     }
-    fn data<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn data<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(data) = err.data {
             let _ = writeln!(out, "## Data\n");
 
@@ -47,7 +50,7 @@ impl MarkdownReport {
             let _ = writeln!(out);
         }
     }
-    fn tags<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn tags<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(tags) = err.tags
             && !tags.is_empty()
         {
@@ -60,7 +63,7 @@ impl MarkdownReport {
             let _ = writeln!(out);
         }
     }
-    fn location<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn location<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         let _ = writeln!(
             out,
             "## Location\n\n{}:{}:{}\n",
@@ -69,16 +72,16 @@ impl MarkdownReport {
             err.location.column()
         );
     }
-    fn sources<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(sources) = err.sources {
             let _ = writeln!(out, "## Causes\n");
             for (i, src) in sources.iter().enumerate() {
                 let i = i + 1;
                 match src {
-                    crate::Source::Err(e) => {
+                    Source::Err(e) => {
                         let _ = writeln!(out, "### {}. {}\n", i, e);
                     }
-                    crate::Source::GErr(gerr) => {
+                    Source::GErr(gerr) => {
                         let msg = match gerr.prefix.as_deref() {
                             Some(prefix) => format!("{prefix} {}", gerr.message),
                             None => gerr.message.to_string(),
@@ -115,7 +118,7 @@ impl MarkdownReport {
         }
     }
     #[cfg(feature = "backtrace")]
-    fn backtrace<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn backtrace<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         let _ = writeln!(out, "## Backtrace\n");
         let _ = writeln!(out, "```");
         let _ = writeln!(out, "{:#?}", err.backtrace);

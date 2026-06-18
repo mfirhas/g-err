@@ -1,5 +1,4 @@
-use crate::GErr;
-use crate::Prefix;
+use crate::gerr::{GErr, Prefix};
 use core::error::Error;
 use serde::Serialize;
 

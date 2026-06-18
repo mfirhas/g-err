@@ -3,7 +3,11 @@ use core::panic::Location;
 use core::str::FromStr;
 
 use crate::{
-    GErr, GErrSource, NoData, NoID, NoPrefix, Prefix, ResultExt, Source, report::GErrView,
+    ResultExt,
+    gerr::{GErr, Prefix, Source},
+    gerr_source::GErrSource,
+    gerr_view::GErrView,
+    types::{NoData, NoID, NoPrefix},
 };
 
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
@@ -94,7 +98,7 @@ where
     }
 }
 
-impl<ID, P, D> TryFrom<JsonData> for crate::GErr<ID, P, D>
+impl<ID, P, D> TryFrom<JsonData> for GErr<ID, P, D>
 where
     ID: for<'a> ::serde::Deserialize<'a>,
     P: Prefix,
@@ -136,14 +140,14 @@ where
                 .into_iter()
                 .map(|s| s.into_source(Location::caller()))
                 .collect();
-            err.sources = Some(gerr_sources);
+            err = err.set_sources(gerr_sources);
         }
 
         Ok(err)
     }
 }
 
-impl<ID, P, D> TryFrom<DisplayJsonData> for crate::GErr<ID, P, D>
+impl<ID, P, D> TryFrom<DisplayJsonData> for GErr<ID, P, D>
 where
     ID: for<'a> ::serde::Deserialize<'a>,
     P: Prefix,

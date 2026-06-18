@@ -1,9 +1,14 @@
 use core::fmt::Debug;
 use core::fmt::Display;
+use g_err::GErr;
+use g_err::GResultExt;
+use g_err::Id;
 use g_err::NoID;
 use g_err::NoPrefix;
+use g_err::Prefix;
 use g_err::Result;
-use g_err::{GErr, GResultExt, Id, Prefix, ResultExt, SetField};
+use g_err::ResultExt;
+use g_err::SetField;
 use uuid::Uuid;
 
 fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
@@ -15,10 +20,7 @@ fn get_age(str_age: &str) -> Result<i32, UuidV4, NoPrefix> {
     Ok(age)
 }
 
-fn get_age_usecase(
-    req_id: u32,
-    input: &str,
-) -> g_err::Result<u16, UuidV4, PrefixA, (&'static str, u32)> {
+fn get_age_usecase(req_id: u32, input: &str) -> Result<u16, UuidV4, PrefixA, (&'static str, u32)> {
     let ret = get_age(input).wrap_gerr(
         GErr::new("get age usecase")
             .set_data(("req_id", req_id))
@@ -30,7 +32,7 @@ fn get_age_usecase(
     Ok(ret)
 }
 
-fn handler(req_id: u32, input: &str) -> g_err::Result<u16, &'static str> {
+fn handler(req_id: u32, input: &str) -> Result<u16, &'static str> {
     let ret = get_age_usecase(req_id, input)
         .wrap_gerr(GErr::new_with_id("handler-123", "handler get age error"))?;
     Ok(ret)
@@ -115,7 +117,7 @@ fn test() {
     println!("***************************************************************************");
     println!("Trace:\n{}", &ret.report_as::<g_err::TraceReport>());
     println!("***************************************************************************");
-    println!("Root cause:\n{}", &ret.root_cause());
+    // println!("Root cause:\n{}", &ret.root_cause());
     println!("***************************************************************************");
 
     let err = GErr::<NoID>::new("test").set_prefix("[HTTP]");

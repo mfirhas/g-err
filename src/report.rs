@@ -1,17 +1,10 @@
 extern crate alloc;
 
-use crate::Source;
-use crate::{GErr, Prefix};
-use alloc::borrow::Cow;
 use alloc::string::String;
 use core::fmt::{Debug, Display};
-use core::panic::Location;
 
 #[cfg(feature = "std")]
 extern crate std;
-
-#[cfg(feature = "backtrace")]
-use std::backtrace::Backtrace;
 
 mod pretty_report;
 pub use pretty_report::PrettyReport;
@@ -34,38 +27,10 @@ pub use json_data::{DisplayJsonData, JsonData, LocationJsonData, SourceJsonData}
 #[cfg(feature = "serde")]
 pub use json_report::{DisplayJsonReport, JsonReport};
 
-pub struct GErrView<'a, ID, D> {
-    pub id: &'a ID,
-    pub message: &'a str,
-    pub prefix: Option<&'a str>,
-    pub data: Option<&'a D>,
-    pub tags: Option<&'a [Cow<'static, str>]>,
-    pub sources: Option<&'a [Source]>,
-    pub location: &'a Location<'static>,
-    #[cfg(feature = "backtrace")]
-    pub backtrace: &'a Backtrace,
-}
-
-impl<'a, ID, P: Prefix, D> From<&'a GErr<ID, P, D>> for GErrView<'a, ID, D> {
-    fn from(err: &'a GErr<ID, P, D>) -> Self {
-        Self {
-            id: &err.id,
-            message: err.message.as_ref(),
-            prefix: err.prefix(),
-
-            data: err.data.as_ref(),
-
-            tags: err.tags.as_deref(),
-
-            sources: err.sources.as_deref(),
-
-            location: err.location,
-
-            #[cfg(feature = "backtrace")]
-            backtrace: &err.backtrace,
-        }
-    }
-}
+use crate::{
+    gerr::{GErr, Prefix},
+    gerr_view::GErrView,
+};
 
 pub trait Report {
     #[cfg(not(feature = "serde"))]

@@ -1,9 +1,6 @@
-use crate::NoID;
 use crate::report::json_data::{DisplayJsonData, JsonData};
-use crate::{
-    Source,
-    report::{GErrView, Report},
-};
+use crate::types::NoID;
+use crate::{gerr::Source, gerr_view::GErrView, report::Report};
 use alloc::borrow::Cow;
 use core::fmt::{Debug, Display};
 

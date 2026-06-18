@@ -1,4 +1,6 @@
 use super::Report;
+use crate::gerr::Source;
+use crate::gerr_view::GErrView;
 use core::fmt::Write;
 use core::fmt::{Debug, Display};
 
@@ -7,7 +9,7 @@ pub struct PrettyReport;
 impl Report for PrettyReport {
     fn report<E, ID, D>(err: &E) -> String
     where
-        for<'a> &'a E: Into<super::GErrView<'a, ID, D>>,
+        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
         ID: Display,
         D: Debug,
     {
@@ -31,19 +33,19 @@ impl PrettyReport {
         let _ = writeln!(out, "Error Report");
         let _ = writeln!(out, "============");
     }
-    fn preamble<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn preamble<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         let _ = writeln!(out, "ID: {}", err.id);
         if let Some(prefix) = err.prefix {
             let _ = writeln!(out, "Prefix: {prefix}");
         }
         let _ = writeln!(out, "Message: {}", err.message);
     }
-    fn data<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn data<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(data) = err.data {
             let _ = writeln!(out, "Data:\n {data:#?}");
         }
     }
-    fn tags<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn tags<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(tags) = err.tags
             && !tags.is_empty()
         {
@@ -53,7 +55,7 @@ impl PrettyReport {
             }
         }
     }
-    fn location<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn location<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         let _ = writeln!(
             out,
             "Location: {}:{}:{}",
@@ -62,16 +64,16 @@ impl PrettyReport {
             err.location.column()
         );
     }
-    fn sources<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(sources) = err.sources {
             let _ = writeln!(out, "Caused by:");
             for (i, src) in sources.iter().enumerate() {
                 let i = i + 1;
                 match src {
-                    crate::Source::Err(e) => {
+                    Source::Err(e) => {
                         let _ = writeln!(out, "  {i}: {e}");
                     }
-                    crate::Source::GErr(gerr) => {
+                    Source::GErr(gerr) => {
                         match gerr.prefix.as_deref() {
                             Some(prefix) => {
                                 let _ = writeln!(out, "  {i}: {prefix} {}", gerr.message);
@@ -106,7 +108,7 @@ impl PrettyReport {
         }
     }
     #[cfg(feature = "backtrace")]
-    fn backtrace<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn backtrace<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         let _ = writeln!(out, "Backtrace:");
         let _ = writeln!(out, "{:#?}", err.backtrace);
     }

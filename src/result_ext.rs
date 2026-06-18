@@ -1,6 +1,12 @@
 extern crate alloc;
 
-use crate::{GErr, GErrSource, Id, NoData, Prefix, Result, sealed};
+use crate::gerr::{Id, Prefix};
+use crate::types::NoData;
+use crate::{
+    gerr::{GErr, Result},
+    gerr_source::GErrSource,
+    sealed,
+};
 use core::error::Error;
 use core::panic::Location;
 

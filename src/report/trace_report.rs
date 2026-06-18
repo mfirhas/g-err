@@ -1,4 +1,6 @@
 use super::Report;
+use crate::gerr::Source;
+use crate::gerr_view::GErrView;
 use core::fmt::{Debug, Display, Write};
 
 pub struct TraceReport;
@@ -6,7 +8,7 @@ pub struct TraceReport;
 impl Report for TraceReport {
     fn report<E, ID, D>(err: &E) -> String
     where
-        for<'a> &'a E: Into<super::GErrView<'a, ID, D>>,
+        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
         ID: Display,
         D: Debug,
     {
@@ -20,7 +22,7 @@ impl Report for TraceReport {
 }
 
 impl TraceReport {
-    fn header<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn header<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(prefix) = err.prefix {
             let _ = writeln!(out, "{prefix} {} ({})", err.message, err.id);
         } else {
@@ -28,14 +30,14 @@ impl TraceReport {
         }
     }
 
-    fn sources<ID: Display, D: Debug>(err: &super::GErrView<ID, D>, out: &mut String) {
+    fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(sources) = err.sources {
             Self::write_sources(sources, out, &mut Vec::new());
         }
     }
 
     fn write_sources(
-        sources: &[crate::Source],
+        sources: &[Source],
         out: &mut String,
         ancestors: &mut Vec<bool>, // true = ancestor was last child
     ) {
@@ -50,11 +52,11 @@ impl TraceReport {
             let branch = if is_last { "└─ " } else { "├─ " };
 
             match src {
-                crate::Source::Err(e) => {
+                Source::Err(e) => {
                     let _ = writeln!(out, "{branch}{e}");
                 }
 
-                crate::Source::GErr(ge) => {
+                Source::GErr(ge) => {
                     let msg = match ge.prefix.as_deref() {
                         Some(prefix) => format!("{prefix} {} ({})", ge.message, ge.id),
                         None => format!("{} ({})", ge.message, ge.id),

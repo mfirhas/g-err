@@ -1,12 +1,6 @@
-use crate::{GErr, GErrSource};
-use core::error::Error;
 use core::fmt::{Debug, Display};
 
-pub type Result<T, ID = NoID, P = NoPrefix, D = NoData> = core::result::Result<T, GErr<ID, P, D>>;
-
-pub trait Id {
-    fn id() -> Self;
-}
+use crate::gerr::{Id, Prefix};
 
 #[derive(Debug)]
 pub struct NoID;
@@ -45,11 +39,6 @@ impl<'de> ::serde::Deserialize<'de> for NoID {
     }
 }
 
-pub trait Prefix {
-    const PREFIX: Option<&'static str> = None;
-}
-
-#[derive(Debug)]
 pub struct NoPrefix;
 
 impl Prefix for NoPrefix {}
@@ -76,16 +65,4 @@ impl<'de> ::serde::Deserialize<'de> for NoData {
         <()>::deserialize(deserializer)?;
         Ok(NoData)
     }
-}
-
-pub trait SetField<K, V> {
-    fn set_field(&mut self, key: K, value: V);
-}
-
-pub type BoxError = Box<dyn Error + Send + Sync + 'static>;
-
-#[derive(Debug)]
-pub enum Source {
-    Err(BoxError),
-    GErr(Box<GErrSource>),
 }
