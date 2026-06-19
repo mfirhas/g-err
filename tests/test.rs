@@ -100,7 +100,10 @@ impl SetField<String, serde_json::Value> for ErrData {
 
 #[test]
 fn test() {
-    let ret: GErr<NoID, PrefixA> = handler(123456, "anu").gerr("handler error").unwrap_err();
+    let ret: GErr<NoID, PrefixA> = handler(123456, "anu")
+        .gerr("handler error")
+        .unwrap_err()
+        .set_help("figure it out!");
     dbg!(&ret);
     println!("***************************************************************************");
     println!("Display:\n{}", &ret);

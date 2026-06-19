@@ -121,7 +121,7 @@ impl MarkdownReport {
     fn help<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(help) = err.help {
             let _ = writeln!(out, "## Help\n");
-            let _ = writeln!(out, "> {}", help);
+            let _ = writeln!(out, "> {}\n", help);
         }
     }
     #[cfg(feature = "backtrace")]
