@@ -9,7 +9,6 @@ use g_err::Prefix;
 use g_err::Result;
 use g_err::ResultExt;
 use g_err::SetField;
-use g_err::gerr;
 use uuid::Uuid;
 
 #[path = "macro_test.rs"]
