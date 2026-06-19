@@ -18,6 +18,7 @@ impl Report for MarkdownReport {
         Self::header::<ID, D>(&mut out);
         Self::preamble::<ID, D>(err, &mut out);
         Self::data::<ID, D>(err, &mut out);
+        Self::help::<ID, D>(err, &mut out);
         Self::tags::<ID, D>(err, &mut out);
         Self::location::<ID, D>(err, &mut out);
         Self::sources::<ID, D>(err, &mut out);
@@ -115,6 +116,12 @@ impl MarkdownReport {
                     }
                 }
             }
+        }
+    }
+    fn help<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
+        if let Some(help) = err.help {
+            let _ = writeln!(out, "## Help\n");
+            let _ = writeln!(out, "> {}", help);
         }
     }
     #[cfg(feature = "backtrace")]
