@@ -17,6 +17,7 @@ pub struct DisplayJsonData {
     pub message: String,
     pub tags: Option<Vec<String>>,
     pub data: Option<serde_json::Value>,
+    pub help: Option<String>,
 }
 
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
@@ -28,6 +29,7 @@ pub struct JsonData {
     pub data: Option<serde_json::Value>,
     pub location: LocationJsonData,
     pub sources: Option<Vec<SourceJsonData>>,
+    pub help: Option<String>,
 
     pub backtrace: Option<String>,
 }
@@ -48,6 +50,7 @@ pub struct SourceJsonData {
     pub data: Option<serde_json::Value>,
     pub location: Option<LocationJsonData>,
     pub sources: Option<Vec<Box<SourceJsonData>>>,
+    pub help: Option<String>,
 }
 
 impl<'a, ID, D> From<&GErrView<'a, ID, D>> for JsonData
@@ -65,6 +68,7 @@ where
             data: err
                 .data
                 .map(|d| serde_json::to_value(d).unwrap_or_default()),
+            help: err.help.map(Into::into),
             location: LocationJsonData {
                 file: err.location.file().into(),
                 line: err.location.line(),
@@ -94,6 +98,7 @@ where
             data: err
                 .data
                 .map(|d| serde_json::to_value(d).unwrap_or_default()),
+            help: err.help.map(Into::into),
         }
     }
 }
@@ -114,6 +119,7 @@ where
             message,
             tags,
             data,
+            help,
             location: _,
             sources,
             backtrace: _,
@@ -143,6 +149,10 @@ where
             err = err.set_sources(gerr_sources);
         }
 
+        if let Some(help) = help {
+            err = err.set_help(help);
+        }
+
         Ok(err)
     }
 }
@@ -163,6 +173,7 @@ where
             message,
             tags,
             data,
+            help,
         } = value;
 
         let de_id: ID = serde_json::from_value(id).context("converting id")?;
@@ -179,6 +190,10 @@ where
 
         if let Some(tags) = tags {
             err = err.add_tags(tags);
+        }
+
+        if let Some(help) = help {
+            err = err.set_help(help);
         }
 
         Ok(err)
@@ -235,6 +250,7 @@ impl From<&Source> for SourceJsonData {
                     }
                 })
                 .unwrap_or_default(),
+                help: gerr.prefix.as_deref().map(|s| s.into()),
                 sources: gerr
                     .sources
                     .as_ref()
@@ -258,6 +274,7 @@ impl SourceJsonData {
                 message,
                 tags,
                 data,
+                help,
                 location: _,
                 sources,
             } = self;
@@ -281,6 +298,8 @@ impl SourceJsonData {
                     .map(|v| Box::new(v.to_string()) as Box<dyn core::fmt::Debug + Send + Sync>),
 
                 data_json: data,
+
+                help: help.map(Cow::Owned),
 
                 location,
             }

@@ -16,6 +16,7 @@ pub struct GErrView<'a, ID, D> {
     pub data: Option<&'a D>,
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub sources: Option<&'a [Source]>,
+    pub help: Option<&'a str>,
     pub location: &'a Location<'static>,
     #[cfg(feature = "backtrace")]
     pub backtrace: &'a Backtrace,
@@ -33,6 +34,8 @@ impl<'a, ID, P: Prefix, D> From<&'a GErr<ID, P, D>> for GErrView<'a, ID, D> {
             tags: err.tags(),
 
             sources: err.sources(),
+
+            help: err.help(),
 
             location: err.location(),
 

@@ -32,6 +32,8 @@ pub struct GErrSource {
 
     pub data: Option<Box<dyn Debug + Send + Sync>>,
 
+    pub help: Option<Cow<'static, str>>,
+
     #[cfg(feature = "serde")]
     pub data_json: Option<serde_json::Value>,
 

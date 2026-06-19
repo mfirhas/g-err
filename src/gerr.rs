@@ -49,6 +49,8 @@ pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
 
     data: Option<D>,
 
+    help: Option<Cow<'static, str>>,
+
     location: &'static Location<'static>,
 
     #[cfg(feature = "backtrace")]
@@ -105,6 +107,8 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             tags: None,
 
             data: None,
+
+            help: None,
 
             location,
 
@@ -195,6 +199,16 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
         self
     }
 
+    #[must_use]
+    #[inline]
+    pub fn set_help<H>(mut self, help: H) -> Self
+    where
+        H: Into<Cow<'static, str>>,
+    {
+        self.help = Some(help.into());
+        self
+    }
+
     /// Override ID value and probably type.
     #[must_use]
     #[inline]
@@ -209,6 +223,8 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             tags: self.tags,
 
             data: self.data,
+
+            help: self.help,
 
             location: self.location,
 
@@ -234,6 +250,8 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
             data: self.data,
 
+            help: self.help,
+
             location: self.location,
 
             #[cfg(feature = "backtrace")]
@@ -257,6 +275,8 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             tags: self.tags,
 
             data: Some(data),
+
+            help: self.help,
 
             location: self.location,
 
@@ -302,6 +322,11 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     #[inline]
     pub fn location(&self) -> &'static Location<'static> {
         self.location
+    }
+
+    #[inline]
+    pub fn help(&self) -> Option<&str> {
+        self.help.as_deref()
     }
 
     #[cfg(feature = "backtrace")]
@@ -350,6 +375,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Debug for GErr<ID, P, D> {
             .field("source", &self.sources)
             .field("tags", &self.tags)
             .field("data", &self.data)
+            .field("help", &self.help())
             .field("location", &self.location);
 
         #[cfg(feature = "backtrace")]
@@ -388,6 +414,7 @@ where
             data: gerr
                 .data
                 .map(|d| Box::new(d) as Box<dyn Debug + Send + Sync>),
+            help: gerr.help,
             location: gerr.location,
             sources: gerr.sources,
         }
@@ -415,6 +442,7 @@ where
             data: gerr
                 .data
                 .map(|d| Box::new(d) as Box<dyn Debug + Send + Sync>),
+            help: gerr.help,
             location: gerr.location,
             sources: gerr.sources,
         }
