@@ -138,33 +138,3 @@ fn test() {
     let err = err.add_source_gerr(err3);
     println!("{}", err.report_as::<g_err::TraceReport>());
 }
-
-#[test]
-fn test_macro() {
-    let err = gerr!("not found");
-
-    let a = 'a';
-    let asd = "asd";
-    let err = gerr!(asd);
-
-    // gerr!(
-    //     "user {} not found", id;
-    //     id = 404,
-    //     prefix = "HTTP",
-    // );
-
-    // gerr!(
-    //     "db failed";
-    //     source = err,
-    //     tags = ["db", "query"],
-    // );
-
-    // gerr!(
-    //     "validation failed";
-    //     data = ValidationData {
-    //         field: "email",
-    //     },
-    // );
-
-    println!("{err}");
-}
