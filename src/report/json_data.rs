@@ -132,7 +132,7 @@ where
         }
 
         if let Some(tags) = tags {
-            err = err.set_tags(tags);
+            err = err.add_tags(tags);
         }
 
         if let Some(sources) = sources {
@@ -178,7 +178,7 @@ where
         }
 
         if let Some(tags) = tags {
-            err = err.set_tags(tags);
+            err = err.add_tags(tags);
         }
 
         Ok(err)

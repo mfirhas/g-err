@@ -146,7 +146,7 @@ macro_rules! gerr {
         tags = $tags:expr
         $(, $($rest:tt)*)?
     ) => {{
-        let err = $err.set_tags($tags);
+        let err = $err.add_tags($tags);
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 }

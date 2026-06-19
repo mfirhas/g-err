@@ -177,12 +177,14 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     }
 
     #[must_use]
-    pub fn set_tags<I, T>(mut self, tags: I) -> Self
+    pub fn add_tags<I, T>(mut self, tags: I) -> Self
     where
         I: IntoIterator<Item = T>,
         T: Into<Cow<'static, str>>,
     {
-        self.tags = Some(tags.into_iter().map(Into::into).collect());
+        self.tags
+            .get_or_insert_default()
+            .extend(tags.into_iter().map(Into::into));
         self
     }
 
