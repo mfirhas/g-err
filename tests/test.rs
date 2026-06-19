@@ -9,7 +9,11 @@ use g_err::Prefix;
 use g_err::Result;
 use g_err::ResultExt;
 use g_err::SetField;
+use g_err::gerr;
 use uuid::Uuid;
+
+#[path = "macro_test.rs"]
+mod macro_test;
 
 fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
     str_age.parse().context("parsing string age into i32")
@@ -133,4 +137,34 @@ fn test() {
     let err = err.add_source_gerr(err2);
     let err = err.add_source_gerr(err3);
     println!("{}", err.report_as::<g_err::TraceReport>());
+}
+
+#[test]
+fn test_macro() {
+    let err = gerr!("not found");
+
+    let a = 'a';
+    let asd = "asd";
+    let err = gerr!(asd);
+
+    // gerr!(
+    //     "user {} not found", id;
+    //     id = 404,
+    //     prefix = "HTTP",
+    // );
+
+    // gerr!(
+    //     "db failed";
+    //     source = err,
+    //     tags = ["db", "query"],
+    // );
+
+    // gerr!(
+    //     "validation failed";
+    //     data = ValidationData {
+    //         field: "email",
+    //     },
+    // );
+
+    println!("{err}");
 }
