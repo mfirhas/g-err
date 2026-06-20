@@ -1,5 +1,6 @@
 extern crate alloc;
 
+use crate::gerr_source::DataSource;
 use crate::gerr_source::GErrSource;
 use crate::gerr_source::IdSource;
 use crate::types::{NoData, NoID, NoPrefix};
@@ -403,7 +404,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Error for GErr<ID, P, D> {
 impl<ID, P, D> From<GErr<ID, P, D>> for GErrSource
 where
     ID: IdSource + 'static,
-    D: Debug + Send + Sync + 'static,
+    D: DataSource + 'static,
 {
     fn from(gerr: GErr<ID, P, D>) -> Self {
         GErrSource {
@@ -411,9 +412,7 @@ where
             message: gerr.message,
             prefix: gerr.prefix,
             tags: gerr.tags,
-            data: gerr
-                .data
-                .map(|d| Box::new(d) as Box<dyn Debug + Send + Sync>),
+            data: gerr.data.map(|d| Box::new(d) as Box<dyn DataSource>),
             help: gerr.help,
             location: gerr.location,
             sources: gerr.sources,
@@ -426,7 +425,7 @@ impl<ID, P, D> From<GErr<ID, P, D>> for GErrSource
 where
     ID: ::serde::Serialize + IdSource + 'static,
     P: Prefix,
-    D: ::serde::Serialize + Debug + Send + Sync + 'static,
+    D: ::serde::Serialize + DataSource + 'static,
 {
     fn from(gerr: GErr<ID, P, D>) -> Self {
         GErrSource {
@@ -439,9 +438,7 @@ where
                 .data
                 .as_ref()
                 .map(|d| serde_json::to_value(d).unwrap_or_default()),
-            data: gerr
-                .data
-                .map(|d| Box::new(d) as Box<dyn Debug + Send + Sync>),
+            data: gerr.data.map(|d| Box::new(d) as Box<dyn DataSource>),
             help: gerr.help,
             location: gerr.location,
             sources: gerr.sources,

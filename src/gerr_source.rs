@@ -3,6 +3,7 @@ extern crate alloc;
 use alloc::borrow::Cow;
 
 use core::{
+    any::Any,
     error::Error,
     fmt::{Debug, Display},
     panic::Location,
@@ -10,9 +11,13 @@ use core::{
 
 use crate::gerr::Source;
 
-pub trait IdSource: Debug + Display + Send + Sync {}
+pub trait IdSource: Any + Debug + Display + Send + Sync {}
 
-impl<T> IdSource for T where T: Debug + Display + Send + Sync {}
+impl<T> IdSource for T where T: Any + Debug + Display + Send + Sync {}
+
+pub trait DataSource: Any + Debug + Send + Sync {}
+
+impl<T> DataSource for T where T: Any + Debug + Send + Sync {}
 
 // --- GErrSource, before converting GErr to dyn Err
 #[derive(Debug)]
@@ -30,7 +35,7 @@ pub struct GErrSource {
 
     pub tags: Option<Vec<Cow<'static, str>>>,
 
-    pub data: Option<Box<dyn Debug + Send + Sync>>,
+    pub data: Option<Box<dyn DataSource>>,
 
     pub help: Option<Cow<'static, str>>,
 

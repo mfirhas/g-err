@@ -5,7 +5,7 @@ use core::str::FromStr;
 use crate::{
     ResultExt,
     gerr::{GErr, Prefix, Source},
-    gerr_source::GErrSource,
+    gerr_source::{DataSource, GErrSource},
     gerr_view::GErrView,
     types::{NoData, NoID, NoPrefix},
 };
@@ -295,7 +295,7 @@ impl SourceJsonData {
 
                 data: data
                     .as_ref()
-                    .map(|v| Box::new(v.to_string()) as Box<dyn core::fmt::Debug + Send + Sync>),
+                    .map(|v| Box::new(v.to_string()) as Box<dyn DataSource>),
 
                 data_json: data,
 

@@ -129,7 +129,7 @@ fn test() {
     let err = GErr::<NoID>::new("test").set_prefix("[HTTP]");
     let err2 = GErr::<NoID>::new("test2");
     let err3 = GErr::<NoID>::new("test3");
-    let err4 = GErr::<NoID>::new("test4");
+    let err4 = GErr::<NoID>::new("test4").add_tag("nganu");
     let err4_2 = GErr::<u16>::new_with_id(123, "test4_2").with_id("XYZ");
     let err5 = GErr::<NoID>::new("test5").set_prefix("[ASD]");
     let err4 = err4.add_source(err5);
@@ -139,4 +139,12 @@ fn test() {
     let err = err.add_source_gerr(err2);
     let err = err.add_source_gerr(err3);
     println!("{}", err.report_as::<g_err::TraceReport>());
+
+    let ret = err.contains_tag("nganu");
+    println!("{ret}");
+
+    println!("{}", err.iter().count());
+    for e in err.iter() {
+        println!("{e}");
+    }
 }

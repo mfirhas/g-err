@@ -10,7 +10,7 @@ mod gerr;
 pub use gerr::{BoxError, GErr, Id, Prefix, Result, SetField, Source};
 
 mod gerr_source;
-pub use gerr_source::{GErrSource, IdSource};
+pub use gerr_source::{DataSource, GErrSource, IdSource};
 
 mod gerr_view;
 pub use gerr_view::GErrView;
@@ -33,6 +33,10 @@ pub use types::{NoData, NoID, NoPrefix};
 
 mod result_ext;
 pub use result_ext::{GResultExt, ResultExt};
+
+mod iterator;
+pub use iterator::{Iter, IterItem};
+mod query;
 
 mod sealed {
     pub trait Sealed {}
