@@ -135,11 +135,27 @@ where
     }
 
     #[inline]
+    pub fn find_by_id<T>(&self, value: &T) -> Option<IterItem<'_, ID, P, D>>
+    where
+        T: Any + PartialEq,
+    {
+        self.iter_by_id(value).next()
+    }
+
+    #[inline]
     pub fn find_data<T>(&self) -> Option<IterItem<'_, ID, P, D>>
     where
         T: Any,
     {
         self.iter_data::<T>().next()
+    }
+
+    #[inline]
+    pub fn find_by_data<T>(&self, value: &T) -> Option<IterItem<'_, ID, P, D>>
+    where
+        T: Any + PartialEq,
+    {
+        self.iter_by_data(value).next()
     }
 
     #[inline]
