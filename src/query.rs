@@ -26,54 +26,52 @@ where
     }
 
     #[inline]
-    pub fn ids<T>(&self) -> impl Iterator<Item = &T>
+    pub fn ids<T>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
     where
         T: Any,
     {
-        self.iter().filter_map(|item| match item {
-            IterItem::Root(gerr) => (gerr.id() as &dyn Any).downcast_ref::<T>(),
+        self.iter().filter(|item| match item {
+            IterItem::Root(gerr) => (gerr.id() as &dyn Any).is::<T>(),
 
-            IterItem::GErr(gerr) => (&*gerr.id as &dyn Any).downcast_ref::<T>(),
+            IterItem::GErr(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
 
-            IterItem::Err(_) => None,
+            IterItem::Err(_) => false,
         })
     }
 
     #[inline]
-    pub fn datas<T>(&self) -> impl Iterator<Item = &T>
+    pub fn datas<T>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
     where
         T: Any,
     {
-        self.iter().filter_map(|item| match item {
-            IterItem::Root(gerr) => gerr
-                .data()
-                .and_then(|data| (data as &dyn Any).downcast_ref::<T>()),
+        self.iter().filter(|item| match item {
+            IterItem::Root(gerr) => gerr.data().is_some_and(|data| (data as &dyn Any).is::<T>()),
 
             IterItem::GErr(gerr) => gerr
                 .data
                 .as_ref()
-                .and_then(|data| (&**data as &dyn Any).downcast_ref::<T>()),
+                .is_some_and(|data| (&**data as &dyn Any).is::<T>()),
 
-            IterItem::Err(_) => None,
+            IterItem::Err(_) => false,
         })
     }
 
     #[inline]
-    pub fn sources_of<E>(&self) -> impl Iterator<Item = &E>
+    pub fn sources_of<E>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
     where
         E: Error + 'static,
     {
         self.iter().filter_map(|item| match item {
-            IterItem::Err(err) => err.downcast_ref::<E>(),
+            IterItem::Err(err) if err.is::<E>() => Some(item),
 
-            IterItem::GErr(gerr) => (gerr as &dyn Error).downcast_ref::<E>(),
+            IterItem::GErr(gerr) if (gerr as &dyn Error).is::<E>() => Some(item),
 
-            IterItem::Root(_) => None,
+            _ => None,
         })
     }
 
     #[inline]
-    pub fn find_id<T>(&self) -> Option<&T>
+    pub fn find_id<T>(&self) -> Option<IterItem<'_, ID, P, D>>
     where
         T: Any,
     {
@@ -81,7 +79,7 @@ where
     }
 
     #[inline]
-    pub fn find_data<T>(&self) -> Option<&T>
+    pub fn find_data<T>(&self) -> Option<IterItem<'_, ID, P, D>>
     where
         T: Any,
     {
@@ -89,7 +87,7 @@ where
     }
 
     #[inline]
-    pub fn find_source<E>(&self) -> Option<&E>
+    pub fn find_source<E>(&self) -> Option<IterItem<'_, ID, P, D>>
     where
         E: Error + 'static,
     {

@@ -143,6 +143,9 @@ fn test() {
     let ret = err.contains_tag("nganu");
     println!("{ret}");
 
+    let ret = err.find_id::<&str>().unwrap();
+    println!("--> {ret:?}");
+
     println!("{}", err.iter().count());
     for e in err.iter() {
         println!("{e}");

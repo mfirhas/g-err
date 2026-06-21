@@ -30,7 +30,7 @@ where
     P: Prefix,
     D: DataSource + 'static,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Self::Root(root) => write!(f, "{}", root),
             Self::Err(err) => write!(f, "{}", err),
@@ -45,7 +45,7 @@ where
     P: Prefix,
     D: DataSource + 'static,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Self::Root(root) => write!(f, "root: {:#?}", root),
             Self::Err(err) => write!(f, "err: {:#?}", err),
