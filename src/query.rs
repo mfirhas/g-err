@@ -10,6 +10,20 @@ where
     D: DataSource + 'static,
 {
     #[inline]
+    pub fn iter_by_prefix<'a>(
+        &'a self,
+        prefix: &'a str,
+    ) -> impl Iterator<Item = IterItem<'a, ID, P, D>> + 'a {
+        self.iter().filter(move |item| match item {
+            IterItem::Root(gerr) => gerr.prefix().is_some_and(|p| p == prefix),
+
+            IterItem::GErr(gerr) => gerr.prefix.as_ref().is_some_and(|p| p == prefix),
+
+            IterItem::Err(_) => false,
+        })
+    }
+
+    #[inline]
     pub fn iter_by_tag<'a>(
         &'a self,
         tag: &'a str,

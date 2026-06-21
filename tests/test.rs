@@ -146,6 +146,9 @@ fn test() {
     let ret = err.find_id::<&str>().unwrap();
     println!("--> {ret:?}");
 
+    let ret = err.iter_by_prefix("[HTTP]").next().unwrap();
+    println!("==> {ret}");
+
     println!("{}", err.iter().count());
     for e in err.iter() {
         println!("{e}");
