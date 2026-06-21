@@ -92,6 +92,27 @@ where
     }
 
     #[inline]
+    pub fn iter_by_data<T>(&self, value: &T) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    where
+        T: Any + PartialEq,
+    {
+        self.iter().filter(move |item| match item {
+            IterItem::Root(gerr) => gerr
+                .data()
+                .and_then(|data| (data as &dyn Any).downcast_ref::<T>())
+                .is_some_and(|data| data == value),
+
+            IterItem::GErr(gerr) => gerr
+                .data
+                .as_ref()
+                .and_then(|data| (&**data as &dyn Any).downcast_ref::<T>())
+                .is_some_and(|data| data == value),
+
+            IterItem::Err(_) => false,
+        })
+    }
+
+    #[inline]
     pub fn iter_source<E>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
     where
         E: Error + 'static,
