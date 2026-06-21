@@ -143,6 +143,11 @@ where
     }
 
     #[inline]
+    pub fn find_by_prefix<'a>(&'a self, value: &'a str) -> Option<IterItem<'a, ID, P, D>> {
+        self.iter_by_prefix(value).next()
+    }
+
+    #[inline]
     pub fn find_data<T>(&self) -> Option<IterItem<'_, ID, P, D>>
     where
         T: Any,
@@ -156,6 +161,11 @@ where
         T: Any + PartialEq,
     {
         self.iter_by_data(value).next()
+    }
+
+    #[inline]
+    pub fn find_by_tag<'a>(&'a self, value: &'a str) -> Option<IterItem<'a, ID, P, D>> {
+        self.iter_by_tag(value).next()
     }
 
     #[inline]
