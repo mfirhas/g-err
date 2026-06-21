@@ -57,6 +57,24 @@ where
     }
 
     #[inline]
+    pub fn iter_by_id<T>(&self, value: &T) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    where
+        T: Any + PartialEq,
+    {
+        self.iter().filter(move |item| match item {
+            IterItem::Root(gerr) => (gerr.id() as &dyn Any)
+                .downcast_ref::<T>()
+                .is_some_and(|id| id == value),
+
+            IterItem::GErr(gerr) => (&*gerr.id as &dyn Any)
+                .downcast_ref::<T>()
+                .is_some_and(|id| id == value),
+
+            IterItem::Err(_) => false,
+        })
+    }
+
+    #[inline]
     pub fn iter_data<T>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
     where
         T: Any,
