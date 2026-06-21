@@ -10,8 +10,11 @@ where
     D: DataSource + 'static,
 {
     #[inline]
-    pub fn contains_tag(&self, tag: &str) -> bool {
-        self.iter().any(|item| match item {
+    pub fn iter_by_tag<'a>(
+        &'a self,
+        tag: &'a str,
+    ) -> impl Iterator<Item = IterItem<'a, ID, P, D>> + 'a {
+        self.iter().filter(move |item| match item {
             IterItem::Root(gerr) => gerr
                 .tags()
                 .is_some_and(|tags| tags.iter().any(|t| t == tag)),

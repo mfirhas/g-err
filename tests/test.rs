@@ -140,8 +140,8 @@ fn test() {
     let err = err.add_source_gerr(err3);
     println!("{}", err.report_as::<g_err::TraceReport>());
 
-    let ret = err.contains_tag("nganu");
-    println!("{ret}");
+    let ret = err.iter_by_tag("nganu").next().unwrap();
+    println!("{}", ret);
 
     let ret = err.find_id::<&str>().unwrap();
     println!("--> {ret:?}");
