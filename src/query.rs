@@ -29,7 +29,7 @@ where
     }
 
     #[inline]
-    pub fn ids<T>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    pub fn iter_id<T>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
     where
         T: Any,
     {
@@ -43,7 +43,7 @@ where
     }
 
     #[inline]
-    pub fn datas<T>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    pub fn iter_data<T>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
     where
         T: Any,
     {
@@ -60,7 +60,7 @@ where
     }
 
     #[inline]
-    pub fn sources_of<E>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    pub fn iter_source<E>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
     where
         E: Error + 'static,
     {
@@ -78,7 +78,7 @@ where
     where
         T: Any,
     {
-        self.ids::<T>().next()
+        self.iter_id::<T>().next()
     }
 
     #[inline]
@@ -86,7 +86,7 @@ where
     where
         T: Any,
     {
-        self.datas::<T>().next()
+        self.iter_data::<T>().next()
     }
 
     #[inline]
@@ -94,6 +94,6 @@ where
     where
         E: Error + 'static,
     {
-        self.sources_of::<E>().next()
+        self.iter_source::<E>().next()
     }
 }
