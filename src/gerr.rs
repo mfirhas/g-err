@@ -77,6 +77,15 @@ impl<ID: Id, P: Prefix, D> GErr<ID, P, D> {
     {
         Self::with_id_untracked(ID::id(), message.into(), location)
     }
+
+    #[track_caller]
+    #[inline]
+    pub fn from_error<E>(err: E) -> Self
+    where
+        E: Error + Send + Sync + 'static,
+    {
+        Self::new_untracked(err.to_string(), Location::caller()).add_source(err)
+    }
 }
 
 impl<ID, P: Prefix, D> GErr<ID, P, D> {
