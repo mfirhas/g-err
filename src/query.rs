@@ -17,7 +17,7 @@ where
         self.iter().filter(move |item| match item {
             GErrNode::Root(gerr) => gerr.prefix().is_some_and(|p| p == prefix),
 
-            GErrNode::GErr(gerr) => gerr.prefix.as_ref().is_some_and(|p| p == prefix),
+            GErrNode::Leaf(gerr) => gerr.prefix.as_ref().is_some_and(|p| p == prefix),
         })
     }
 
@@ -31,7 +31,7 @@ where
                 .tags()
                 .is_some_and(|tags| tags.iter().any(|t| t == tag)),
 
-            GErrNode::GErr(gerr) => gerr
+            GErrNode::Leaf(gerr) => gerr
                 .tags
                 .as_ref()
                 .is_some_and(|tags| tags.iter().any(|t| t == tag)),
@@ -46,7 +46,7 @@ where
         self.iter().filter(|item| match item {
             GErrNode::Root(gerr) => (gerr.id() as &dyn Any).is::<T>(),
 
-            GErrNode::GErr(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
+            GErrNode::Leaf(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
         })
     }
 
@@ -60,7 +60,7 @@ where
                 .downcast_ref::<T>()
                 .is_some_and(|id| id == value),
 
-            GErrNode::GErr(gerr) => (&*gerr.id as &dyn Any)
+            GErrNode::Leaf(gerr) => (&*gerr.id as &dyn Any)
                 .downcast_ref::<T>()
                 .is_some_and(|id| id == value),
         })
@@ -74,7 +74,7 @@ where
         self.iter().filter(|item| match item {
             GErrNode::Root(gerr) => gerr.data().is_some_and(|data| (data as &dyn Any).is::<T>()),
 
-            GErrNode::GErr(gerr) => gerr
+            GErrNode::Leaf(gerr) => gerr
                 .data
                 .as_ref()
                 .is_some_and(|data| (&**data as &dyn Any).is::<T>()),
@@ -92,7 +92,7 @@ where
                 .and_then(|data| (data as &dyn Any).downcast_ref::<T>())
                 .is_some_and(|data| data == value),
 
-            GErrNode::GErr(gerr) => gerr
+            GErrNode::Leaf(gerr) => gerr
                 .data
                 .as_ref()
                 .and_then(|data| (&**data as &dyn Any).downcast_ref::<T>())
@@ -106,7 +106,7 @@ where
         E: Error + 'static,
     {
         self.iter().filter_map(|item| match item {
-            GErrNode::GErr(gerr) if (gerr as &dyn Error).is::<E>() => Some(item),
+            GErrNode::Leaf(gerr) if (gerr as &dyn Error).is::<E>() => Some(item),
 
             _ => None,
         })
