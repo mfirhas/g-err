@@ -32,7 +32,7 @@ mod types;
 pub use types::{NoData, NoID, NoPrefix};
 
 mod result_ext;
-pub use result_ext::ResultExt;
+pub use result_ext::{GResultExt, ResultExt};
 
 mod iterator;
 pub use iterator::{Iter, IterItem};
