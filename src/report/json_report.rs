@@ -1,6 +1,7 @@
+use crate::GErrSource;
 use crate::report::json_data::{DisplayJsonData, JsonData};
 use crate::types::NoID;
-use crate::{gerr::Source, gerr_view::GErrView, report::Report};
+use crate::{gerr_view::GErrView, report::Report};
 use alloc::borrow::Cow;
 use core::fmt::{Debug, Display};
 
@@ -142,36 +143,23 @@ where
     }
 }
 
-pub static NO_ID_JSON: serde_json::Value = serde_json::Value::Null;
-
-impl<'a> From<&'a Source> for SourceJson<'a> {
-    fn from(value: &'a Source) -> Self {
-        match value {
-            Source::Err(err) => Self {
-                id: &NO_ID_JSON,
-                prefix: None,
-                message: err.to_string(),
-                tags: None,
-                data: None,
-                location: None,
-                sources: None,
-            },
-            Source::GErr(gerr) => Self {
-                id: &gerr.id_json,
-                prefix: gerr.prefix.as_deref(),
-                message: gerr.message.to_string(),
-                tags: gerr.tags.as_deref(),
-                data: gerr.data_json.as_ref(),
-                location: Some(LocationJson {
-                    file: gerr.location.file(),
-                    line: gerr.location.line(),
-                    column: gerr.location.column(),
-                }),
-                sources: gerr
-                    .sources
-                    .as_deref()
-                    .map(|ref s| s.iter().map(|src| Box::new(src.into())).collect()),
-            },
+impl<'a> From<&'a GErrSource> for SourceJson<'a> {
+    fn from(gerr: &'a GErrSource) -> Self {
+        Self {
+            id: &gerr.id_json,
+            prefix: gerr.prefix.as_deref(),
+            message: gerr.message.to_string(),
+            tags: gerr.tags.as_deref(),
+            data: gerr.data_json.as_ref(),
+            location: Some(LocationJson {
+                file: gerr.location.file(),
+                line: gerr.location.line(),
+                column: gerr.location.column(),
+            }),
+            sources: gerr
+                .sources
+                .as_deref()
+                .map(|ref s| s.iter().map(|src| Box::new(src.into())).collect()),
         }
     }
 }

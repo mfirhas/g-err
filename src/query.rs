@@ -18,8 +18,6 @@ where
             IterItem::Root(gerr) => gerr.prefix().is_some_and(|p| p == prefix),
 
             IterItem::GErr(gerr) => gerr.prefix.as_ref().is_some_and(|p| p == prefix),
-
-            IterItem::Err(_) => false,
         })
     }
 
@@ -37,8 +35,6 @@ where
                 .tags
                 .as_ref()
                 .is_some_and(|tags| tags.iter().any(|t| t == tag)),
-
-            IterItem::Err(_) => false,
         })
     }
 
@@ -51,8 +47,6 @@ where
             IterItem::Root(gerr) => (gerr.id() as &dyn Any).is::<T>(),
 
             IterItem::GErr(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
-
-            IterItem::Err(_) => false,
         })
     }
 
@@ -69,8 +63,6 @@ where
             IterItem::GErr(gerr) => (&*gerr.id as &dyn Any)
                 .downcast_ref::<T>()
                 .is_some_and(|id| id == value),
-
-            IterItem::Err(_) => false,
         })
     }
 
@@ -86,8 +78,6 @@ where
                 .data
                 .as_ref()
                 .is_some_and(|data| (&**data as &dyn Any).is::<T>()),
-
-            IterItem::Err(_) => false,
         })
     }
 
@@ -107,8 +97,6 @@ where
                 .as_ref()
                 .and_then(|data| (&**data as &dyn Any).downcast_ref::<T>())
                 .is_some_and(|data| data == value),
-
-            IterItem::Err(_) => false,
         })
     }
 
@@ -118,8 +106,6 @@ where
         E: Error + 'static,
     {
         self.iter().filter_map(|item| match item {
-            IterItem::Err(err) if err.is::<E>() => Some(item),
-
             IterItem::GErr(gerr) if (gerr as &dyn Error).is::<E>() => Some(item),
 
             _ => None,

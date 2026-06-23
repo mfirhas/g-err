@@ -7,7 +7,10 @@ use alloc::borrow::Cow;
 #[cfg(feature = "backtrace")]
 use std::backtrace::Backtrace;
 
-use crate::gerr::{GErr, Prefix, Source};
+use crate::{
+    GErrSource,
+    gerr::{GErr, Prefix},
+};
 
 pub struct GErrView<'a, ID, D> {
     pub id: &'a ID,
@@ -15,7 +18,7 @@ pub struct GErrView<'a, ID, D> {
     pub prefix: Option<&'a str>,
     pub data: Option<&'a D>,
     pub tags: Option<&'a [Cow<'static, str>]>,
-    pub sources: Option<&'a [Source]>,
+    pub sources: Option<&'a [GErrSource]>,
     pub help: Option<&'a str>,
     pub location: &'a Location<'static>,
     #[cfg(feature = "backtrace")]

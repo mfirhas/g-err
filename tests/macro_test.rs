@@ -122,11 +122,6 @@ fn source_builder() {
     let sources = err.sources().unwrap();
 
     assert_eq!(sources.len(), 1);
-
-    match &sources[0] {
-        Source::Err(_) => {}
-        _ => panic!("expected Source::Err"),
-    }
 }
 
 #[test]
@@ -141,11 +136,6 @@ fn gerr_builder() {
     let sources = err.sources().unwrap();
 
     assert_eq!(sources.len(), 1);
-
-    match &sources[0] {
-        Source::GErr(_) => {}
-        _ => panic!("expected Source::GErr"),
-    }
 }
 
 #[test]
@@ -173,11 +163,6 @@ fn multiple_builder_fields() {
 
     let sources = err.sources().unwrap();
     assert_eq!(sources.len(), 1);
-
-    match &sources[0] {
-        Source::GErr(_) => {}
-        _ => panic!("expected Source::GErr"),
-    }
 }
 
 #[test]

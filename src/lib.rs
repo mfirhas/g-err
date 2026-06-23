@@ -7,7 +7,7 @@
 extern crate alloc;
 
 mod gerr;
-pub use gerr::{BoxError, GErr, Id, Prefix, Result, SetField, Source};
+pub use gerr::{GErr, Id, Prefix, Result, SetField};
 
 mod gerr_source;
 pub use gerr_source::{DataSource, GErrSource, IdSource};
@@ -32,7 +32,7 @@ mod types;
 pub use types::{NoData, NoID, NoPrefix};
 
 mod result_ext;
-pub use result_ext::{GResultExt, ResultExt};
+pub use result_ext::ResultExt;
 
 mod iterator;
 pub use iterator::{Iter, IterItem};

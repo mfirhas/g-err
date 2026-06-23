@@ -29,14 +29,6 @@ pub trait SetField<K, V> {
     fn set_field(&mut self, key: K, value: V);
 }
 
-pub type BoxError = Box<dyn Error + Send + Sync + 'static>;
-
-#[derive(Debug)]
-pub enum Source {
-    Err(BoxError),
-    GErr(Box<GErrSource>),
-}
-
 pub type Result<T, ID = NoID, P = NoPrefix, D = NoData> = core::result::Result<T, GErr<ID, P, D>>;
 
 pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
@@ -44,7 +36,7 @@ pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
     message: Cow<'static, str>,
 
     prefix: Option<Cow<'static, str>>,
-    sources: Option<Vec<Source>>,
+    sources: Option<Vec<GErrSource>>,
 
     tags: Option<Vec<Cow<'static, str>>>,
 
@@ -150,11 +142,12 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
     #[must_use]
     #[inline]
-    pub fn set_sources<I>(mut self, sources: I) -> Self
+    pub fn set_sources<I, E>(mut self, sources: I) -> Self
     where
-        I: IntoIterator<Item = Source>,
+        I: IntoIterator<Item = E>,
+        E: Error + Send + Sync + 'static,
     {
-        self.sources = Some(sources.into_iter().map(Into::into).collect());
+        self.sources = Some(sources.into_iter().map(GErrSource::from_error).collect());
         self
     }
 
@@ -166,7 +159,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     {
         self.sources
             .get_or_insert_default()
-            .push(Source::Err(Box::new(source)));
+            .push(GErrSource::from_error(source));
         self
     }
 
@@ -175,9 +168,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         E: Into<GErrSource> + Error + Send + Sync + 'static,
     {
-        self.sources
-            .get_or_insert_default()
-            .push(Source::GErr(Box::new(gerr.into())));
+        self.sources.get_or_insert_default().push(gerr.into());
         self
     }
 
@@ -325,7 +316,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     }
 
     #[inline]
-    pub fn sources(&self) -> Option<&[Source]> {
+    pub fn sources(&self) -> Option<&[GErrSource]> {
         self.sources.as_deref()
     }
 
@@ -400,10 +391,9 @@ impl<ID: Debug, P: Prefix, D: Debug> Error for GErr<ID, P, D> {
         if let Some(ref sources) = self.sources
             && !sources.is_empty()
         {
-            return sources.first().and_then(|s| match s {
-                Source::Err(e) => Some(&**e as &(dyn Error + 'static)),
-                Source::GErr(e) => Some(&**e as &(dyn Error + 'static)),
-            });
+            return sources
+                .first()
+                .and_then(|s| Some(&*s as &(dyn Error + 'static)));
         }
         None
     }
@@ -426,6 +416,18 @@ where
             location: gerr.location,
             sources: gerr.sources,
         }
+    }
+}
+
+#[cfg(not(feature = "serde"))]
+impl<ID, P, D> GErr<ID, P, D>
+where
+    ID: IdSource + 'static,
+    D: DataSource + 'static,
+{
+    #[inline]
+    pub fn into_gerr_source(self) -> GErrSource {
+        self.into()
     }
 }
 
@@ -452,5 +454,18 @@ where
             location: gerr.location,
             sources: gerr.sources,
         }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<ID, P, D> GErr<ID, P, D>
+where
+    ID: ::serde::Serialize + IdSource + 'static,
+    P: Prefix,
+    D: ::serde::Serialize + DataSource + 'static,
+{
+    #[inline]
+    pub fn into_gerr_source(self) -> GErrSource {
+        self.into()
     }
 }

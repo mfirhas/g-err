@@ -1,5 +1,4 @@
 use super::Report;
-use crate::gerr::Source;
 use crate::gerr_view::GErrView;
 use core::fmt::Write;
 use core::fmt::{Debug, Display};
@@ -68,42 +67,36 @@ impl PrettyReport {
     fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(sources) = err.sources {
             let _ = writeln!(out, "Caused by:");
-            for (i, src) in sources.iter().enumerate() {
+            for (i, gerr) in sources.iter().enumerate() {
                 let i = i + 1;
-                match src {
-                    Source::Err(e) => {
-                        let _ = writeln!(out, "  {i}: {e}");
+
+                match gerr.prefix.as_deref() {
+                    Some(prefix) => {
+                        let _ = writeln!(out, "  {i}: {prefix} {}", gerr.message);
                     }
-                    Source::GErr(gerr) => {
-                        match gerr.prefix.as_deref() {
-                            Some(prefix) => {
-                                let _ = writeln!(out, "  {i}: {prefix} {}", gerr.message);
-                            }
-                            None => {
-                                let _ = writeln!(out, "  {i}: {}", gerr.message);
-                            }
-                        }
-
-                        let _ = writeln!(out, "     id: {}", gerr.id);
-
-                        let _ = writeln!(
-                            out,
-                            "     at: {}:{}:{}",
-                            gerr.location.file(),
-                            gerr.location.line(),
-                            gerr.location.column()
-                        );
-
-                        if let Some(tags) = &gerr.tags
-                            && !tags.is_empty()
-                        {
-                            let _ = writeln!(out, "     tags: {}", tags.join(", "));
-                        }
-
-                        if let Some(data) = &gerr.data {
-                            let _ = writeln!(out, "     data: {data:#?}");
-                        }
+                    None => {
+                        let _ = writeln!(out, "  {i}: {}", gerr.message);
                     }
+                }
+
+                let _ = writeln!(out, "     id: {}", gerr.id);
+
+                let _ = writeln!(
+                    out,
+                    "     at: {}:{}:{}",
+                    gerr.location.file(),
+                    gerr.location.line(),
+                    gerr.location.column()
+                );
+
+                if let Some(tags) = &gerr.tags
+                    && !tags.is_empty()
+                {
+                    let _ = writeln!(out, "     tags: {}", tags.join(", "));
+                }
+
+                if let Some(data) = &gerr.data {
+                    let _ = writeln!(out, "     data: {data:#?}");
                 }
             }
         }

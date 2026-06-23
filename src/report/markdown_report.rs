@@ -1,7 +1,6 @@
 use crate::gerr_view::GErrView;
 
 use super::Report;
-use crate::gerr::Source;
 use core::fmt::{Debug, Display, Write};
 
 pub struct MarkdownReport;
@@ -76,44 +75,38 @@ impl MarkdownReport {
     fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(sources) = err.sources {
             let _ = writeln!(out, "## Causes\n");
-            for (i, src) in sources.iter().enumerate() {
+            for (i, gerr) in sources.iter().enumerate() {
                 let i = i + 1;
-                match src {
-                    Source::Err(e) => {
-                        let _ = writeln!(out, "### {}. {}\n", i, e);
-                    }
-                    Source::GErr(gerr) => {
-                        let msg = match gerr.prefix.as_deref() {
-                            Some(prefix) => format!("{prefix} {}", gerr.message),
-                            None => gerr.message.to_string(),
-                        };
 
-                        let _ = writeln!(out, "### {}. {}\n", i, msg);
+                let msg = match gerr.prefix.as_deref() {
+                    Some(prefix) => format!("{prefix} {}", gerr.message),
+                    None => gerr.message.to_string(),
+                };
 
-                        let _ = writeln!(out, "- **ID:** `{}`\n", gerr.id);
+                let _ = writeln!(out, "### {}. {}\n", i, msg);
 
-                        let loc = &gerr.location;
-                        let _ = writeln!(
-                            out,
-                            "- **Location:** `{}:{}:{}`\n",
-                            loc.file(),
-                            loc.line(),
-                            loc.column()
-                        );
+                let _ = writeln!(out, "- **ID:** `{}`\n", gerr.id);
 
-                        if let Some(tags) = &gerr.tags
-                            && !tags.is_empty()
-                        {
-                            let _ = writeln!(out, "- **Tags:** *{}*\n", tags.join(", "));
-                        }
+                let loc = &gerr.location;
+                let _ = writeln!(
+                    out,
+                    "- **Location:** `{}:{}:{}`\n",
+                    loc.file(),
+                    loc.line(),
+                    loc.column()
+                );
 
-                        if let Some(data) = &gerr.data {
-                            let _ = writeln!(out, "- **Data:**\n");
-                            let _ = writeln!(out, "```");
-                            let _ = writeln!(out, "{data:#?}");
-                            let _ = writeln!(out, "```");
-                        }
-                    }
+                if let Some(tags) = &gerr.tags
+                    && !tags.is_empty()
+                {
+                    let _ = writeln!(out, "- **Tags:** *{}*\n", tags.join(", "));
+                }
+
+                if let Some(data) = &gerr.data {
+                    let _ = writeln!(out, "- **Data:**\n");
+                    let _ = writeln!(out, "```");
+                    let _ = writeln!(out, "{data:#?}");
+                    let _ = writeln!(out, "```");
                 }
             }
         }

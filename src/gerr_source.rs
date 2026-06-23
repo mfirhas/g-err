@@ -9,7 +9,7 @@ use core::{
     panic::Location,
 };
 
-use crate::gerr::Source;
+use crate::NoID;
 
 pub trait IdSource: Any + Debug + Display + Send + Sync {}
 
@@ -31,7 +31,7 @@ pub struct GErrSource {
 
     pub prefix: Option<Cow<'static, str>>,
 
-    pub sources: Option<Vec<Source>>,
+    pub sources: Option<Vec<GErrSource>>,
 
     pub tags: Option<Vec<Cow<'static, str>>>,
 
@@ -43,6 +43,53 @@ pub struct GErrSource {
     pub data_json: Option<serde_json::Value>,
 
     pub location: &'static Location<'static>,
+}
+
+impl GErrSource {
+    #[track_caller]
+    #[inline]
+    pub fn from_error<E>(err: E) -> Self
+    where
+        E: Error + Send + Sync + 'static,
+    {
+        let msg = err.to_string();
+        let any = &err as &dyn Any;
+
+        if let Some(_) = any.downcast_ref::<GErrSource>() {
+            let any: Box<dyn Any> = Box::new(err);
+            if let Ok(owned_gerr_source) = any.downcast::<GErrSource>() {
+                return Self {
+                    id: owned_gerr_source.id,
+                    #[cfg(feature = "serde")]
+                    id_json: owned_gerr_source.id_json,
+                    message: owned_gerr_source.message,
+                    prefix: owned_gerr_source.prefix,
+                    sources: owned_gerr_source.sources,
+                    tags: owned_gerr_source.tags,
+                    data: owned_gerr_source.data,
+                    help: owned_gerr_source.help,
+                    #[cfg(feature = "serde")]
+                    data_json: owned_gerr_source.data_json,
+                    location: Location::caller(),
+                };
+            }
+        }
+
+        Self {
+            id: Box::new(NoID),
+            #[cfg(feature = "serde")]
+            id_json: serde_json::Value::Null,
+            message: msg.into(),
+            prefix: None,
+            sources: None,
+            tags: None,
+            data: None,
+            help: None,
+            #[cfg(feature = "serde")]
+            data_json: None,
+            location: Location::caller(),
+        }
+    }
 }
 
 impl Display for GErrSource {
@@ -60,10 +107,9 @@ impl Error for GErrSource {
         if let Some(ref sources) = self.sources
             && !sources.is_empty()
         {
-            return sources.first().and_then(|s| match s {
-                Source::Err(e) => Some(&**e as &(dyn Error + 'static)),
-                Source::GErr(e) => Some(&**e as &(dyn Error + 'static)),
-            });
+            return sources
+                .first()
+                .and_then(|s| Some(&*s as &(dyn Error + 'static)));
         }
         None
     }

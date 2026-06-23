@@ -1,8 +1,7 @@
 use alloc::vec::Vec;
-use core::error::Error;
 use core::fmt::{Debug, Display};
 
-use crate::{DataSource, GErr, GErrSource, IdSource, Prefix, Source};
+use crate::{DataSource, GErr, GErrSource, IdSource, Prefix};
 
 impl<ID, P, D> GErr<ID, P, D>
 where
@@ -20,7 +19,6 @@ where
 
 pub enum IterItem<'a, ID, P, D> {
     Root(&'a GErr<ID, P, D>),
-    Err(&'a (dyn Error + Send + Sync + 'static)),
     GErr(&'a GErrSource),
 }
 
@@ -33,7 +31,6 @@ where
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Self::Root(root) => write!(f, "{}", root),
-            Self::Err(err) => write!(f, "{}", err),
             Self::GErr(gerr) => write!(f, "{}", gerr),
         }
     }
@@ -48,7 +45,6 @@ where
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Self::Root(root) => write!(f, "root: {:#?}", root),
-            Self::Err(err) => write!(f, "err: {:#?}", err),
             Self::GErr(gerr) => write!(f, "gerr: {:#?}", gerr),
         }
     }
@@ -70,20 +66,10 @@ where
         let current = self.stack.pop()?;
 
         match &current {
-            IterItem::Err(_) => {}
-
             IterItem::Root(gerr) => {
                 if let Some(sources) = gerr.sources() {
                     for source in sources.iter().rev() {
-                        match source {
-                            Source::Err(err) => {
-                                self.stack.push(IterItem::Err(&**err));
-                            }
-
-                            Source::GErr(gerr) => {
-                                self.stack.push(IterItem::GErr(gerr.as_ref()));
-                            }
-                        }
+                        self.stack.push(IterItem::GErr(source));
                     }
                 }
             }
@@ -91,15 +77,7 @@ where
             IterItem::GErr(gerr) => {
                 if let Some(sources) = gerr.sources.as_deref() {
                     for source in sources.iter().rev() {
-                        match source {
-                            Source::Err(err) => {
-                                self.stack.push(IterItem::Err(&**err));
-                            }
-
-                            Source::GErr(gerr) => {
-                                self.stack.push(IterItem::GErr(gerr.as_ref()));
-                            }
-                        }
+                        self.stack.push(IterItem::GErr(source));
                     }
                 }
             }
