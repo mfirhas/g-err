@@ -2,7 +2,6 @@ extern crate alloc;
 
 use crate::GErrSource;
 use crate::gerr::{Id, Prefix};
-use crate::types::NoData;
 use crate::{
     gerr::{GErr, Result},
     sealed,
@@ -17,14 +16,14 @@ impl<T, E> sealed::Sealed for core::result::Result<T, E> {}
 pub trait ResultExt<T>: sealed::Sealed {
     #[must_use]
     #[track_caller]
-    fn context<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    fn context<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix;
 
     #[must_use]
     #[track_caller]
-    fn with_context<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
+    fn with_context<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
@@ -41,7 +40,7 @@ where
     E: Error + Send + Sync + 'static,
 {
     #[track_caller]
-    fn context<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    fn context<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
@@ -49,13 +48,11 @@ where
         let message = message.into();
         let location = Location::caller();
 
-        self.map_err(|source| {
-            GErr::<ID, P, NoData>::new_untracked(message, location).add_source(source)
-        })
+        self.map_err(|source| GErr::<ID, P, D>::new_untracked(message, location).add_source(source))
     }
 
     #[track_caller]
-    fn with_context<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
+    fn with_context<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
@@ -65,9 +62,7 @@ where
         let message = func().into();
         let location = Location::caller();
 
-        self.map_err(|source| {
-            GErr::<ID, P, NoData>::new_untracked(message, location).add_source(source)
-        })
+        self.map_err(|source| GErr::<ID, P, D>::new_untracked(message, location).add_source(source))
     }
 
     #[track_caller]
@@ -82,14 +77,14 @@ where
 pub trait GResultExt<T>: sealed::Sealed {
     #[must_use]
     #[track_caller]
-    fn gerr<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    fn gerr<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix;
 
     #[must_use]
     #[track_caller]
-    fn with_gerr<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
+    fn with_gerr<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
@@ -102,7 +97,7 @@ where
     E: Into<GErrSource> + Error + Send + Sync + 'static,
 {
     #[track_caller]
-    fn gerr<ID, P>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P>
+    fn gerr<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
@@ -111,12 +106,12 @@ where
         let location = Location::caller();
 
         self.map_err(|source| {
-            GErr::<ID, P, NoData>::new_untracked(message, location).add_source_gerr(source.into())
+            GErr::<ID, P, D>::new_untracked(message, location).add_source_gerr(source.into())
         })
     }
 
     #[track_caller]
-    fn with_gerr<ID, P, F, M>(self, func: F) -> Result<T, ID, P>
+    fn with_gerr<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
@@ -127,7 +122,7 @@ where
         let location = Location::caller();
 
         self.map_err(|source| {
-            GErr::<ID, P, NoData>::new_untracked(message, location).add_source_gerr(source.into())
+            GErr::<ID, P, D>::new_untracked(message, location).add_source_gerr(source.into())
         })
     }
 }

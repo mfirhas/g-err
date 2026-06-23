@@ -3,6 +3,7 @@ use core::fmt::Display;
 use g_err::GErr;
 use g_err::GResultExt;
 use g_err::Id;
+use g_err::NoData;
 use g_err::NoID;
 use g_err::NoPrefix;
 use g_err::Prefix;
@@ -31,7 +32,7 @@ fn get_age_usecase(req_id: u32, input: &str) -> Result<u16, UuidV4, PrefixA, (&'
             .add_source_gerr(e)
     })?;
     let ret = u16::try_from(ret)
-        .context::<NoID, PrefixB>("converting i32 to u16")
+        .context::<NoID, PrefixB, NoData>("converting i32 to u16")
         .map_err(|gerr| GErr::new("into u16").add_source_gerr(gerr))?;
     Ok(ret)
 }
