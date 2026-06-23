@@ -1,3 +1,42 @@
+/// GErr macro.
+///
+/// Creates GErr easily with formatting support and rich data.
+///
+/// Error message and its metadata are separated by `;`.
+///
+/// You can override the metadatas, and latest ones will be used.
+///
+/// # Example
+/// ```rust
+/// use g_err::gerr;
+///
+/// let inner = gerr!("parsing integer");
+/// let external_error = "anu".parse::<i32>().unwrap_err();
+/// let err = gerr!(
+///     "failed {}",
+///     500;
+///     id = 999u32,
+///     prefix = "HTTP",
+///     tag = "server",
+///     tags = ["api", "v1"],
+///     data = "payload",
+///     prefix = "[USER]",
+///     source = external_error,
+///     gerr = inner,
+///     help = "Try parsing valid signed integer 32",
+/// );
+///
+/// assert_eq!(err.message(), "failed 500");
+/// assert_eq!(*err.id(), 999);
+/// assert_eq!(err.prefix(), Some("[USER]"));
+/// assert_eq!(err.data(), Some(&"payload"));
+///
+/// let tags = err.tags().unwrap();
+/// assert_eq!(tags.len(), 3);
+///
+/// let sources = err.sources().unwrap();
+/// assert_eq!(sources.len(), 2);
+/// ```
 #[macro_export]
 macro_rules! gerr {
     // ==================================================
@@ -147,6 +186,19 @@ macro_rules! gerr {
         $(, $($rest:tt)*)?
     ) => {{
         let err = $err.add_tags($tags);
+        $crate::gerr!(@build err $(, $($rest)*)?)
+    }};
+
+    // ==================================================
+    // help = ...
+    // ==================================================
+
+    (
+        @build $err:ident,
+        help = $help:expr
+        $(, $($rest:tt)*)?
+    ) => {{
+        let err = $err.set_help($help);
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 }

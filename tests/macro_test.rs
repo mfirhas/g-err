@@ -142,6 +142,7 @@ fn gerr_builder() {
 fn multiple_builder_fields() {
     let inner = gerr!("inner");
 
+    let external_error = "anu".parse::<i32>().unwrap_err();
     let err = gerr!(
         "failed {}",
         500;
@@ -150,19 +151,22 @@ fn multiple_builder_fields() {
         tag = "server",
         tags = ["api", "v1"],
         data = "payload",
+        source = external_error,
         gerr = inner,
+        help = "Try parsing valid signed integer 32",
     );
 
     assert_eq!(err.message(), "failed 500");
     assert_eq!(*err.id(), 999);
     assert_eq!(err.prefix(), Some("HTTP"));
     assert_eq!(err.data(), Some(&"payload"));
+    assert_eq!(err.help(), Some("Try parsing valid signed integer 32"));
 
     let tags = err.tags().unwrap();
     assert_eq!(tags.len(), 3);
 
     let sources = err.sources().unwrap();
-    assert_eq!(sources.len(), 1);
+    assert_eq!(sources.len(), 2);
 }
 
 #[test]
