@@ -32,7 +32,10 @@ pub trait ResultExt<T>: sealed::Sealed {
 
     #[must_use]
     #[track_caller]
-    fn as_gerr<ID: Id, P: Prefix, D>(self) -> Result<T, ID, P, D>;
+    fn as_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
+    where
+        ID: Id,
+        P: Prefix;
 }
 
 impl<T, E> ResultExt<T> for core::result::Result<T, E>
@@ -66,7 +69,11 @@ where
     }
 
     #[track_caller]
-    fn as_gerr<ID: Id, P: Prefix, D>(self) -> Result<T, ID, P, D> {
+    fn as_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
+    where
+        ID: Id,
+        P: Prefix,
+    {
         let location = Location::caller();
         self.map_err(|source| {
             GErr::<ID, P, D>::with_id_untracked(ID::id(), source.to_string(), location)
