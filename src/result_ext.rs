@@ -30,6 +30,10 @@ pub trait ResultExt<T>: sealed::Sealed {
         P: Prefix,
         F: FnOnce() -> M,
         M: Into<Cow<'static, str>>;
+
+    #[must_use]
+    #[track_caller]
+    fn as_gerr<ID: Id, P: Prefix, D>(self) -> Result<T, ID, P, D>;
 }
 
 impl<T, E> ResultExt<T> for core::result::Result<T, E>
@@ -65,6 +69,14 @@ where
         self.map_err(|source| {
             GErr::<ID, P, NoData>::new_untracked(message, location)
                 .add_source_gerr(GErrSource::from_error(source))
+        })
+    }
+
+    #[track_caller]
+    fn as_gerr<ID: Id, P: Prefix, D>(self) -> Result<T, ID, P, D> {
+        let location = Location::caller();
+        self.map_err(|source| {
+            GErr::<ID, P, D>::with_id_untracked(ID::id(), source.to_string(), location)
         })
     }
 }
