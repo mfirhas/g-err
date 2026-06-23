@@ -42,11 +42,10 @@ pub struct GErrSource {
     #[cfg(feature = "serde")]
     pub data_json: Option<serde_json::Value>,
 
-    pub location: &'static Location<'static>,
+    pub location: Option<&'static Location<'static>>,
 }
 
 impl GErrSource {
-    #[track_caller]
     #[inline]
     pub fn from_error<E>(err: E) -> Self
     where
@@ -70,7 +69,7 @@ impl GErrSource {
                     help: owned_gerr_source.help,
                     #[cfg(feature = "serde")]
                     data_json: owned_gerr_source.data_json,
-                    location: Location::caller(),
+                    location: owned_gerr_source.location,
                 };
             }
         }
@@ -87,7 +86,7 @@ impl GErrSource {
             help: None,
             #[cfg(feature = "serde")]
             data_json: None,
-            location: Location::caller(),
+            location: None,
         }
     }
 }

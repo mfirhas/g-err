@@ -87,14 +87,15 @@ impl MarkdownReport {
 
                 let _ = writeln!(out, "- **ID:** `{}`\n", gerr.id);
 
-                let loc = &gerr.location;
-                let _ = writeln!(
-                    out,
-                    "- **Location:** `{}:{}:{}`\n",
-                    loc.file(),
-                    loc.line(),
-                    loc.column()
-                );
+                if let Some(loc) = gerr.location {
+                    let _ = writeln!(
+                        out,
+                        "- **Location:** `{}:{}:{}`\n",
+                        loc.file(),
+                        loc.line(),
+                        loc.column()
+                    );
+                }
 
                 if let Some(tags) = &gerr.tags
                     && !tags.is_empty()

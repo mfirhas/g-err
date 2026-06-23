@@ -81,13 +81,15 @@ impl PrettyReport {
 
                 let _ = writeln!(out, "     id: {}", gerr.id);
 
-                let _ = writeln!(
-                    out,
-                    "     at: {}:{}:{}",
-                    gerr.location.file(),
-                    gerr.location.line(),
-                    gerr.location.column()
-                );
+                if let Some(loc) = gerr.location {
+                    let _ = writeln!(
+                        out,
+                        "     at: {}:{}:{}",
+                        loc.file(),
+                        loc.line(),
+                        loc.column()
+                    );
+                }
 
                 if let Some(tags) = &gerr.tags
                     && !tags.is_empty()

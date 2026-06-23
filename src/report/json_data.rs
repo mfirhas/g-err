@@ -27,7 +27,7 @@ pub struct JsonData {
     pub message: String,
     pub tags: Option<Vec<String>>,
     pub data: Option<serde_json::Value>,
-    pub location: LocationJsonData,
+    pub location: Option<LocationJsonData>,
     pub sources: Option<Vec<SourceJsonData>>,
     pub help: Option<String>,
 
@@ -69,11 +69,11 @@ where
                 .data
                 .map(|d| serde_json::to_value(d).unwrap_or_default()),
             help: err.help.map(Into::into),
-            location: LocationJsonData {
+            location: Some(LocationJsonData {
                 file: err.location.file().into(),
                 line: err.location.line(),
                 column: err.location.column(),
-            },
+            }),
             sources: err.sources.map(|s| s.iter().map(|i| i.into()).collect()),
             #[cfg(not(feature = "backtrace"))]
             backtrace: None,
@@ -248,10 +248,10 @@ impl From<&GErrSource> for SourceJsonData {
                 .sources
                 .as_ref()
                 .map(|s| s.iter().map(|s| Box::new(s.into())).collect()),
-            location: Some(LocationJsonData {
-                file: gerr.location.file().into(),
-                line: gerr.location.line(),
-                column: gerr.location.column(),
+            location: gerr.location.map(|loc| LocationJsonData {
+                file: loc.file().into(),
+                line: loc.line(),
+                column: loc.column(),
             }),
         }
     }
@@ -293,7 +293,7 @@ impl SourceJsonData {
 
                 help: help.map(Cow::Owned),
 
-                location,
+                location: Some(location),
             }
         };
 

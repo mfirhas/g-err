@@ -151,10 +151,10 @@ impl<'a> From<&'a GErrSource> for SourceJson<'a> {
             message: gerr.message.to_string(),
             tags: gerr.tags.as_deref(),
             data: gerr.data_json.as_ref(),
-            location: Some(LocationJson {
-                file: gerr.location.file(),
-                line: gerr.location.line(),
-                column: gerr.location.column(),
+            location: gerr.location.map(|loc| LocationJson {
+                file: loc.file(),
+                line: loc.line(),
+                column: loc.column(),
             }),
             sources: gerr
                 .sources

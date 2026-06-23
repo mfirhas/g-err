@@ -413,7 +413,7 @@ where
             tags: gerr.tags,
             data: gerr.data.map(|d| Box::new(d) as Box<dyn DataSource>),
             help: gerr.help,
-            location: gerr.location,
+            location: Some(gerr.location),
             sources: gerr.sources,
         }
     }
@@ -451,7 +451,7 @@ where
                 .map(|d| serde_json::to_value(d).unwrap_or_default()),
             data: gerr.data.map(|d| Box::new(d) as Box<dyn DataSource>),
             help: gerr.help,
-            location: gerr.location,
+            location: Some(gerr.location),
             sources: gerr.sources,
         }
     }
