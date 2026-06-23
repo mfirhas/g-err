@@ -7,7 +7,7 @@
 extern crate alloc;
 
 mod gerr;
-pub use gerr::{GErr, Id, Prefix, Result, SetField};
+pub use gerr::{GErr, GErrDefault, Id, Prefix, Result, SetField};
 
 mod gerr_source;
 pub use gerr_source::{DataSource, GErrSource, IdSource};
@@ -19,9 +19,11 @@ mod report;
 pub use report::{MarkdownReport, PrettyReport, TraceReport};
 
 #[cfg(feature = "serde")]
-pub use report::{
-    DisplayJsonData, DisplayJsonReport, JsonData, JsonReport, LocationJsonData, SourceJsonData,
-};
+pub mod json {
+    pub use super::report::{
+        DisplayJsonData, DisplayJsonReport, JsonData, JsonReport, LocationJsonData, SourceJsonData,
+    };
+}
 
 #[cfg(feature = "serde")]
 pub mod serde;
@@ -34,8 +36,7 @@ pub use types::{NoData, NoID, NoPrefix};
 mod result_ext;
 pub use result_ext::{GResultExt, ResultExt};
 
-mod iterator;
-pub use iterator::{Iter, IterItem};
+pub mod iterator;
 mod query;
 
 mod sealed {

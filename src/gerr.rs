@@ -31,6 +31,8 @@ pub trait SetField<K, V> {
 
 pub type Result<T, ID = NoID, P = NoPrefix, D = NoData> = core::result::Result<T, GErr<ID, P, D>>;
 
+pub type GErrDefault = GErr<NoID, NoPrefix, NoData>;
+
 pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
     id: ID,
     message: Cow<'static, str>,

@@ -114,12 +114,12 @@ fn test() {
     println!("Pretty:\n{}", &ret.report());
     println!("***************************************************************************");
     #[cfg(feature = "serde")]
-    println!("JSON:\n{}", &ret.report_as::<g_err::JsonReport>());
+    println!("JSON:\n{}", &ret.report_as::<g_err::json::JsonReport>());
     println!("***************************************************************************");
     #[cfg(feature = "serde")]
     println!(
         "Display JSON:\n{}",
-        &ret.report_as::<g_err::DisplayJsonReport>()
+        &ret.report_as::<g_err::json::DisplayJsonReport>()
     );
     println!("***************************************************************************");
     println!("Markdown:\n{}", &ret.report_as::<g_err::MarkdownReport>());

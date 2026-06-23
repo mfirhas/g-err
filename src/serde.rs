@@ -23,7 +23,7 @@ where
 ///
 /// `#[serde(with = "g_err::serde::json")]`
 pub mod json {
-    use crate::JsonData;
+    use crate::json::JsonData;
 
     use super::*;
 
@@ -57,7 +57,7 @@ pub mod json {
 ///
 /// `#[serde(with = "g_err::serde::display_json")]`
 pub mod display_json {
-    use crate::DisplayJsonData;
+    use crate::json::DisplayJsonData;
 
     use super::*;
 

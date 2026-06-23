@@ -1,7 +1,7 @@
 use core::any::Any;
 use core::error::Error;
 
-use crate::{DataSource, GErr, IdSource, IterItem, Prefix};
+use crate::{DataSource, GErr, IdSource, Prefix, iterator::GErrNode};
 
 impl<ID, P, D> GErr<ID, P, D>
 where
@@ -13,11 +13,11 @@ where
     pub fn iter_by_prefix<'a>(
         &'a self,
         prefix: &'a str,
-    ) -> impl Iterator<Item = IterItem<'a, ID, P, D>> + 'a {
+    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>> + 'a {
         self.iter().filter(move |item| match item {
-            IterItem::Root(gerr) => gerr.prefix().is_some_and(|p| p == prefix),
+            GErrNode::Root(gerr) => gerr.prefix().is_some_and(|p| p == prefix),
 
-            IterItem::GErr(gerr) => gerr.prefix.as_ref().is_some_and(|p| p == prefix),
+            GErrNode::GErr(gerr) => gerr.prefix.as_ref().is_some_and(|p| p == prefix),
         })
     }
 
@@ -25,13 +25,13 @@ where
     pub fn iter_by_tag<'a>(
         &'a self,
         tag: &'a str,
-    ) -> impl Iterator<Item = IterItem<'a, ID, P, D>> + 'a {
+    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>> + 'a {
         self.iter().filter(move |item| match item {
-            IterItem::Root(gerr) => gerr
+            GErrNode::Root(gerr) => gerr
                 .tags()
                 .is_some_and(|tags| tags.iter().any(|t| t == tag)),
 
-            IterItem::GErr(gerr) => gerr
+            GErrNode::GErr(gerr) => gerr
                 .tags
                 .as_ref()
                 .is_some_and(|tags| tags.iter().any(|t| t == tag)),
@@ -39,42 +39,42 @@ where
     }
 
     #[inline]
-    pub fn iter_id<T>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    pub fn iter_id<T>(&self) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
         T: Any,
     {
         self.iter().filter(|item| match item {
-            IterItem::Root(gerr) => (gerr.id() as &dyn Any).is::<T>(),
+            GErrNode::Root(gerr) => (gerr.id() as &dyn Any).is::<T>(),
 
-            IterItem::GErr(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
+            GErrNode::GErr(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
         })
     }
 
     #[inline]
-    pub fn iter_by_id<T>(&self, value: &T) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    pub fn iter_by_id<T>(&self, value: &T) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
         T: Any + PartialEq,
     {
         self.iter().filter(move |item| match item {
-            IterItem::Root(gerr) => (gerr.id() as &dyn Any)
+            GErrNode::Root(gerr) => (gerr.id() as &dyn Any)
                 .downcast_ref::<T>()
                 .is_some_and(|id| id == value),
 
-            IterItem::GErr(gerr) => (&*gerr.id as &dyn Any)
+            GErrNode::GErr(gerr) => (&*gerr.id as &dyn Any)
                 .downcast_ref::<T>()
                 .is_some_and(|id| id == value),
         })
     }
 
     #[inline]
-    pub fn iter_data<T>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    pub fn iter_data<T>(&self) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
         T: Any,
     {
         self.iter().filter(|item| match item {
-            IterItem::Root(gerr) => gerr.data().is_some_and(|data| (data as &dyn Any).is::<T>()),
+            GErrNode::Root(gerr) => gerr.data().is_some_and(|data| (data as &dyn Any).is::<T>()),
 
-            IterItem::GErr(gerr) => gerr
+            GErrNode::GErr(gerr) => gerr
                 .data
                 .as_ref()
                 .is_some_and(|data| (&**data as &dyn Any).is::<T>()),
@@ -82,17 +82,17 @@ where
     }
 
     #[inline]
-    pub fn iter_by_data<T>(&self, value: &T) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    pub fn iter_by_data<T>(&self, value: &T) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
         T: Any + PartialEq,
     {
         self.iter().filter(move |item| match item {
-            IterItem::Root(gerr) => gerr
+            GErrNode::Root(gerr) => gerr
                 .data()
                 .and_then(|data| (data as &dyn Any).downcast_ref::<T>())
                 .is_some_and(|data| data == value),
 
-            IterItem::GErr(gerr) => gerr
+            GErrNode::GErr(gerr) => gerr
                 .data
                 .as_ref()
                 .and_then(|data| (&**data as &dyn Any).downcast_ref::<T>())
@@ -101,19 +101,19 @@ where
     }
 
     #[inline]
-    pub fn iter_source<E>(&self) -> impl Iterator<Item = IterItem<'_, ID, P, D>>
+    pub fn iter_source<E>(&self) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
         E: Error + 'static,
     {
         self.iter().filter_map(|item| match item {
-            IterItem::GErr(gerr) if (gerr as &dyn Error).is::<E>() => Some(item),
+            GErrNode::GErr(gerr) if (gerr as &dyn Error).is::<E>() => Some(item),
 
             _ => None,
         })
     }
 
     #[inline]
-    pub fn find_id<T>(&self) -> Option<IterItem<'_, ID, P, D>>
+    pub fn find_id<T>(&self) -> Option<GErrNode<'_, ID, P, D>>
     where
         T: Any,
     {
@@ -121,7 +121,7 @@ where
     }
 
     #[inline]
-    pub fn find_by_id<T>(&self, value: &T) -> Option<IterItem<'_, ID, P, D>>
+    pub fn find_by_id<T>(&self, value: &T) -> Option<GErrNode<'_, ID, P, D>>
     where
         T: Any + PartialEq,
     {
@@ -129,12 +129,12 @@ where
     }
 
     #[inline]
-    pub fn find_by_prefix<'a>(&'a self, value: &'a str) -> Option<IterItem<'a, ID, P, D>> {
+    pub fn find_by_prefix<'a>(&'a self, value: &'a str) -> Option<GErrNode<'a, ID, P, D>> {
         self.iter_by_prefix(value).next()
     }
 
     #[inline]
-    pub fn find_data<T>(&self) -> Option<IterItem<'_, ID, P, D>>
+    pub fn find_data<T>(&self) -> Option<GErrNode<'_, ID, P, D>>
     where
         T: Any,
     {
@@ -142,7 +142,7 @@ where
     }
 
     #[inline]
-    pub fn find_by_data<T>(&self, value: &T) -> Option<IterItem<'_, ID, P, D>>
+    pub fn find_by_data<T>(&self, value: &T) -> Option<GErrNode<'_, ID, P, D>>
     where
         T: Any + PartialEq,
     {
@@ -150,12 +150,12 @@ where
     }
 
     #[inline]
-    pub fn find_by_tag<'a>(&'a self, value: &'a str) -> Option<IterItem<'a, ID, P, D>> {
+    pub fn find_by_tag<'a>(&'a self, value: &'a str) -> Option<GErrNode<'a, ID, P, D>> {
         self.iter_by_tag(value).next()
     }
 
     #[inline]
-    pub fn find_source<E>(&self) -> Option<IterItem<'_, ID, P, D>>
+    pub fn find_source<E>(&self) -> Option<GErrNode<'_, ID, P, D>>
     where
         E: Error + 'static,
     {

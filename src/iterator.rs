@@ -10,19 +10,19 @@ where
     D: DataSource + 'static,
 {
     #[must_use]
-    pub fn iter(&self) -> Iter<'_, ID, P, D> {
-        Iter {
-            stack: vec![IterItem::Root(self)],
+    pub fn iter(&self) -> GErrTree<'_, ID, P, D> {
+        GErrTree {
+            nodes: vec![GErrNode::Root(self)],
         }
     }
 }
 
-pub enum IterItem<'a, ID, P, D> {
+pub enum GErrNode<'a, ID, P, D> {
     Root(&'a GErr<ID, P, D>),
     GErr(&'a GErrSource),
 }
 
-impl<'a, ID, P, D> Display for IterItem<'a, ID, P, D>
+impl<'a, ID, P, D> Display for GErrNode<'a, ID, P, D>
 where
     ID: IdSource + 'static,
     P: Prefix,
@@ -36,7 +36,7 @@ where
     }
 }
 
-impl<'a, ID, P, D> Debug for IterItem<'a, ID, P, D>
+impl<'a, ID, P, D> Debug for GErrNode<'a, ID, P, D>
 where
     ID: IdSource + 'static,
     P: Prefix,
@@ -50,34 +50,34 @@ where
     }
 }
 
-pub struct Iter<'a, ID, P, D> {
-    stack: Vec<IterItem<'a, ID, P, D>>,
+pub struct GErrTree<'a, ID, P, D> {
+    nodes: Vec<GErrNode<'a, ID, P, D>>,
 }
 
-impl<'a, ID, P, D> Iterator for Iter<'a, ID, P, D>
+impl<'a, ID, P, D> Iterator for GErrTree<'a, ID, P, D>
 where
     ID: IdSource + 'static,
     P: Prefix,
     D: DataSource + 'static,
 {
-    type Item = IterItem<'a, ID, P, D>;
+    type Item = GErrNode<'a, ID, P, D>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let current = self.stack.pop()?;
+        let current = self.nodes.pop()?;
 
         match &current {
-            IterItem::Root(gerr) => {
+            GErrNode::Root(gerr) => {
                 if let Some(sources) = gerr.sources() {
                     for source in sources.iter().rev() {
-                        self.stack.push(IterItem::GErr(source));
+                        self.nodes.push(GErrNode::GErr(source));
                     }
                 }
             }
 
-            IterItem::GErr(gerr) => {
+            GErrNode::GErr(gerr) => {
                 if let Some(sources) = gerr.sources.as_deref() {
                     for source in sources.iter().rev() {
-                        self.stack.push(IterItem::GErr(source));
+                        self.nodes.push(GErrNode::GErr(source));
                     }
                 }
             }
