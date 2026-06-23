@@ -15,7 +15,7 @@ use uuid::Uuid;
 mod macro_test;
 
 fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
-    str_age.parse().context("parsing string age into i32")
+    str_age.parse().as_gerr()
 }
 
 fn get_age(str_age: &str) -> Result<i32, UuidV4, NoPrefix> {
