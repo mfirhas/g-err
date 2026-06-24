@@ -5,9 +5,11 @@ use crate::{gerr_view::GErrView, report::Report};
 use alloc::borrow::Cow;
 use core::fmt::{Debug, Display};
 
+/// GErr's reporting as JSON for internal reports.
 pub struct JsonReport;
 
 impl JsonReport {
+    /// Internal JSON report data.
     pub fn data<E, ID, D>(err: &E) -> JsonData
     where
         for<'a> &'a E: Into<GErrView<'a, ID, D>>,
@@ -32,9 +34,11 @@ impl Report for JsonReport {
     }
 }
 
+/// GErr's reporting as JSON for public reports.
 pub struct DisplayJsonReport;
 
 impl DisplayJsonReport {
+    /// Public JSON report data.
     pub fn data<E, ID, D>(err: &E) -> DisplayJsonData
     where
         for<'a> &'a E: Into<GErrView<'a, ID, D>>,

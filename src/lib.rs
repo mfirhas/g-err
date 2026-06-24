@@ -20,6 +20,7 @@ pub use report::{MarkdownReport, PrettyReport, TraceReport};
 
 #[cfg(feature = "serde")]
 pub mod json {
+    //! Contains JSON reporting and data for [`GErr`](super::GErr).
     pub use super::report::{
         DisplayJsonData, DisplayJsonReport, JsonData, JsonReport, LocationJsonData, SourceJsonData,
     };

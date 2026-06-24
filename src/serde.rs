@@ -1,3 +1,11 @@
+//! Contains serde implementations for [`GErr`].
+//!
+//! For default serialization, goes into string.
+//! No default deserialization.
+//!
+//! For JSON serde use `g_err::serde::json` for internal,
+//! and `g_err::serde::display_json` for public.
+//!
 use crate::gerr::{GErr, Prefix};
 use core::error::Error;
 use serde::Serialize;
@@ -27,6 +35,7 @@ pub mod json {
 
     use super::*;
 
+    /// Serialize GErr into JSON through [`JsonData`]
     pub fn serialize<S, ID, P, D>(err: &GErr<ID, P, D>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -38,6 +47,7 @@ pub mod json {
         err.json_data().serialize(serializer)
     }
 
+    /// deserialize GErr from JSON through [`JsonData`]
     pub fn deserialize<'de, De, ID, P, D>(deserializer: De) -> Result<GErr<ID, P, D>, De::Error>
     where
         De: serde::Deserializer<'de>,
@@ -61,6 +71,7 @@ pub mod display_json {
 
     use super::*;
 
+    /// Serialize GErr into JSON through [`DisplayJsonData`]
     pub fn serialize<S, ID, P, D>(err: &GErr<ID, P, D>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -72,6 +83,7 @@ pub mod display_json {
         err.display_json_data().serialize(serializer)
     }
 
+    /// deserialize GErr from JSON through [`DisplayJsonData`]
     pub fn deserialize<'de, De, ID, P, D>(deserializer: De) -> Result<GErr<ID, P, D>, De::Error>
     where
         De: serde::Deserializer<'de>,

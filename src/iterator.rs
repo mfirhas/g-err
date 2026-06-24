@@ -1,3 +1,10 @@
+//! Iterator for [`GErr`].
+//!
+//! Iterate over GErr's tree of root and leaf nodes.
+//!
+//! Produce iterator using [`GErr::iter`] method producing [`GErrTree`].
+//!
+//! [`GErrTree`] is traversed by DFS method.
 use alloc::vec::Vec;
 use core::fmt::{Debug, Display};
 
@@ -9,7 +16,8 @@ where
     P: Prefix,
     D: DataSource + 'static,
 {
-    #[must_use]
+    /// Produces iterator of GErr's nodes(including self).
+    #[inline]
     pub fn iter(&self) -> GErrTree<'_, ID, P, D> {
         GErrTree {
             nodes: vec![GErrNode::Root(self)],
@@ -17,6 +25,9 @@ where
     }
 }
 
+/// A node in GErrTree.
+///
+/// Contained by [`GErrTree`].
 pub enum GErrNode<'a, ID, P, D> {
     Root(&'a GErr<ID, P, D>),
     Leaf(&'a GErrSource),
@@ -50,6 +61,9 @@ where
     }
 }
 
+/// Iterator of GErr error nodes.
+///
+/// Produced by [`GErr::iter`].
 pub struct GErrTree<'a, ID, P, D> {
     nodes: Vec<GErrNode<'a, ID, P, D>>,
 }

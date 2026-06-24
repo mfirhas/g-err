@@ -10,46 +10,76 @@ use crate::{
     types::{NoData, NoID, NoPrefix},
 };
 
+/// JSON data for public display.
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
 pub struct DisplayJsonData {
+    /// Error ID: can be in form of Number or String.
     pub id: serde_json::Value,
+    /// Error prefix.
     pub prefix: Option<String>,
+    /// Error message.
     pub message: String,
+    /// Error tags.
     pub tags: Option<Vec<String>>,
+    /// Error data: can be in any JSON values.
     pub data: Option<serde_json::Value>,
+    /// Error help hint.
     pub help: Option<String>,
 }
 
+/// JSON data for internal display.
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
 pub struct JsonData {
+    /// Error ID: can be in form of Number or String
     pub id: serde_json::Value,
+    /// Error prefix
     pub prefix: Option<String>,
+    /// Error message
     pub message: String,
+    /// Error tags
     pub tags: Option<Vec<String>>,
+    /// Error data: can be in any JSON values.
     pub data: Option<serde_json::Value>,
+    /// Error location
     pub location: Option<LocationJsonData>,
+    /// Error sources
     pub sources: Option<Vec<SourceJsonData>>,
+    /// Error help hint
     pub help: Option<String>,
 
+    /// Error stack trace
     pub backtrace: Option<String>,
 }
 
+/// JSON data for error location.
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
 pub struct LocationJsonData {
+    /// File where error happen
     pub file: String,
+    /// Line where error happen
     pub line: u32,
+    /// Column where error happen
     pub column: u32,
 }
 
+/// JSON data for error sources
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize, Default)]
 pub struct SourceJsonData {
+    /// Error ID: can be in form of Number or String
     pub id: serde_json::Value,
+    /// Error prefix
     pub prefix: Option<String>,
+    /// Error message
     pub message: String,
+    /// Error tags
     pub tags: Option<Vec<String>>,
+    /// Error data: can be in any JSON values.
     pub data: Option<serde_json::Value>,
+    /// Error location
     pub location: Option<LocationJsonData>,
+    /// Error sources
     pub sources: Option<Vec<Box<SourceJsonData>>>,
+    /// Error help hint
     pub help: Option<String>,
 }
 
