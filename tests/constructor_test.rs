@@ -36,7 +36,7 @@ impl Prefix for TestPrefix {
 }
 
 /// Data type for testing
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 struct TestData {
     code: u32,
 }
@@ -327,7 +327,7 @@ fn test_constructor_with_id_prefix_and_data() {
     assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error with id, prefix, and data");
     assert_eq!(err.prefix(), Some("[TEST]"));
-    assert_eq!(err.data(), None); // Not set during construction
+    assert_eq!(err.data(), None);
 }
 
 #[test]
@@ -486,4 +486,697 @@ fn test_debug_with_all_generics() {
     assert!(debug_str.contains("Err"));
     assert!(debug_str.contains("42"));
     assert!(debug_str.contains("error"));
+}
+
+// ============================================================================
+// Tests for builder method: set_id()
+// ============================================================================
+
+#[test]
+fn test_set_id_basic() {
+    let err: GErr<u32> = GErr::new_with_id(1, "error").set_id(99);
+
+    assert_eq!(err.id(), &99);
+    assert_eq!(err.message(), "error");
+}
+
+#[test]
+fn test_set_id_multiple_times() {
+    let err: GErr<u32> = GErr::new_with_id(1, "error").set_id(2).set_id(3).set_id(4);
+
+    assert_eq!(err.id(), &4);
+}
+
+#[test]
+fn test_set_id_preserves_other_fields() {
+    let err: GErr<u32> = GErr::new_with_id(1, "error")
+        .set_prefix("[PREFIX]")
+        .set_help("help text")
+        .set_id(99);
+
+    assert_eq!(err.id(), &99);
+    assert_eq!(err.message(), "error");
+    assert_eq!(err.prefix(), Some("[PREFIX]"));
+    assert_eq!(err.help(), Some("help text"));
+}
+
+// ============================================================================
+// Tests for builder method: set_prefix()
+// ============================================================================
+
+#[test]
+fn test_set_prefix_basic() {
+    let err: GErr<NoID> = GErr::new("error").set_prefix("[ERROR]");
+
+    assert_eq!(err.prefix(), Some("[ERROR]"));
+}
+
+#[test]
+fn test_set_prefix_override() {
+    let err: GErr<NoID> = GErr::new("error")
+        .set_prefix("[FIRST]")
+        .set_prefix("[SECOND]");
+
+    assert_eq!(err.prefix(), Some("[SECOND]"));
+}
+
+#[test]
+fn test_set_prefix_with_string() {
+    let err: GErr<NoID> = GErr::new("error").set_prefix(String::from("[DYNAMIC]"));
+
+    assert_eq!(err.prefix(), Some("[DYNAMIC]"));
+}
+
+#[test]
+fn test_set_prefix_empty_string() {
+    let err: GErr<NoID> = GErr::new("error").set_prefix("");
+
+    assert_eq!(err.prefix(), Some(""));
+}
+
+#[test]
+fn test_set_prefix_preserves_other_fields() {
+    let err: GErr<u32> = GErr::new_with_id(42, "error")
+        .set_help("help")
+        .set_prefix("[PREFIX]");
+
+    assert_eq!(err.id(), &42);
+    assert_eq!(err.message(), "error");
+    assert_eq!(err.prefix(), Some("[PREFIX]"));
+    assert_eq!(err.help(), Some("help"));
+}
+
+// ============================================================================
+// Tests for builder method: prepend_prefix()
+// ============================================================================
+
+#[test]
+fn test_prepend_prefix_to_empty() {
+    let err: GErr<NoID> = GErr::new("error").prepend_prefix("[BEFORE]");
+
+    assert_eq!(err.prefix(), Some("[BEFORE]"));
+}
+
+#[test]
+fn test_prepend_prefix_to_existing() {
+    let err: GErr<NoID> = GErr::new("error")
+        .set_prefix("[MIDDLE]")
+        .prepend_prefix("[BEFORE]");
+
+    assert_eq!(err.prefix(), Some("[BEFORE][MIDDLE]"));
+}
+
+#[test]
+fn test_prepend_prefix_multiple_times() {
+    let err: GErr<NoID> = GErr::new("error")
+        .set_prefix("[C]")
+        .prepend_prefix("[B]")
+        .prepend_prefix("[A]");
+
+    assert_eq!(err.prefix(), Some("[A][B][C]"));
+}
+
+#[test]
+fn test_prepend_prefix_with_owned_string() {
+    let err: GErr<NoID> = GErr::new("error")
+        .set_prefix("MIDDLE")
+        .prepend_prefix(String::from("BEFORE_"));
+
+    assert_eq!(err.prefix(), Some("BEFORE_MIDDLE"));
+}
+
+#[test]
+fn test_prepend_prefix_preserves_other_fields() {
+    let err: GErr<u32> = GErr::new_with_id(42, "error")
+        .set_prefix("[MIDDLE]")
+        .add_tag("tag1")
+        .prepend_prefix("[BEFORE]");
+
+    assert_eq!(err.id(), &42);
+    assert_eq!(err.message(), "error");
+    assert_eq!(err.prefix(), Some("[BEFORE][MIDDLE]"));
+    assert_eq!(err.tags().unwrap().len(), 1);
+}
+
+// ============================================================================
+// Tests for builder method: append_prefix()
+// ============================================================================
+
+#[test]
+fn test_append_prefix_to_empty() {
+    let err: GErr<NoID> = GErr::new("error").append_prefix("[AFTER]");
+
+    assert_eq!(err.prefix(), Some("[AFTER]"));
+}
+
+#[test]
+fn test_append_prefix_to_existing() {
+    let err: GErr<NoID> = GErr::new("error")
+        .set_prefix("[MIDDLE]")
+        .append_prefix("[AFTER]");
+
+    assert_eq!(err.prefix(), Some("[MIDDLE][AFTER]"));
+}
+
+#[test]
+fn test_append_prefix_multiple_times() {
+    let err: GErr<NoID> = GErr::new("error")
+        .set_prefix("[A]")
+        .append_prefix("[B]")
+        .append_prefix("[C]");
+
+    assert_eq!(err.prefix(), Some("[A][B][C]"));
+}
+
+#[test]
+fn test_append_prefix_with_owned_string() {
+    let err: GErr<NoID> = GErr::new("error")
+        .set_prefix("FIRST_")
+        .append_prefix(String::from("SECOND"));
+
+    assert_eq!(err.prefix(), Some("FIRST_SECOND"));
+}
+
+#[test]
+fn test_prepend_and_append_prefix_combined() {
+    let err: GErr<NoID> = GErr::new("error")
+        .set_prefix("[MIDDLE]")
+        .prepend_prefix("[BEFORE]")
+        .append_prefix("[AFTER]");
+
+    assert_eq!(err.prefix(), Some("[BEFORE][MIDDLE][AFTER]"));
+}
+
+#[test]
+fn test_append_prefix_preserves_other_fields() {
+    let err: GErr<u32> = GErr::new_with_id(42, "error")
+        .set_prefix("[MIDDLE]")
+        .set_help("help")
+        .append_prefix("[AFTER]");
+
+    assert_eq!(err.id(), &42);
+    assert_eq!(err.message(), "error");
+    assert_eq!(err.prefix(), Some("[MIDDLE][AFTER]"));
+    assert_eq!(err.help(), Some("help"));
+}
+
+// ============================================================================
+// Tests for builder method: set_data()
+// ============================================================================
+
+#[test]
+fn test_set_data_basic() {
+    let err: GErr<NoID, NoPrefix, TestData> = GErr::new("error").set_data(TestData { code: 500 });
+
+    assert_eq!(err.data(), Some(&TestData { code: 500 }));
+}
+
+#[test]
+fn test_set_data_override() {
+    let err: GErr<NoID, NoPrefix, TestData> = GErr::new("error")
+        .set_data(TestData { code: 400 })
+        .set_data(TestData { code: 500 });
+
+    assert_eq!(err.data(), Some(&TestData { code: 500 }));
+}
+
+#[test]
+fn test_set_data_preserves_other_fields() {
+    let err: GErr<u32, NoPrefix, TestData> = GErr::new_with_id(42, "error")
+        .set_prefix("[PREFIX]")
+        .set_help("help")
+        .add_tag("tag")
+        .set_data(TestData { code: 404 });
+
+    assert_eq!(err.id(), &42);
+    assert_eq!(err.message(), "error");
+    assert_eq!(err.prefix(), Some("[PREFIX]"));
+    assert_eq!(err.help(), Some("help"));
+    assert_eq!(err.data(), Some(&TestData { code: 404 }));
+    assert_eq!(err.tags().unwrap().len(), 1);
+}
+
+// ============================================================================
+// Tests for builder method: set_help()
+// ============================================================================
+
+#[test]
+fn test_set_help_basic() {
+    let err: GErr<NoID> = GErr::new("error").set_help("Try restarting");
+
+    assert_eq!(err.help(), Some("Try restarting"));
+}
+
+#[test]
+fn test_set_help_override() {
+    let err: GErr<NoID> = GErr::new("error")
+        .set_help("First help")
+        .set_help("Second help");
+
+    assert_eq!(err.help(), Some("Second help"));
+}
+
+#[test]
+fn test_set_help_with_owned_string() {
+    let err: GErr<NoID> = GErr::new("error").set_help(String::from("Dynamic help text"));
+
+    assert_eq!(err.help(), Some("Dynamic help text"));
+}
+
+#[test]
+fn test_set_help_empty_string() {
+    let err: GErr<NoID> = GErr::new("error").set_help("");
+
+    assert_eq!(err.help(), Some(""));
+}
+
+#[test]
+fn test_set_help_preserves_other_fields() {
+    let err: GErr<u32> = GErr::new_with_id(42, "error")
+        .set_prefix("[PREFIX]")
+        .add_tag("tag")
+        .set_help("helpful text");
+
+    assert_eq!(err.id(), &42);
+    assert_eq!(err.message(), "error");
+    assert_eq!(err.prefix(), Some("[PREFIX]"));
+    assert_eq!(err.help(), Some("helpful text"));
+    assert_eq!(err.tags().unwrap().len(), 1);
+}
+
+// ============================================================================
+// Tests for builder method: add_tag()
+// ============================================================================
+
+#[test]
+fn test_add_tag_single() {
+    let err: GErr<NoID> = GErr::new("error").add_tag("important");
+
+    assert_eq!(err.tags().unwrap().len(), 1);
+    assert_eq!(err.tags().unwrap()[0].as_ref(), "important");
+}
+
+#[test]
+fn test_add_tag_multiple() {
+    let err: GErr<NoID> = GErr::new("error")
+        .add_tag("tag1")
+        .add_tag("tag2")
+        .add_tag("tag3");
+
+    assert_eq!(err.tags().unwrap().len(), 3);
+    assert_eq!(err.tags().unwrap()[0].as_ref(), "tag1");
+    assert_eq!(err.tags().unwrap()[1].as_ref(), "tag2");
+    assert_eq!(err.tags().unwrap()[2].as_ref(), "tag3");
+}
+
+#[test]
+fn test_add_tag_with_owned_string() {
+    let err: GErr<NoID> = GErr::new("error")
+        .add_tag("static")
+        .add_tag(String::from("dynamic"));
+
+    assert_eq!(err.tags().unwrap().len(), 2);
+}
+
+#[test]
+fn test_add_tag_duplicate_tags() {
+    let err: GErr<NoID> = GErr::new("error")
+        .add_tag("tag")
+        .add_tag("tag")
+        .add_tag("tag");
+
+    assert_eq!(err.tags().unwrap().len(), 3);
+}
+
+#[test]
+fn test_add_tag_preserves_other_fields() {
+    let err: GErr<u32> = GErr::new_with_id(42, "error")
+        .set_prefix("[PREFIX]")
+        .set_help("help")
+        .add_tag("tag1")
+        .add_tag("tag2");
+
+    assert_eq!(err.id(), &42);
+    assert_eq!(err.message(), "error");
+    assert_eq!(err.prefix(), Some("[PREFIX]"));
+    assert_eq!(err.help(), Some("help"));
+    assert_eq!(err.tags().unwrap().len(), 2);
+}
+
+// ============================================================================
+// Tests for builder method: add_tags()
+// ============================================================================
+
+#[test]
+fn test_add_tags_vector() {
+    let tags = vec!["tag1", "tag2", "tag3"];
+    let err: GErr<NoID> = GErr::new("error").add_tags(tags);
+
+    assert_eq!(err.tags().unwrap().len(), 3);
+    assert_eq!(err.tags().unwrap()[0].as_ref(), "tag1");
+    assert_eq!(err.tags().unwrap()[1].as_ref(), "tag2");
+    assert_eq!(err.tags().unwrap()[2].as_ref(), "tag3");
+}
+
+#[test]
+fn test_add_tags_array() {
+    let err: GErr<NoID> = GErr::new("error").add_tags(["tag1", "tag2"]);
+
+    assert_eq!(err.tags().unwrap().len(), 2);
+}
+
+#[test]
+fn test_add_tags_iterator() {
+    let tags = vec!["a", "b", "c"];
+    let err: GErr<NoID> = GErr::new("error").add_tags(tags.into_iter());
+
+    assert_eq!(err.tags().unwrap().len(), 3);
+}
+
+#[test]
+fn test_add_tags_combined_with_add_tag() {
+    let err: GErr<NoID> = GErr::new("error")
+        .add_tag("single")
+        .add_tags(vec!["bulk1", "bulk2"])
+        .add_tag("another");
+
+    assert_eq!(err.tags().unwrap().len(), 4);
+    assert_eq!(err.tags().unwrap()[0].as_ref(), "single");
+    assert_eq!(err.tags().unwrap()[3].as_ref(), "another");
+}
+
+#[test]
+fn test_add_tags_empty() {
+    let err: GErr<NoID> = GErr::new("error").add_tags::<Vec<&str>, &str>(vec![]);
+    assert!(err.tags().is_none());
+}
+
+#[test]
+fn test_add_tags_preserves_other_fields() {
+    let err: GErr<u32> = GErr::new_with_id(42, "error")
+        .set_help("help")
+        .add_tags(vec!["tag1", "tag2"]);
+
+    assert_eq!(err.id(), &42);
+    assert_eq!(err.message(), "error");
+    assert_eq!(err.help(), Some("help"));
+    assert_eq!(err.tags().unwrap().len(), 2);
+}
+
+// ============================================================================
+// Tests for builder method: add_source()
+// ============================================================================
+
+#[test]
+fn test_add_source_single() {
+    let source = std::io::Error::new(std::io::ErrorKind::NotFound, "not found");
+    let err: GErr<NoID> = GErr::new("error").add_source(source);
+
+    assert_eq!(err.sources().unwrap().len(), 1);
+}
+
+#[test]
+fn test_add_source_multiple() {
+    let err: GErr<NoID> = GErr::new("error")
+        .add_source(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "not found",
+        ))
+        .add_source(std::io::Error::new(
+            std::io::ErrorKind::PermissionDenied,
+            "denied",
+        ))
+        .add_source(std::io::Error::new(std::io::ErrorKind::Other, "other"));
+
+    assert_eq!(err.sources().unwrap().len(), 3);
+}
+
+#[test]
+fn test_add_source_chain() {
+    let err: GErr<NoID> = GErr::new("main error").add_source(std::io::Error::new(
+        std::io::ErrorKind::NotFound,
+        "root cause",
+    ));
+
+    assert!(err.sources().is_some());
+    assert_eq!(err.sources().unwrap().len(), 1);
+}
+
+#[test]
+fn test_add_source_preserves_other_fields() {
+    let err: GErr<u32> = GErr::new_with_id(42, "error")
+        .set_prefix("[PREFIX]")
+        .set_help("help")
+        .add_tag("tag")
+        .add_source(std::io::Error::new(std::io::ErrorKind::Other, "source"));
+
+    assert_eq!(err.id(), &42);
+    assert_eq!(err.prefix(), Some("[PREFIX]"));
+    assert_eq!(err.help(), Some("help"));
+    assert_eq!(err.tags().unwrap().len(), 1);
+    assert_eq!(err.sources().unwrap().len(), 1);
+}
+
+// ============================================================================
+// Tests for builder method: with_id()
+// ============================================================================
+
+#[test]
+fn test_with_id_changes_id_type() {
+    let err1: GErr<u32> = GErr::new_with_id(42, "error");
+    let err2: GErr<&'static str> = err1.with_id("NEW_ID");
+
+    assert_eq!(err2.id(), &"NEW_ID");
+    assert_eq!(err2.message(), "error");
+}
+
+#[test]
+fn test_with_id_preserves_other_fields() {
+    let err1: GErr<u32> = GErr::new_with_id(42, "error")
+        .set_prefix("[PREFIX]")
+        .set_help("help")
+        .add_tag("tag");
+
+    let err2: GErr<&'static str> = err1.with_id("NEW_ID");
+
+    assert_eq!(err2.id(), &"NEW_ID");
+    assert_eq!(err2.message(), "error");
+    assert_eq!(err2.prefix(), Some("[PREFIX]"));
+    assert_eq!(err2.help(), Some("help"));
+    assert_eq!(err2.tags().unwrap().len(), 1);
+}
+
+#[test]
+fn test_with_id_chain() {
+    let err1: GErr<u32> = GErr::new_with_id(1, "error");
+    let err2: GErr<&'static str> = err1.with_id("STR_ID");
+    let err3: GErr<MockId> = err2.with_id(MockId(999));
+
+    assert_eq!(err3.id(), &MockId(999));
+    assert_eq!(err3.message(), "error");
+}
+
+// ============================================================================
+// Tests for builder method: with_prefix()
+// ============================================================================
+
+#[test]
+fn test_with_prefix_changes_prefix_type() {
+    struct NewPrefix;
+    impl Prefix for NewPrefix {
+        const PREFIX: Option<&'static str> = Some("[NEW]");
+    }
+
+    let err1: GErr<NoID, NoPrefix> = GErr::new("error");
+    let err2: GErr<NoID, NewPrefix> = err1.with_prefix();
+
+    assert_eq!(err2.prefix(), Some("[NEW]"));
+    assert_eq!(err2.message(), "error");
+}
+
+#[test]
+fn test_with_prefix_preserves_other_fields() {
+    struct NewPrefix;
+    impl Prefix for NewPrefix {
+        const PREFIX: Option<&'static str> = Some("[NEW]");
+    }
+
+    let err1: GErr<u32, NoPrefix> = GErr::new_with_id(42, "error")
+        .set_help("help")
+        .add_tag("tag");
+
+    let err2: GErr<u32, NewPrefix> = err1.with_prefix();
+
+    assert_eq!(err2.id(), &42);
+    assert_eq!(err2.message(), "error");
+    assert_eq!(err2.prefix(), Some("[NEW]"));
+    assert_eq!(err2.help(), Some("help"));
+    assert_eq!(err2.tags().unwrap().len(), 1);
+}
+
+#[test]
+fn test_with_prefix_overrides_manual_prefix() {
+    struct NewPrefix;
+    impl Prefix for NewPrefix {
+        const PREFIX: Option<&'static str> = Some("[NEW]");
+    }
+
+    let err1: GErr<NoID, NoPrefix> = GErr::new("error").set_prefix("[MANUAL]");
+    let err2: GErr<NoID, NewPrefix> = err1.with_prefix();
+
+    // Manual prefix should be replaced with static prefix
+    assert_eq!(err2.prefix(), Some("[NEW]"));
+}
+
+// ============================================================================
+// Tests for builder method: with_data()
+// ============================================================================
+
+#[test]
+fn test_with_data_changes_data_type() {
+    let err1: GErr<NoID, NoPrefix, NoData> = GErr::new("error");
+    let err2: GErr<NoID, NoPrefix, TestData> = err1.with_data(TestData { code: 404 });
+
+    assert_eq!(err2.data(), Some(&TestData { code: 404 }));
+    assert_eq!(err2.message(), "error");
+}
+
+#[test]
+fn test_with_data_preserves_other_fields() {
+    let err1: GErr<u32, TestPrefix, NoData> = GErr::new_with_id(42, "error")
+        .set_help("help")
+        .add_tag("tag");
+
+    let err2: GErr<u32, TestPrefix, TestData> = err1.with_data(TestData { code: 500 });
+
+    assert_eq!(err2.id(), &42);
+    assert_eq!(err2.message(), "error");
+    assert_eq!(err2.prefix(), Some("[TEST]"));
+    assert_eq!(err2.help(), Some("help"));
+    assert_eq!(err2.data(), Some(&TestData { code: 500 }));
+    assert_eq!(err2.tags().unwrap().len(), 1);
+}
+
+#[test]
+fn test_with_data_chain() {
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    struct DataType1 {
+        val: u32,
+    }
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    struct DataType2 {
+        msg: &'static str,
+    }
+
+    let err1: GErr<NoID, NoPrefix, NoData> = GErr::new("error");
+    let err2: GErr<NoID, NoPrefix, DataType1> = err1.with_data(DataType1 { val: 42 });
+    let err3: GErr<NoID, NoPrefix, DataType2> = err2.with_data(DataType2 { msg: "new data" });
+
+    assert_eq!(err3.data(), Some(&DataType2 { msg: "new data" }));
+    assert_eq!(err3.message(), "error");
+}
+
+// ============================================================================
+// Tests for complex builder chains
+// ============================================================================
+
+#[test]
+fn test_complex_builder_chain_with_all_methods() {
+    let err: GErr<u32, TestPrefix, TestData> = GErr::new_with_id(1, "base error")
+        .set_prefix("[HTTP]")
+        .prepend_prefix("[API]")
+        .append_prefix("[FAILED]")
+        .set_help("Contact support immediately")
+        .add_tag("critical")
+        .add_tags(vec!["production", "urgent"])
+        .set_data(TestData { code: 500 })
+        .set_id(500);
+
+    assert_eq!(err.id(), &500);
+    assert_eq!(err.message(), "base error");
+    assert_eq!(err.prefix(), Some("[API][HTTP][FAILED]"));
+    assert_eq!(err.help(), Some("Contact support immediately"));
+    assert_eq!(err.data(), Some(&TestData { code: 500 }));
+    assert_eq!(err.tags().unwrap().len(), 3);
+}
+
+#[test]
+fn test_builder_chain_with_type_conversions() {
+    let err1: GErr<u32, NoPrefix, NoData> = GErr::new_with_id(42, "error");
+    let err2: GErr<&'static str, TestPrefix, TestData> = err1
+        .with_id("ERR_ID")
+        .with_prefix()
+        .with_data(TestData { code: 400 })
+        .set_help("Invalid request");
+
+    assert_eq!(err2.id(), &"ERR_ID");
+    assert_eq!(err2.message(), "error");
+    assert_eq!(err2.prefix(), Some("[TEST]"));
+    assert_eq!(err2.data(), Some(&TestData { code: 400 }));
+    assert_eq!(err2.help(), Some("Invalid request"));
+}
+
+#[test]
+fn test_builder_with_from_error_chain() {
+    let std_err = std::io::Error::new(std::io::ErrorKind::NotFound, "file not found");
+    let err: GErr<u32> = GErr::<_>::from_error_with_id(123, std_err)
+        .set_help("Check the file path")
+        .add_tag("filesystem");
+    let err = err
+        .with_id(404)
+        .with_prefix::<TestPrefix>()
+        .with_data(TestData { code: 404 });
+
+    assert_eq!(err.id(), &404);
+    assert_eq!(err.message(), "file not found");
+    assert_eq!(err.prefix(), Some("[TEST]"));
+    assert_eq!(err.data(), Some(&TestData { code: 404 }));
+    assert_eq!(err.help(), Some("Check the file path"));
+    assert_eq!(err.tags().unwrap().len(), 1);
+    assert!(err.sources().is_some());
+}
+
+#[test]
+fn test_builder_immutability() {
+    let base: GErr<NoID> = GErr::new("error");
+    assert_eq!(base.prefix(), None);
+    assert_eq!(base.tags(), None);
+    let modified1 = base.set_prefix("[A]").add_tag("tag1");
+    assert_eq!(modified1.prefix(), Some("[A]"));
+    let modified2 = modified1.set_prefix("[B]").add_tag("tag2");
+    assert_eq!(modified2.prefix(), Some("[B]"));
+}
+
+#[test]
+fn test_builder_none_returns_new_error() {
+    let err: GErr<NoID> = GErr::new("error");
+    let result = err.result::<()>();
+
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_set_field_with_data_impl() {
+    use g_err::SetField;
+
+    #[derive(Debug, Default, Clone)]
+    struct CustomData {
+        fields: std::collections::HashMap<String, String>,
+    }
+
+    impl SetField<String, String> for CustomData {
+        fn set_field(&mut self, key: String, value: String) {
+            self.fields.insert(key, value);
+        }
+    }
+
+    let err: GErr<NoID, NoPrefix, CustomData> = GErr::new("error")
+        .set_field("key1".to_string(), "value1".to_string())
+        .set_field("key2".to_string(), "value2".to_string());
+
+    assert_eq!(err.data().unwrap().fields.len(), 2);
+    assert_eq!(
+        err.data().unwrap().fields.get("key1").map(|s| s.as_str()),
+        Some("value1")
+    );
 }
