@@ -11,42 +11,66 @@ use core::{
 
 use crate::NoID;
 
+/// Dyn-compatible trait for error id.
 pub trait IdSource: Any + Debug + Display + Send + Sync {}
 
 impl<T> IdSource for T where T: Any + Debug + Display + Send + Sync {}
 
+/// Dyn-compatible trait for error data.
 pub trait DataSource: Any + Debug + Send + Sync {}
 
 impl<T> DataSource for T where T: Any + Debug + Send + Sync {}
 
-// --- GErrSource, before converting GErr to dyn Err
+/// GErrSource - GErr as source of error.
+///
+/// This will be the type of GErr's sources,
+/// be it from general error or from GErr itself.
+///
+/// You can add more detail attributes like GErr to other error types,
+/// by implementing conversion from those errors to GErrSource.
+///
+/// Then, you can add it as detailed GErrSource into method [`crate::GErr::add_source_gerr`].
 #[derive(Debug)]
 pub struct GErrSource {
+    /// Error id, must implement Debug and Display.
     pub id: Box<dyn IdSource>,
 
+    /// Error id as json value, support for numeric and string only.
+    ///
+    /// Passing other than numeric and string, will be ignored at serde.
     #[cfg(feature = "serde")]
     pub id_json: serde_json::Value,
 
+    /// Error message.
     pub message: Cow<'static, str>,
 
+    /// Error prefix.
     pub prefix: Option<Cow<'static, str>>,
 
+    /// Error sources.
     pub sources: Option<Vec<GErrSource>>,
 
+    /// Error tags.
     pub tags: Option<Vec<Cow<'static, str>>>,
 
+    /// Error data.
     pub data: Option<Box<dyn DataSource>>,
 
+    /// Error help.
     pub help: Option<Cow<'static, str>>,
 
+    /// Error data as json values. Supports all json values.
     #[cfg(feature = "serde")]
     pub data_json: Option<serde_json::Value>,
 
+    /// Error location.
     pub location: Option<&'static Location<'static>>,
 }
 
 impl GErrSource {
-    #[inline]
+    /// Constructs GErrSource from any error implementing [`Error`].
+    ///
+    /// If you pass GErrSource itself, it will be parsed with the attributes.
     pub fn from_error<E>(err: E) -> Self
     where
         E: Error + Send + Sync + 'static,
