@@ -32,7 +32,11 @@ use crate::{
     gerr_view::GErrView,
 };
 
+/// Reporting trait.
+///
+/// Reports error in multiple forms of display.
 pub trait Report {
+    /// Reports error from error borrowed form [`crate::GErrView`] into String.
     #[cfg(not(feature = "serde"))]
     fn report<E, ID, D>(err: &E) -> String
     where
@@ -40,6 +44,9 @@ pub trait Report {
         ID: Display,
         D: Debug;
 
+    /// Reports error from error borrowed form [`crate::GErrView`] into String.
+    ///
+    /// Supports JSON.
     #[cfg(feature = "serde")]
     fn report<E, ID, D>(err: &E) -> String
     where
@@ -55,10 +62,12 @@ where
     P: Prefix,
     D: Debug,
 {
+    /// Reports error in pretty format.
     pub fn report(&self) -> String {
         PrettyReport::report::<_, ID, D>(self)
     }
 
+    /// Reports error as specified format.
     pub fn report_as<R>(&self) -> String
     where
         R: Report,
@@ -74,11 +83,13 @@ where
     P: Prefix,
     D: Debug + serde::Serialize,
 {
+    /// Reports error in pretty format.
     #[inline]
     pub fn report(&self) -> String {
         PrettyReport::report::<_, ID, D>(self)
     }
 
+    /// Reports error as specified format.
     #[inline]
     pub fn report_as<R>(&self) -> String
     where
@@ -87,11 +98,13 @@ where
         R::report::<_, ID, D>(self)
     }
 
+    /// JSON data of GErr.
     #[inline]
     pub fn json_data(&self) -> JsonData {
         JsonReport::data(self)
     }
 
+    /// Public JSON data of GErr.
     #[inline]
     pub fn display_json_data(&self) -> DisplayJsonData {
         DisplayJsonReport::data(self)

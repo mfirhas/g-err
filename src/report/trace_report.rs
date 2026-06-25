@@ -3,6 +3,7 @@ use crate::GErrSource;
 use crate::gerr_view::GErrView;
 use core::fmt::{Debug, Display, Write};
 
+/// Report type for error reporting as tracing format.
 pub struct TraceReport;
 
 impl Report for TraceReport {

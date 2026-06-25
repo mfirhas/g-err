@@ -2,6 +2,7 @@ use core::fmt::{Debug, Display};
 
 use crate::gerr::{Id, Prefix};
 
+/// Type for generic parameter `ID` for GErr without id.
 #[derive(Debug)]
 pub struct NoID;
 
@@ -39,10 +40,12 @@ impl<'de> ::serde::Deserialize<'de> for NoID {
     }
 }
 
+/// Type for generic parameter `P` for GErr without prefix.
 pub struct NoPrefix;
 
 impl Prefix for NoPrefix {}
 
+/// Type for generic parameter `D` for GErr without data.
 #[derive(Debug)]
 pub struct NoData;
 

@@ -12,15 +12,25 @@ use crate::{
     gerr::{GErr, Prefix},
 };
 
+/// GErrView - GErr in borrowed form for reporting.
 pub struct GErrView<'a, ID, D> {
+    /// Error id.
     pub id: &'a ID,
+    /// Error message.
     pub message: &'a str,
+    /// Error prefix.
     pub prefix: Option<&'a str>,
+    /// Error data.
     pub data: Option<&'a D>,
+    /// Error tags.
     pub tags: Option<&'a [Cow<'static, str>]>,
+    /// Error sources.
     pub sources: Option<&'a [GErrSource]>,
+    /// Error help hint.
     pub help: Option<&'a str>,
+    /// Error location.
     pub location: &'a Location<'static>,
+    /// Error backtrace.
     #[cfg(feature = "backtrace")]
     pub backtrace: &'a Backtrace,
 }

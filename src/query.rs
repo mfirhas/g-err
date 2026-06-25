@@ -9,6 +9,7 @@ where
     P: Prefix,
     D: DataSource + 'static,
 {
+    /// Iterate over GErr's prefixes.
     #[inline]
     pub fn iter_by_prefix<'a>(
         &'a self,
@@ -21,6 +22,7 @@ where
         })
     }
 
+    /// Iterate over GErr's tags.
     #[inline]
     pub fn iter_by_tag<'a>(
         &'a self,
@@ -38,6 +40,7 @@ where
         })
     }
 
+    /// Iterate over GErr's id type.
     #[inline]
     pub fn iter_id<T>(&self) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
@@ -50,6 +53,7 @@ where
         })
     }
 
+    /// Iterate over GErr's id.
     #[inline]
     pub fn iter_by_id<T>(&self, value: &T) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
@@ -66,6 +70,7 @@ where
         })
     }
 
+    /// Iterate over GErr's data's type.
     #[inline]
     pub fn iter_data<T>(&self) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
@@ -81,6 +86,7 @@ where
         })
     }
 
+    /// Iterate over GErr's data.
     #[inline]
     pub fn iter_by_data<T>(&self, value: &T) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
@@ -100,6 +106,7 @@ where
         })
     }
 
+    /// Iterate over GErr's sources by source's type.
     #[inline]
     pub fn iter_source<E>(&self) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
     where
@@ -112,6 +119,7 @@ where
         })
     }
 
+    /// Find GErr's id by type.
     #[inline]
     pub fn find_id<T>(&self) -> Option<GErrNode<'_, ID, P, D>>
     where
@@ -120,6 +128,7 @@ where
         self.iter_id::<T>().next()
     }
 
+    /// Find GErr's id by value.
     #[inline]
     pub fn find_by_id<T>(&self, value: &T) -> Option<GErrNode<'_, ID, P, D>>
     where
@@ -128,11 +137,13 @@ where
         self.iter_by_id(value).next()
     }
 
+    /// Find GErr's prefix by value.
     #[inline]
     pub fn find_by_prefix<'a>(&'a self, value: &'a str) -> Option<GErrNode<'a, ID, P, D>> {
         self.iter_by_prefix(value).next()
     }
 
+    /// Find GErr's data by type.
     #[inline]
     pub fn find_data<T>(&self) -> Option<GErrNode<'_, ID, P, D>>
     where
@@ -141,6 +152,7 @@ where
         self.iter_data::<T>().next()
     }
 
+    /// Find GErr's data by value.
     #[inline]
     pub fn find_by_data<T>(&self, value: &T) -> Option<GErrNode<'_, ID, P, D>>
     where
@@ -149,11 +161,13 @@ where
         self.iter_by_data(value).next()
     }
 
+    /// Find GErr's tags by value.
     #[inline]
     pub fn find_by_tag<'a>(&'a self, value: &'a str) -> Option<GErrNode<'a, ID, P, D>> {
         self.iter_by_tag(value).next()
     }
 
+    /// Find GErr's sources by source's type.
     #[inline]
     pub fn find_source<E>(&self) -> Option<GErrNode<'_, ID, P, D>>
     where

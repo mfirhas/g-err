@@ -13,7 +13,13 @@ use alloc::borrow::Cow;
 
 impl<T, E> sealed::Sealed for core::result::Result<T, E> {}
 
+/// Extension for Result wrapping `E` as GErr's source.
+///
+/// This is for general error, including GErr itself.
+///
+/// Passing GErr will be parsed as general error.
 pub trait ResultExt<T>: sealed::Sealed {
+    /// Wrap `E` inside GErr as source with auto-generated id.
     #[must_use]
     #[track_caller]
     fn context<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
@@ -21,6 +27,7 @@ pub trait ResultExt<T>: sealed::Sealed {
         ID: Id,
         P: Prefix;
 
+    /// Wrap `E` inside GErr as source with auto-generated id, with a closure generating the error message.
     #[must_use]
     #[track_caller]
     fn with_context<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
@@ -30,6 +37,11 @@ pub trait ResultExt<T>: sealed::Sealed {
         F: FnOnce() -> M,
         M: Into<Cow<'static, str>>;
 
+    /// Returns any `E` as GErr with auto-generated id.
+    ///
+    /// Useful if the return type is GErr, accepting any errors.
+    ///
+    /// Make sure GErr return type ID: Id and P: Prefix.
     #[must_use]
     #[track_caller]
     fn as_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
@@ -81,7 +93,11 @@ where
     }
 }
 
+/// Result extension where `E` is GErr or any error implementing `Into<GErrSource>`.
+///
+/// Use this extension if you pass GErr or `Into<GErrSource>` from Result's E and want to keep the detail attributes.
 pub trait GResultExt<T>: sealed::Sealed {
+    /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`.
     #[must_use]
     #[track_caller]
     fn gerr<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
@@ -89,6 +105,7 @@ pub trait GResultExt<T>: sealed::Sealed {
         ID: Id,
         P: Prefix;
 
+    /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`, with closure producing error message.
     #[must_use]
     #[track_caller]
     fn with_gerr<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>

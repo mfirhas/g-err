@@ -3,6 +3,7 @@ use crate::gerr_view::GErrView;
 use super::Report;
 use core::fmt::{Debug, Display, Write};
 
+/// Report type for error reporting as markdown.
 pub struct MarkdownReport;
 
 impl Report for MarkdownReport {

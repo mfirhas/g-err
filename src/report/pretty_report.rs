@@ -3,6 +3,7 @@ use crate::gerr_view::GErrView;
 use core::fmt::Write;
 use core::fmt::{Debug, Display};
 
+/// Report type for error reporting as pretty format.
 pub struct PrettyReport;
 
 impl Report for PrettyReport {
