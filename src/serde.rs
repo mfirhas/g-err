@@ -55,9 +55,9 @@ pub mod json {
         P: Prefix,
         D: for<'a> serde::Deserialize<'a>,
     {
-        Ok(<JsonData as serde::Deserialize>::deserialize(deserializer)?
+        <JsonData as serde::Deserialize>::deserialize(deserializer)?
             .try_into()
-            .map_err(::serde::de::Error::custom)?)
+            .map_err(::serde::de::Error::custom)
     }
 }
 
@@ -91,10 +91,8 @@ pub mod display_json {
         P: Prefix,
         D: for<'a> serde::Deserialize<'a>,
     {
-        Ok(
-            <DisplayJsonData as serde::Deserialize>::deserialize(deserializer)?
-                .try_into()
-                .map_err(::serde::de::Error::custom)?,
-        )
+        <DisplayJsonData as serde::Deserialize>::deserialize(deserializer)?
+            .try_into()
+            .map_err(::serde::de::Error::custom)
     }
 }
