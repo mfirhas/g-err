@@ -78,7 +78,7 @@ impl GErrSource {
         let msg = err.to_string();
         let any = &err as &dyn Any;
 
-        if let Some(_) = any.downcast_ref::<GErrSource>() {
+        if any.downcast_ref::<GErrSource>().is_some() {
             let any: Box<dyn Any> = Box::new(err);
             if let Ok(owned_gerr_source) = any.downcast::<GErrSource>() {
                 return Self {
@@ -130,9 +130,7 @@ impl Error for GErrSource {
         if let Some(ref sources) = self.sources
             && !sources.is_empty()
         {
-            return sources
-                .first()
-                .and_then(|s| Some(&*s as &(dyn Error + 'static)));
+            return sources.first().map(|s| s as &(dyn Error + 'static));
         }
         None
     }

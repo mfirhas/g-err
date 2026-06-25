@@ -53,7 +53,7 @@ impl<'a, ID, P: Prefix, D> From<&'a GErr<ID, P, D>> for GErrView<'a, ID, D> {
             location: err.location(),
 
             #[cfg(feature = "backtrace")]
-            backtrace: &err.backtrace(),
+            backtrace: err.backtrace(),
         }
     }
 }

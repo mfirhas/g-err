@@ -101,7 +101,7 @@ struct SourceJson<'a> {
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub data: Option<&'a serde_json::Value>,
     pub location: Option<LocationJson<'a>>,
-    pub sources: Option<Vec<Box<SourceJson<'a>>>>,
+    pub sources: Option<Vec<SourceJson<'a>>>,
 }
 
 impl<'a, ID, D> From<&'a GErrView<'a, ID, D>> for DisplayJsonReportData<'a>
@@ -163,7 +163,7 @@ impl<'a> From<&'a GErrSource> for SourceJson<'a> {
             sources: gerr
                 .sources
                 .as_deref()
-                .map(|ref s| s.iter().map(|src| Box::new(src.into())).collect()),
+                .map(|s| s.iter().map(|src| src.into()).collect()),
         }
     }
 }

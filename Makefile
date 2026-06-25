@@ -9,6 +9,7 @@ OUT_FILE := $(OUT_DIR)/lcov.info
 
 test:
 	@echo "Running tests..."
+	@cargo test
 	@cargo test --all-features
 	@cargo test -q --doc --all-features
 
@@ -49,6 +50,7 @@ branch:
 all:
 	@echo "Running all checks..."
 	@echo "Running cargo check---------------------------------------------"
+	@cargo check
 	@cargo check --all-features
 	@sleep 1
 	@echo "Running formatting----------------------------------------------"
@@ -61,5 +63,6 @@ all:
 	@cargo doc --all-features --no-deps
 	@sleep 1
 	@echo "Running tests---------------------------------------------------"
+	@cargo test
 	@cargo test --all-features
 	@cargo test -q --doc --all-features

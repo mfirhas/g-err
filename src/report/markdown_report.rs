@@ -15,7 +15,7 @@ impl Report for MarkdownReport {
     {
         let err = &err.into();
         let mut out: String = String::new();
-        Self::header::<ID, D>(&mut out);
+        Self::header(&mut out);
         Self::preamble::<ID, D>(err, &mut out);
         Self::data::<ID, D>(err, &mut out);
         Self::help::<ID, D>(err, &mut out);
@@ -30,7 +30,7 @@ impl Report for MarkdownReport {
 }
 
 impl MarkdownReport {
-    fn header<ID: Display, D: Debug>(out: &mut String) {
+    fn header(out: &mut String) {
         let _ = writeln!(out, "# Error Report\n");
     }
     fn preamble<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {

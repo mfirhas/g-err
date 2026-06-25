@@ -389,7 +389,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     /// Error prefix.
     #[inline]
     pub fn prefix(&self) -> Option<&str> {
-        self.prefix.as_deref().or(P::PREFIX.as_deref())
+        self.prefix.as_deref().or(P::PREFIX)
     }
 
     /// Error tags.
@@ -454,7 +454,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
 impl<ID, P: Prefix, D> Display for GErr<ID, P, D> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        if let Some(prefix) = self.prefix.as_deref().or(P::PREFIX.as_deref()) {
+        if let Some(prefix) = self.prefix.as_deref().or(P::PREFIX) {
             write!(f, "{prefix} {}", self.message())
         } else {
             write!(f, "{}", self.message())
@@ -468,7 +468,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Debug for GErr<ID, P, D> {
 
         debug
             .field("id", &self.id)
-            .field("prefix", &self.prefix.as_deref().or(P::PREFIX.as_deref()))
+            .field("prefix", &self.prefix.as_deref().or(P::PREFIX))
             .field("message", &self.message)
             .field("source", &self.sources)
             .field("tags", &self.tags)
@@ -488,9 +488,7 @@ impl<ID: Debug, P: Prefix, D: Debug> Error for GErr<ID, P, D> {
         if let Some(ref sources) = self.sources
             && !sources.is_empty()
         {
-            return sources
-                .first()
-                .and_then(|s| Some(&*s as &(dyn Error + 'static)));
+            return sources.first().map(|s| s as &(dyn Error + 'static));
         }
         None
     }

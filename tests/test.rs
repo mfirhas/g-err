@@ -1,6 +1,8 @@
 use core::fmt::Debug;
 use core::fmt::Display;
 use g_err::GErr;
+use g_err::GErrDefault;
+use g_err::GErrSource;
 use g_err::GResultExt;
 use g_err::Id;
 use g_err::NoData;
@@ -10,13 +12,16 @@ use g_err::Prefix;
 use g_err::Result;
 use g_err::ResultExt;
 use g_err::SetField;
+extern crate alloc;
+use alloc::borrow::Cow;
+use core::panic::Location;
 use uuid::Uuid;
 
 #[path = "macro_test.rs"]
 mod macro_test;
 
 fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
-    str_age.parse().as_gerr()
+    str_age.parse().into_gerr()
 }
 
 fn get_age(str_age: &str) -> Result<i32, UuidV4, NoPrefix> {
@@ -159,4 +164,30 @@ fn test() {
     for e in err.iter() {
         println!("{e}");
     }
+
+    println!("GErrDefault = {}", size_of::<GErrDefault>());
+    println!(
+        "message                = {}",
+        size_of::<Cow<'static, str>>()
+    );
+    println!(
+        "prefix                 = {}",
+        size_of::<Option<Cow<'static, str>>>()
+    );
+    println!(
+        "sources                = {}",
+        size_of::<Option<Vec<GErrSource>>>()
+    );
+    println!(
+        "tags                   = {}",
+        size_of::<Option<Vec<Cow<'static, str>>>>()
+    );
+    println!(
+        "help                   = {}",
+        size_of::<Option<Cow<'static, str>>>()
+    );
+    println!(
+        "location               = {}",
+        size_of::<&'static Location<'static>>()
+    );
 }
