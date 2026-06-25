@@ -1119,11 +1119,11 @@ fn test_builder_chain_with_type_conversions() {
 #[test]
 fn test_builder_with_from_error_chain() {
     let std_err = std::io::Error::new(std::io::ErrorKind::NotFound, "file not found");
-    let err: GErr<u32> = GErr::<_>::from_error_with_id(123, std_err)
+    let err: GErr<u32> = GErr::from_error_with_id(123, std_err)
         .set_help("Check the file path")
         .add_tag("filesystem");
     let err = err
-        .with_id(404)
+        .with_id(404_i64)
         .with_prefix::<TestPrefix>()
         .with_data(TestData { code: 404 });
 
