@@ -70,6 +70,17 @@ pub type GErrDefault = GErr<NoID, NoPrefix, NoData>;
 /// - `help`: Hint about how to solve the error.
 /// - `location`: Where the error happen.
 /// - `backtrace`: The error stacktrace, feature-gated behind `backtrace`.
+///
+/// # Note
+/// Set aside size of error ID and Data:
+///
+/// - `GErr<(), (), ()>` is approximately 136 bytes.
+/// - Enabling the `backtrace` feature increases this to approximately
+///   184 bytes (+48 bytes from `Backtrace`).
+///
+/// Clippy's `result_large_err` lint is intentionally allowed for this crate.
+/// Users requiring a smaller error representation may box `GErr` in their
+/// own APIs.
 pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
     id: ID,
     message: Cow<'static, str>,
