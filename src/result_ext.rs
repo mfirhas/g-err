@@ -41,7 +41,7 @@ pub trait ResultExt<T>: sealed::Sealed {
     ///
     /// Make sure GErr return type ID: Id and P: Prefix.
     #[track_caller]
-    fn as_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
+    fn into_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix;
@@ -78,7 +78,7 @@ where
     }
 
     #[track_caller]
-    fn as_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
+    fn into_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
