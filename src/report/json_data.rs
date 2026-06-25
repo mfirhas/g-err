@@ -176,7 +176,9 @@ where
                 .into_iter()
                 .map(|s| s.into_source(Location::caller()))
                 .collect();
-            err = err.set_sources(gerr_sources);
+            for gs in gerr_sources {
+                err = err.add_source_gerr(gs);
+            }
         }
 
         if let Some(help) = help {

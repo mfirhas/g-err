@@ -177,6 +177,18 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             _static_prefix: PhantomData,
         }
     }
+
+    /// Constructs new GErr from any error implementing trait [`Error`]
+    ///
+    /// Id is manually-set and only contains message, location and the error as source.
+    #[track_caller]
+    #[inline]
+    pub fn from_error_with_id<E>(id: ID, err: E) -> Self
+    where
+        E: Error + Send + Sync + 'static,
+    {
+        Self::with_id_untracked(id, err.to_string(), Location::caller()).add_source(err)
+    }
 }
 
 impl<ID, P: Prefix, D> GErr<ID, P, D> {
@@ -234,25 +246,6 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             None => self.prefix = Some(post_prefix.into()),
         }
 
-        self
-    }
-
-    /// Update all sources.
-    ///
-    /// The sources are treated as general error, so any errors pass.
-    ///
-    /// General Error only has id, message and location.
-    ///
-    /// If you're passing GErr, convert it into [`GErrSource`] first using [`GErr::into_gerr_source`] or `Into`
-    /// to parse the error with detailed attributes of GErr.
-    #[must_use]
-    #[inline]
-    pub fn set_sources<I, E>(mut self, sources: I) -> Self
-    where
-        I: IntoIterator<Item = E>,
-        E: Error + Send + Sync + 'static,
-    {
-        self.sources = Some(sources.into_iter().map(GErrSource::from_error).collect());
         self
     }
 
