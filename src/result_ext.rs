@@ -20,7 +20,6 @@ impl<T, E> sealed::Sealed for core::result::Result<T, E> {}
 /// Passing GErr will be parsed as general error.
 pub trait ResultExt<T>: sealed::Sealed {
     /// Wrap `E` inside GErr as source with auto-generated id.
-    #[must_use]
     #[track_caller]
     fn context<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
@@ -28,7 +27,6 @@ pub trait ResultExt<T>: sealed::Sealed {
         P: Prefix;
 
     /// Wrap `E` inside GErr as source with auto-generated id, with a closure generating the error message.
-    #[must_use]
     #[track_caller]
     fn with_context<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
     where
@@ -42,7 +40,6 @@ pub trait ResultExt<T>: sealed::Sealed {
     /// Useful if the return type is GErr, accepting any errors.
     ///
     /// Make sure GErr return type ID: Id and P: Prefix.
-    #[must_use]
     #[track_caller]
     fn as_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
     where
@@ -98,7 +95,6 @@ where
 /// Use this extension if you pass GErr or `Into<GErrSource>` from Result's E and want to keep the detail attributes.
 pub trait GResultExt<T>: sealed::Sealed {
     /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`.
-    #[must_use]
     #[track_caller]
     fn gerr<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
@@ -106,7 +102,6 @@ pub trait GResultExt<T>: sealed::Sealed {
         P: Prefix;
 
     /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`, with closure producing error message.
-    #[must_use]
     #[track_caller]
     fn with_gerr<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
     where
