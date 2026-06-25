@@ -20,6 +20,27 @@ use uuid::Uuid;
 #[path = "macro_test.rs"]
 mod macro_test;
 
+#[path = "constructor_test.rs"]
+mod constructor_test;
+
+#[path = "conversion_test.rs"]
+mod conversion_test;
+
+#[path = "prefix_test.rs"]
+mod prefix_test;
+
+#[path = "query_test.rs"]
+mod query_test;
+
+#[path = "report_test.rs"]
+mod report_test;
+
+#[path = "sources_test.rs"]
+mod sources_test;
+
+#[path = "tags_test.rs"]
+mod tags_test;
+
 fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
     str_age.parse().into_gerr()
 }
