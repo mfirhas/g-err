@@ -15,17 +15,17 @@
 /// let err = gerr!(
 ///     "failed {}",
 ///     500;
-///     id = 999u32,
-///     prefix = "HTTP",
-///     tag = "server",
-///     tags = ["api", "v1"],
-///     data = "payload",
-///     prefix = "[USER]",
-///     pprefix = "@",
-///     aprefix = "[CREATE]",
-///     source = external_error,
-///     gerr = inner,
-///     help = "Try parsing valid signed integer 32",
+///     id = 999u32, // set id
+///     prefix = "HTTP", // set prefix
+///     tag = "server", // set a tag
+///     tags = ["api", "v1"], // set tags
+///     data = "payload", // set error data
+///     prefix = "[USER]", // update prefix
+///     pprefix = "@", // prepend to existing prefix, or become one
+///     aprefix = "[CREATE]", // append to existing prefix, or become one
+///     source = external_error, // set general error as source
+///     gerr = inner, // set `Into<GErrSource>` error as source
+///     help = "Try parsing valid signed integer 32", // set help hint
 /// );
 ///
 /// assert_eq!(err.message(), "failed 500");
