@@ -289,44 +289,39 @@ impl From<&GErrSource> for SourceJsonData {
 
 impl SourceJsonData {
     fn into_source(self, location: &'static Location<'static>) -> GErrSource {
-        let gerr_source = {
-            let SourceJsonData {
-                id,
-                prefix,
-                message,
-                tags,
-                data,
-                help,
-                location: _,
-                sources,
-            } = self;
+        let SourceJsonData {
+            id,
+            prefix,
+            message,
+            tags,
+            data,
+            help,
+            location: _,
+            sources,
+        } = self;
 
-            GErrSource {
-                id: Box::new(id.to_string()),
+        GErrSource {
+            id: Box::new(id.to_string()),
 
-                id_json: id,
+            id_json: id,
 
-                message: message.into(),
+            message: message.into(),
 
-                prefix: prefix.map(|s| Cow::Owned(s)),
+            prefix: prefix.map(Cow::Owned),
 
-                sources: sources
-                    .map(|s| s.into_iter().map(|sj| sj.into_source(location)).collect()),
+            sources: sources.map(|s| s.into_iter().map(|sj| sj.into_source(location)).collect()),
 
-                tags: tags.map(|tags| tags.into_iter().map(Cow::Owned).collect()),
+            tags: tags.map(|tags| tags.into_iter().map(Cow::Owned).collect()),
 
-                data: data
-                    .as_ref()
-                    .map(|v| Box::new(v.to_string()) as Box<dyn DataSource>),
+            data: data
+                .as_ref()
+                .map(|v| Box::new(v.to_string()) as Box<dyn DataSource>),
 
-                data_json: data,
+            data_json: data,
 
-                help: help.map(Cow::Owned),
+            help: help.map(Cow::Owned),
 
-                location: Some(location),
-            }
-        };
-
-        gerr_source
+            location: Some(location),
+        }
     }
 }
