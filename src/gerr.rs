@@ -212,7 +212,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             Some(p) => {
                 p.to_mut().insert_str(0, pre_prefix.as_ref());
             }
-            None => self.prefix = self.prefix.into(),
+            None => self.prefix = Some(pre_prefix.into()),
         }
 
         self
@@ -231,7 +231,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
             Some(p) => {
                 p.to_mut().push_str(post_prefix.as_ref());
             }
-            None => self.prefix = self.prefix.into(),
+            None => self.prefix = Some(post_prefix.into()),
         }
 
         self

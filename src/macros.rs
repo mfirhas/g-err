@@ -21,6 +21,8 @@
 ///     tags = ["api", "v1"],
 ///     data = "payload",
 ///     prefix = "[USER]",
+///     pprefix = "@",
+///     aprefix = "[CREATE]",
 ///     source = external_error,
 ///     gerr = inner,
 ///     help = "Try parsing valid signed integer 32",
@@ -28,7 +30,7 @@
 ///
 /// assert_eq!(err.message(), "failed 500");
 /// assert_eq!(*err.id(), 999);
-/// assert_eq!(err.prefix(), Some("[USER]"));
+/// assert_eq!(err.prefix(), Some("@[USER][CREATE]"));
 /// assert_eq!(err.data(), Some(&"payload"));
 ///
 /// let tags = err.tags().unwrap();
@@ -121,6 +123,32 @@ macro_rules! gerr {
         $(, $($rest:tt)*)?
     ) => {{
         let err = $err.set_prefix($prefix);
+        $crate::gerr!(@build err $(, $($rest)*)?)
+    }};
+
+    // ==================================================
+    // pprefix = ...
+    // ==================================================
+
+    (
+        @build $err:ident,
+        pprefix = $pprefix:expr
+        $(, $($rest:tt)*)?
+    ) => {{
+        let err = $err.prepend_prefix($pprefix);
+        $crate::gerr!(@build err $(, $($rest)*)?)
+    }};
+
+    // ==================================================
+    // aprefix = ...
+    // ==================================================
+
+    (
+        @build $err:ident,
+        aprefix = $aprefix:expr
+        $(, $($rest:tt)*)?
+    ) => {{
+        let err = $err.append_prefix($aprefix);
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
