@@ -199,6 +199,44 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
         self
     }
 
+    /// Update prefix by prepending onto existing prefix.
+    ///
+    /// If current prefix is empty, this becomes the prefix.
+    #[must_use]
+    #[inline]
+    pub fn prepend_prefix<T>(mut self, pre_prefix: T) -> Self
+    where
+        T: Into<Cow<'static, str>> + AsRef<str>,
+    {
+        match self.prefix.as_mut() {
+            Some(p) => {
+                p.to_mut().insert_str(0, pre_prefix.as_ref());
+            }
+            None => self.prefix = self.prefix.into(),
+        }
+
+        self
+    }
+
+    /// Update prefix by appending into existing prefix.
+    ///
+    /// If current prefix is empty, this becomes the prefix.
+    #[must_use]
+    #[inline]
+    pub fn append_prefix<T>(mut self, post_prefix: T) -> Self
+    where
+        T: Into<Cow<'static, str>> + AsRef<str>,
+    {
+        match self.prefix.as_mut() {
+            Some(p) => {
+                p.to_mut().push_str(post_prefix.as_ref());
+            }
+            None => self.prefix = self.prefix.into(),
+        }
+
+        self
+    }
+
     /// Update all sources.
     ///
     /// The sources are treated as general error, so any errors pass.
