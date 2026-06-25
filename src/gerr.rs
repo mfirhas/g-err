@@ -294,9 +294,12 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
         I: IntoIterator<Item = T>,
         T: Into<Cow<'static, str>>,
     {
-        self.tags
-            .get_or_insert_default()
-            .extend(tags.into_iter().map(Into::into));
+        let mut tags = tags.into_iter().peekable();
+        if tags.peek().is_some() {
+            self.tags
+                .get_or_insert_default()
+                .extend(tags.map(Into::into));
+        }
         self
     }
 
