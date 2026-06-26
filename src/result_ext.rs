@@ -45,6 +45,16 @@ pub trait ResultExt<T>: sealed::Sealed {
     where
         ID: Id,
         P: Prefix;
+
+    /// Returns any `E` as GErr with manual id.
+    ///
+    /// Useful if the return type is GErr, accepting any errors.
+    ///
+    /// Make sure GErr return type P: Prefix.
+    #[track_caller]
+    fn into_gerr_with_id<ID, P, D>(self, id: ID) -> Result<T, ID, P, D>
+    where
+        P: Prefix;
 }
 
 impl<T, E> ResultExt<T> for core::result::Result<T, E>
@@ -57,10 +67,10 @@ where
         ID: Id,
         P: Prefix,
     {
-        let message = message.into();
         let location = Location::caller();
-
-        self.map_err(|source| GErr::<ID, P, D>::new_untracked(message, location).add_source(source))
+        self.map_err(|source| {
+            GErr::<ID, P, D>::new_untracked(message.into(), location).add_source(source)
+        })
     }
 
     #[track_caller]
@@ -71,10 +81,10 @@ where
         F: FnOnce() -> M,
         M: Into<Cow<'static, str>>,
     {
-        let message = func().into();
         let location = Location::caller();
-
-        self.map_err(|source| GErr::<ID, P, D>::new_untracked(message, location).add_source(source))
+        self.map_err(|source| {
+            GErr::<ID, P, D>::new_untracked(func().into(), location).add_source(source)
+        })
     }
 
     #[track_caller]
@@ -84,9 +94,16 @@ where
         P: Prefix,
     {
         let location = Location::caller();
-        self.map_err(|source| {
-            GErr::<ID, P, D>::with_id_untracked(ID::id(), source.to_string(), location)
-        })
+        self.map_err(|source| GErr::<ID, P, D>::new_untracked(source.to_string(), location))
+    }
+
+    #[track_caller]
+    fn into_gerr_with_id<ID, P, D>(self, id: ID) -> Result<T, ID, P, D>
+    where
+        P: Prefix,
+    {
+        let location = Location::caller();
+        self.map_err(|source| GErr::<ID, P, D>::with_id_untracked(id, source.to_string(), location))
     }
 }
 
@@ -121,11 +138,9 @@ where
         ID: Id,
         P: Prefix,
     {
-        let message = message.into();
         let location = Location::caller();
-
         self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(message, location).add_source_gerr(source.into())
+            GErr::<ID, P, D>::new_untracked(message.into(), location).add_source_gerr(source)
         })
     }
 
@@ -137,11 +152,9 @@ where
         F: FnOnce() -> M,
         M: Into<Cow<'static, str>>,
     {
-        let message = func().into();
         let location = Location::caller();
-
         self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(message, location).add_source_gerr(source.into())
+            GErr::<ID, P, D>::new_untracked(func().into(), location).add_source_gerr(source)
         })
     }
 }
