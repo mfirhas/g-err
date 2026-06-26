@@ -871,3 +871,63 @@ fn test_result_to_gerr_with_id_location() {
         column
     );
 }
+
+#[test]
+fn test_result_gerr_location() {
+    let source: std::io::Error = std::io::Error::new(std::io::ErrorKind::NotFound, "not found");
+    let gerr: GErr<u8> = GErr::new_with_id(200, "error").add_source(source);
+    let gerr: Result<i32, u8> = Err(gerr);
+
+    let line = line!();
+    let gerr_result: Result<i32, AutoId> = gerr.gerr("the error context");
+    let line = line + 1;
+    let column = 49;
+
+    assert!(gerr_result.is_err());
+    assert_eq!(gerr_result.as_ref().unwrap_err().location().file(), file!());
+    assert_eq!(gerr_result.as_ref().unwrap_err().location().line(), line);
+    assert_eq!(
+        gerr_result.as_ref().unwrap_err().location().column(),
+        column
+    );
+}
+
+#[test]
+fn test_result_with_gerr_location() {
+    let source: std::io::Error = std::io::Error::new(std::io::ErrorKind::NotFound, "not found");
+    let gerr: GErr<u8> = GErr::new_with_id(200, "error").add_source(source);
+    let gerr: Result<i32, u8> = Err(gerr);
+
+    let line = line!();
+    let gerr_result: Result<i32, AutoId> = gerr.with_gerr(|| "the error context");
+    let line = line + 1;
+    let column = 49;
+
+    assert!(gerr_result.is_err());
+    assert_eq!(gerr_result.as_ref().unwrap_err().location().file(), file!());
+    assert_eq!(gerr_result.as_ref().unwrap_err().location().line(), line);
+    assert_eq!(
+        gerr_result.as_ref().unwrap_err().location().column(),
+        column
+    );
+}
+
+#[test]
+fn test_result_with_id_location() {
+    let source: std::io::Error = std::io::Error::new(std::io::ErrorKind::NotFound, "not found");
+    let gerr: GErr<u8> = GErr::new_with_id(200, "error").add_source(source);
+    let gerr: Result<i32, u8> = Err(gerr);
+
+    let line = line!();
+    let gerr_result: Result<i32, &'static str> = gerr.with_id("nganu", "anu");
+    let line = line + 1;
+    let column = 55;
+
+    assert!(gerr_result.is_err());
+    assert_eq!(gerr_result.as_ref().unwrap_err().location().file(), file!());
+    assert_eq!(gerr_result.as_ref().unwrap_err().location().line(), line);
+    assert_eq!(
+        gerr_result.as_ref().unwrap_err().location().column(),
+        column
+    );
+}
