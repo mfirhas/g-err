@@ -180,3 +180,18 @@ where
         })
     }
 }
+
+pub trait GErrBoxExt<T, E>: crate::sealed::Sealed {
+    /// Box `E`
+    fn boxed(self) -> core::result::Result<T, Box<E>>;
+}
+
+impl<T, E> GErrBoxExt<T, E> for core::result::Result<T, E>
+where
+    E: Into<GErrSource> + Error + Send + Sync + 'static,
+{
+    #[inline]
+    fn boxed(self) -> core::result::Result<T, Box<E>> {
+        self.map_err(Box::new)
+    }
+}

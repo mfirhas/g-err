@@ -1,5 +1,6 @@
 extern crate alloc;
 
+use crate::gerr_box::GErrBox;
 use crate::gerr_source::DataSource;
 use crate::gerr_source::GErrSource;
 use crate::gerr_source::IdSource;
@@ -467,6 +468,12 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     #[inline]
     pub fn result<T>(self) -> Result<T, ID, P, D> {
         Result::Err(self)
+    }
+
+    /// Box GErr
+    #[inline]
+    pub fn boxed(self) -> GErrBox<ID, P, D> {
+        Box::new(self)
     }
 }
 

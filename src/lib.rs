@@ -17,6 +17,7 @@ mod gerr_view;
 pub use gerr_view::GErrView;
 
 mod gerr_box;
+pub use gerr_box::GErrBox;
 
 mod report;
 pub use report::{MarkdownReport, PrettyReport, TraceReport};
@@ -38,7 +39,7 @@ mod types;
 pub use types::{NoData, NoID, NoPrefix};
 
 mod result_ext;
-pub use result_ext::{GResultExt, ResultExt};
+pub use result_ext::{GErrBoxExt, GResultExt, ResultExt};
 
 pub mod iterator;
 mod query;
