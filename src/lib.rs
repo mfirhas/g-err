@@ -16,6 +16,8 @@ pub use gerr_source::{DataSource, GErrSource, IdSource};
 mod gerr_view;
 pub use gerr_view::GErrView;
 
+mod gerr_box;
+
 mod report;
 pub use report::{MarkdownReport, PrettyReport, TraceReport};
 
