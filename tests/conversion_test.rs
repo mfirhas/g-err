@@ -190,7 +190,7 @@ fn test_result_context_with_prefix() {
         "not found",
     ));
 
-    let gerr_result: Result<i32, u32, TestPrefix> = result.into_gerr_with_id(123);
+    let gerr_result: Result<i32, u32, TestPrefix> = result.to_gerr_with_id(123);
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -300,7 +300,7 @@ fn test_result_into_gerr_basic() {
         "file not found",
     ));
 
-    let gerr_result: Result<i32, NoID> = result.into_gerr();
+    let gerr_result: Result<i32, NoID> = result.to_gerr();
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -312,7 +312,7 @@ fn test_result_into_gerr_with_autogen_id() {
     let result: core::result::Result<i32, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<i32, AutoId> = result.into_gerr();
+    let gerr_result: Result<i32, AutoId> = result.to_gerr();
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -324,7 +324,7 @@ fn test_result_into_gerr_with_autogen_id() {
 fn test_result_into_gerr_success_case() {
     let result: core::result::Result<i32, std::io::Error> = Ok(42);
 
-    let gerr_result: Result<i32, NoID> = result.into_gerr();
+    let gerr_result: Result<i32, NoID> = result.to_gerr();
 
     assert!(gerr_result.is_ok());
     assert_eq!(gerr_result.unwrap(), 42);
@@ -335,7 +335,7 @@ fn test_result_into_gerr_error_message_extracted() {
     use std::num::ParseIntError;
 
     let parse_result: core::result::Result<i32, ParseIntError> = "not a number".parse();
-    let gerr_result: Result<i32, NoID> = parse_result.into_gerr();
+    let gerr_result: Result<i32, NoID> = parse_result.to_gerr();
 
     let err = gerr_result.unwrap_err();
     assert!(!err.message().is_empty());
@@ -346,7 +346,7 @@ fn test_result_into_gerr_with_prefix() {
     let result: core::result::Result<i32, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<i32, NoID, TestPrefix> = result.into_gerr();
+    let gerr_result: Result<i32, NoID, TestPrefix> = result.to_gerr();
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.prefix(), Some("[TEST]"));
@@ -701,7 +701,7 @@ fn test_result_type_conversion_compatibility() {
     let std_result: core::result::Result<u32, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<u32, NoID, NoPrefix, NoData> = std_result.into_gerr();
+    let gerr_result: Result<u32, NoID, NoPrefix, NoData> = std_result.to_gerr();
 
     assert!(gerr_result.is_err());
 }
@@ -722,7 +722,7 @@ fn test_multiple_error_types_conversion() {
     use std::num::ParseIntError;
 
     let parse_result: core::result::Result<i32, ParseIntError> = "invalid".parse();
-    let gerr_result: Result<i32, NoID> = parse_result.into_gerr();
+    let gerr_result: Result<i32, NoID> = parse_result.to_gerr();
 
     assert!(gerr_result.is_err());
 }
@@ -762,7 +762,7 @@ fn test_conversion_with_nested_sources() {
     let inner_err = std::io::Error::new(std::io::ErrorKind::NotFound, "inner");
     let result1: core::result::Result<i32, std::io::Error> = Err(inner_err);
 
-    let gerr1: Result<i32, u32> = result1.into_gerr_with_id(4);
+    let gerr1: Result<i32, u32> = result1.to_gerr_with_id(4);
 
     assert!(gerr1.is_err());
 
@@ -835,7 +835,7 @@ fn test_result_to_gerr_location() {
     ));
 
     let line = line!();
-    let gerr_result: Result<i32, NoID> = result.into_gerr();
+    let gerr_result: Result<i32, NoID> = result.to_gerr();
 
     let line = line + 1;
     let column = 49;
@@ -857,7 +857,7 @@ fn test_result_to_gerr_with_id_location() {
     ));
 
     let line = line!();
-    let gerr_result: Result<i32, u32> = result.into_gerr_with_id(123);
+    let gerr_result: Result<i32, u32> = result.to_gerr_with_id(123);
 
     let line = line + 1;
     let column = 48;

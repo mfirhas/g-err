@@ -45,7 +45,7 @@ mod tags_test;
 mod gerr_box_test;
 
 fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
-    str_age.parse().into_gerr()
+    str_age.parse().to_gerr()
 }
 
 fn get_age(str_age: &str) -> Result<i32, UuidV4, NoPrefix> {

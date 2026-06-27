@@ -41,7 +41,7 @@ pub trait ResultExt<T>: sealed::Sealed {
     ///
     /// Make sure GErr return type ID: Id and P: Prefix.
     #[track_caller]
-    fn into_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
+    fn to_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix;
@@ -52,7 +52,7 @@ pub trait ResultExt<T>: sealed::Sealed {
     ///
     /// Make sure GErr return type P: Prefix.
     #[track_caller]
-    fn into_gerr_with_id<ID, P, D>(self, id: ID) -> Result<T, ID, P, D>
+    fn to_gerr_with_id<ID, P, D>(self, id: ID) -> Result<T, ID, P, D>
     where
         P: Prefix;
 }
@@ -88,7 +88,7 @@ where
     }
 
     #[track_caller]
-    fn into_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
+    fn to_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
@@ -98,7 +98,7 @@ where
     }
 
     #[track_caller]
-    fn into_gerr_with_id<ID, P, D>(self, id: ID) -> Result<T, ID, P, D>
+    fn to_gerr_with_id<ID, P, D>(self, id: ID) -> Result<T, ID, P, D>
     where
         P: Prefix,
     {
