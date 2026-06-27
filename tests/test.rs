@@ -41,6 +41,9 @@ mod sources_test;
 #[path = "tags_test.rs"]
 mod tags_test;
 
+#[path = "gerr_box_test.rs"]
+mod gerr_box_test;
+
 fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
     str_age.parse().into_gerr()
 }
