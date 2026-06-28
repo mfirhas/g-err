@@ -85,7 +85,7 @@ impl GErrSource {
                     id: owned_gerr_source.id,
                     #[cfg(feature = "serde")]
                     id_json: owned_gerr_source.id_json,
-                    message: owned_gerr_source.message,
+                    message: msg.into(),
                     prefix: owned_gerr_source.prefix,
                     sources: owned_gerr_source.sources,
                     tags: owned_gerr_source.tags,
