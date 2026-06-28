@@ -45,13 +45,15 @@ pub type GErrDefault = GErr<NoID, NoPrefix, NoData>;
 ///
 /// It contains type parameters error id(`ID`), prefix(`P`), and generic error data(`D`).
 ///
-/// *ID*, Error id:
+/// *ID*, error id:
 /// - Can be supplied manually or automatically through [`Id`] trait.
+/// - Implementing [`Id`] is optional only when id needs to be auto-generated.
 /// - Must implements `Debug` and `Display`.
 /// - If `serde` feature enabled, must implements [`::serde::Serialize`].
 ///
 /// *P*, error prefix:
 /// - Can be supplied manually or automatically through [`Prefix`] trait.
+/// - Implementing [`Prefix`] is optional only when prefix needs to be auto-generated.
 ///
 /// *D*, error data:
 /// - Can be supplied manually through methods: [`GErr::set_data`] or [`GErr::with_data`] to change data's type.
