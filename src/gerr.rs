@@ -90,7 +90,7 @@ pub type GErrDefault = GErr<NoID, NoPrefix, NoData>;
 ///
 /// Clippy's `result_large_err` lint is intentionally allowed for this crate.
 /// Users requiring a smaller error representation may box `GErr` in their
-/// own APIs.
+/// own APIs or using provided [`GErrBox`].
 pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
     id: ID,
     message: Cow<'static, str>,
