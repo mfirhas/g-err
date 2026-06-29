@@ -92,7 +92,7 @@ pub type GErrDefault = GErr<NoID, NoPrefix, NoData>;
 /// Users requiring a smaller error representation may box `GErr` in their
 /// own APIs or using provided [`GErrBox`].
 pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
-    id: ID,
+    id: Option<ID>,
     message: Cow<'static, str>,
 
     prefix: Option<Cow<'static, str>>,
@@ -112,23 +112,54 @@ pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
     _static_prefix: PhantomData<P>,
 }
 
-impl<ID: Id, P: Prefix, D> GErr<ID, P, D> {
-    /// Constructs new GErr with message and auto-generated id.
+impl<ID, P, D> GErr<ID, P, D> {
+    /// Constructs new GErr without id.
     #[track_caller]
     #[inline]
     pub fn new<M>(message: M) -> Self
     where
         M: Into<Cow<'static, str>>,
     {
-        Self::new_untracked(message, Location::caller())
-    }
+        Self {
+            id: None,
+            message: message.into(),
 
+            prefix: None,
+            sources: None,
+
+            tags: None,
+
+            data: None,
+
+            help: None,
+
+            location: Location::caller(),
+
+            #[cfg(feature = "backtrace")]
+            backtrace: Backtrace::capture(),
+
+            _static_prefix: PhantomData,
+        }
+    }
+}
+
+impl<ID: Id, P: Prefix, D> GErr<ID, P, D> {
+    /// Constructs new GErr with message and auto-generated id.
+    #[track_caller]
     #[inline]
-    pub(crate) fn new_untracked<M>(message: M, location: &'static Location<'static>) -> Self
+    pub fn new_auto<M>(message: M) -> Self
     where
         M: Into<Cow<'static, str>>,
     {
-        Self::with_id_untracked(ID::id(), message.into(), location)
+        Self::new_auto_untracked(message, Location::caller())
+    }
+
+    #[inline]
+    pub(crate) fn new_auto_untracked<M>(message: M, location: &'static Location<'static>) -> Self
+    where
+        M: Into<Cow<'static, str>>,
+    {
+        Self::new_with_id_untracked(Some(ID::id()), message.into(), location)
     }
 
     /// Constructs new GErr from any error implementing trait [`Error`]
@@ -140,7 +171,7 @@ impl<ID: Id, P: Prefix, D> GErr<ID, P, D> {
     where
         E: Error + Send + Sync + 'static,
     {
-        Self::new_untracked(err.to_string(), Location::caller()).add_source(err)
+        Self::new_auto_untracked(err.to_string(), Location::caller()).add_source(err)
     }
 }
 
@@ -154,12 +185,12 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         M: Into<Cow<'static, str>>,
     {
-        Self::with_id_untracked(id, message, Location::caller())
+        Self::new_with_id_untracked(Some(id), message, Location::caller())
     }
 
     #[inline]
-    pub(crate) fn with_id_untracked<M>(
-        id: ID,
+    pub(crate) fn new_with_id_untracked<M>(
+        id: Option<ID>,
         message: M,
         location: &'static Location<'static>,
     ) -> Self
@@ -197,7 +228,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         E: Error + Send + Sync + 'static,
     {
-        Self::with_id_untracked(id, err.to_string(), Location::caller()).add_source(err)
+        Self::new_with_id_untracked(Some(id), err.to_string(), Location::caller()).add_source(err)
     }
 }
 
@@ -206,7 +237,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     #[must_use]
     #[inline]
     pub fn set_id(mut self, id: ID) -> Self {
-        self.id = id;
+        self.id = Some(id);
         self
     }
 
@@ -339,7 +370,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     #[inline]
     pub fn with_id<T>(self, id: T) -> GErr<T, P, D> {
         GErr {
-            id,
+            id: Some(id),
             message: self.message,
 
             prefix: self.prefix,
@@ -420,8 +451,8 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
     /// Error id.
     #[inline]
-    pub fn id(&self) -> &ID {
-        &self.id
+    pub fn id(&self) -> Option<&ID> {
+        self.id.as_ref()
     }
 
     /// Error message.
@@ -558,7 +589,7 @@ where
 {
     fn from(gerr: GErr<ID, P, D>) -> Self {
         GErrSource {
-            id: Box::new(gerr.id),
+            id: gerr.id.map(|id| Box::new(id) as Box<dyn IdSource>),
             message: gerr.message,
             prefix: gerr.prefix,
             tags: gerr.tags,
@@ -587,13 +618,15 @@ where
 impl<ID, P, D> From<GErr<ID, P, D>> for GErrSource
 where
     ID: ::serde::Serialize + IdSource + 'static,
-    P: Prefix,
     D: ::serde::Serialize + DataSource + 'static,
 {
     fn from(gerr: GErr<ID, P, D>) -> Self {
         GErrSource {
-            id_json: serde_json::to_value(gerr.id()).unwrap_or_default(),
-            id: Box::new(gerr.id),
+            id_json: gerr
+                .id
+                .as_ref()
+                .map(|v| serde_json::to_value(v).unwrap_or_default()),
+            id: gerr.id.map(|id| Box::new(id) as Box<dyn IdSource>),
             message: gerr.message,
             prefix: gerr.prefix,
             tags: gerr.tags,
@@ -613,7 +646,6 @@ where
 impl<ID, P, D> GErr<ID, P, D>
 where
     ID: ::serde::Serialize + IdSource + 'static,
-    P: Prefix,
     D: ::serde::Serialize + DataSource + 'static,
 {
     /// Converts GErr into [`GErrSource`].

@@ -3,7 +3,7 @@ use core::panic::Location;
 use core::str::FromStr;
 
 use crate::{
-    ResultExt,
+    IdSource, ResultExt,
     gerr::{GErr, Prefix},
     gerr_source::{DataSource, GErrSource},
     gerr_view::GErrView,
@@ -14,7 +14,7 @@ use crate::{
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
 pub struct DisplayJsonData {
     /// Error ID: can be in form of Number or String.
-    pub id: serde_json::Value,
+    pub id: Option<serde_json::Value>,
     /// Error prefix.
     pub prefix: Option<String>,
     /// Error message.
@@ -31,7 +31,7 @@ pub struct DisplayJsonData {
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
 pub struct JsonData {
     /// Error ID: can be in form of Number or String
-    pub id: serde_json::Value,
+    pub id: Option<serde_json::Value>,
     /// Error prefix
     pub prefix: Option<String>,
     /// Error message
@@ -66,7 +66,7 @@ pub struct LocationJsonData {
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize, Default)]
 pub struct SourceJsonData {
     /// Error ID: can be in form of Number or String
-    pub id: serde_json::Value,
+    pub id: Option<serde_json::Value>,
     /// Error prefix
     pub prefix: Option<String>,
     /// Error message
@@ -90,8 +90,9 @@ where
 {
     fn from(err: &GErrView<'a, ID, D>) -> Self {
         JsonData {
-            id: serde_json::to_value(err.id)
-                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
+            id: err
+                .id
+                .map(|id| serde_json::to_value(id).unwrap_or_default()),
             prefix: err.prefix.map(|s| s.into()),
             message: err.message.into(),
             tags: err.tags.map(|t| t.iter().map(|s| s.to_string()).collect()),
@@ -120,8 +121,9 @@ where
 {
     fn from(err: &GErrView<'a, ID, D>) -> Self {
         DisplayJsonData {
-            id: serde_json::to_value(err.id)
-                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
+            id: err
+                .id
+                .map(|id| serde_json::to_value(id).unwrap_or_default()),
             prefix: err.prefix.map(|s| s.into()),
             message: err.message.into(),
             tags: err.tags.map(|t| t.iter().map(|s| s.to_string()).collect()),
@@ -155,9 +157,13 @@ where
             backtrace: _,
         } = value;
 
-        let de_id: ID = serde_json::from_value(id).context("converting id")?;
+        let de_id: Option<ID> = if let Some(v) = id {
+            serde_json::from_value(v).context("converting id")?
+        } else {
+            None
+        };
 
-        let mut err = GErr::<ID, P, D>::with_id_untracked(de_id, message, Location::caller());
+        let mut err = GErr::<ID, P, D>::new_with_id_untracked(de_id, message, Location::caller());
 
         if let Some(data) = data {
             err = err.with_data(serde_json::from_value(data).context("converting data")?);
@@ -208,9 +214,13 @@ where
             help,
         } = value;
 
-        let de_id: ID = serde_json::from_value(id).context("converting id")?;
+        let de_id: Option<ID> = if let Some(v) = id {
+            serde_json::from_value(v).context("converting id")?
+        } else {
+            None
+        };
 
-        let mut err = GErr::<ID, P, D>::with_id_untracked(de_id, message, Location::caller());
+        let mut err = GErr::<ID, P, D>::new_with_id_untracked(de_id, message, Location::caller());
 
         if let Some(data) = data {
             err = err.with_data(serde_json::from_value(data).context("converting data")?);
@@ -236,11 +246,11 @@ impl From<&GErrSource> for SourceJsonData {
     fn from(gerr: &GErrSource) -> Self {
         Self {
             id: serde_json::from_value({
-                match &gerr.id_json {
-                    ::serde_json::Value::Number(num) => {
+                match gerr.id_json.as_ref() {
+                    Some(::serde_json::Value::Number(num)) => {
                         serde_json::Value::from(num.as_i64().unwrap_or_default())
                     }
-                    ::serde_json::Value::String(s) => {
+                    Some(::serde_json::Value::String(s)) => {
                         serde_json::Value::from_str(s).unwrap_or_default()
                     }
                     _ => serde_json::Value::Null,
@@ -303,7 +313,9 @@ impl SourceJsonData {
         } = self;
 
         GErrSource {
-            id: Box::new(id.to_string()),
+            id: id
+                .as_ref()
+                .map(|v| Box::new(v.to_string()) as Box<dyn IdSource>),
 
             id_json: id,
 

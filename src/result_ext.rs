@@ -69,7 +69,7 @@ where
     {
         let location = Location::caller();
         self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(message.into(), location).add_source(source)
+            GErr::<ID, P, D>::new_auto_untracked(message.into(), location).add_source(source)
         })
     }
 
@@ -83,7 +83,7 @@ where
     {
         let location = Location::caller();
         self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(func().into(), location).add_source(source)
+            GErr::<ID, P, D>::new_auto_untracked(func().into(), location).add_source(source)
         })
     }
 
@@ -94,7 +94,7 @@ where
         P: Prefix,
     {
         let location = Location::caller();
-        self.map_err(|source| GErr::<ID, P, D>::new_untracked(source.to_string(), location))
+        self.map_err(|source| GErr::<ID, P, D>::new_auto_untracked(source.to_string(), location))
     }
 
     #[track_caller]
@@ -103,7 +103,9 @@ where
         P: Prefix,
     {
         let location = Location::caller();
-        self.map_err(|source| GErr::<ID, P, D>::with_id_untracked(id, source.to_string(), location))
+        self.map_err(|source| {
+            GErr::<ID, P, D>::new_with_id_untracked(Some(id), source.to_string(), location)
+        })
     }
 }
 
@@ -150,7 +152,7 @@ where
     {
         let location = Location::caller();
         self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(message.into(), location).add_source_gerr(source)
+            GErr::<ID, P, D>::new_auto_untracked(message.into(), location).add_source_gerr(source)
         })
     }
 
@@ -164,7 +166,7 @@ where
     {
         let location = Location::caller();
         self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(func().into(), location).add_source_gerr(source)
+            GErr::<ID, P, D>::new_auto_untracked(func().into(), location).add_source_gerr(source)
         })
     }
 
@@ -175,7 +177,7 @@ where
     {
         let location = Location::caller();
         self.map_err(|source| {
-            GErr::<ID, P, D>::with_id_untracked(id, message.into(), location)
+            GErr::<ID, P, D>::new_with_id_untracked(Some(id), message.into(), location)
                 .add_source_gerr(source)
         })
     }

@@ -1,6 +1,5 @@
 use crate::GErrSource;
 use crate::report::json_data::{DisplayJsonData, JsonData};
-use crate::types::NoID;
 use crate::{gerr_view::GErrView, report::Report};
 use alloc::borrow::Cow;
 use core::fmt::{Debug, Display};
@@ -65,7 +64,7 @@ impl Report for DisplayJsonReport {
 
 #[derive(serde::Serialize)]
 struct DisplayJsonReportData<'a> {
-    pub id: serde_json::Value,
+    pub id: Option<serde_json::Value>,
     pub prefix: Option<&'a str>,
     pub message: &'a str,
     pub tags: Option<&'a [Cow<'static, str>]>,
@@ -74,7 +73,7 @@ struct DisplayJsonReportData<'a> {
 
 #[derive(serde::Serialize)]
 struct JsonReportData<'a> {
-    pub id: serde_json::Value,
+    pub id: Option<serde_json::Value>,
     pub prefix: Option<&'a str>,
     pub message: &'a str,
     pub tags: Option<&'a [Cow<'static, str>]>,
@@ -95,7 +94,7 @@ struct LocationJson<'a> {
 
 #[derive(serde::Serialize)]
 struct SourceJson<'a> {
-    pub id: &'a serde_json::Value,
+    pub id: Option<&'a serde_json::Value>,
     pub prefix: Option<&'a str>,
     pub message: String,
     pub tags: Option<&'a [Cow<'static, str>]>,
@@ -111,8 +110,9 @@ where
 {
     fn from(value: &'a GErrView<ID, D>) -> Self {
         Self {
-            id: serde_json::to_value(value.id)
-                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
+            id: value
+                .id
+                .map(|id| serde_json::to_value(id).unwrap_or_default()),
             prefix: value.prefix,
             message: value.message,
             tags: value.tags,
@@ -128,8 +128,9 @@ where
 {
     fn from(value: &'a GErrView<ID, D>) -> Self {
         Self {
-            id: serde_json::to_value(value.id)
-                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
+            id: value
+                .id
+                .map(|id| serde_json::to_value(id).unwrap_or_default()),
             prefix: value.prefix,
             message: value.message,
             tags: value.tags,
@@ -150,7 +151,7 @@ where
 impl<'a> From<&'a GErrSource> for SourceJson<'a> {
     fn from(gerr: &'a GErrSource) -> Self {
         Self {
-            id: &gerr.id_json,
+            id: gerr.id_json.as_ref(),
             prefix: gerr.prefix.as_deref(),
             message: gerr.message.to_string(),
             tags: gerr.tags.as_deref(),

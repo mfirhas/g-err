@@ -180,7 +180,7 @@ fn test_result_context_with_custom_id_type() {
     let err = gerr_result.unwrap_err();
     assert_eq!(err.message(), "wrapped error");
     // ID should be auto-generated
-    assert!(err.id().0.to_string().len() > 0);
+    assert!(err.id().unwrap().0.to_string().len() > 0);
 }
 
 #[test]
@@ -317,7 +317,7 @@ fn test_result_into_gerr_with_autogen_id() {
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
     // ID should be auto-generated
-    assert!(err.id().0.to_string().len() > 0);
+    assert!(err.id().unwrap().0.to_string().len() > 0);
 }
 
 #[test]
@@ -404,7 +404,7 @@ fn test_result_gerr_with_autogen_id() {
     let gerr_result: Result<i32, AutoId> = result.gerr("wrapped");
 
     let err = gerr_result.unwrap_err();
-    assert!(err.id().0.to_string().len() > 0);
+    assert!(err.id().unwrap().0.to_string().len() > 0);
 }
 
 #[test]
@@ -562,7 +562,7 @@ fn test_gerr_source_display_with_prefix() {
 
 #[test]
 fn test_gerr_error_trait_source() {
-    let err: GErr<NoID> = GErr::new("parent error").add_source(std::io::Error::new(
+    let err: GErr<NoID> = GErr::new_auto("parent error").add_source(std::io::Error::new(
         std::io::ErrorKind::Other,
         "child error",
     ));
@@ -576,7 +576,7 @@ fn test_gerr_error_trait_source() {
 fn test_gerr_error_trait_source_chain() {
     use std::error::Error;
 
-    let err: GErr<NoID> = GErr::new("parent")
+    let err: GErr<NoID> = GErr::new_auto("parent")
         .add_source(std::io::Error::new(std::io::ErrorKind::Other, "child1"))
         .add_source(std::io::Error::new(std::io::ErrorKind::Other, "child2"));
 
@@ -657,7 +657,7 @@ fn test_conversion_preserves_error_details() {
 
 #[test]
 fn test_display_trait_on_gerr() {
-    let err: GErr<NoID> = GErr::new("error message");
+    let err: GErr<NoID> = GErr::new_auto("error message");
 
     let display_str = format!("{}", err);
     assert_eq!(display_str, "error message");
@@ -676,7 +676,7 @@ fn test_display_trait_on_gerr_source() {
 
 #[test]
 fn test_debug_trait_on_gerr() {
-    let err: GErr<NoID> = GErr::new("debug test");
+    let err: GErr<NoID> = GErr::new_auto("debug test");
     let debug_str = format!("{:?}", err);
 
     assert!(debug_str.contains("Err"));
@@ -863,7 +863,7 @@ fn test_result_to_gerr_with_id_location() {
     let column = 48;
 
     assert!(gerr_result.is_err());
-    assert_eq!(gerr_result.as_ref().unwrap_err().id(), &123);
+    assert_eq!(gerr_result.as_ref().unwrap_err().id().unwrap(), &123);
     assert_eq!(gerr_result.as_ref().unwrap_err().location().file(), file!());
     assert_eq!(gerr_result.as_ref().unwrap_err().location().line(), line);
     assert_eq!(

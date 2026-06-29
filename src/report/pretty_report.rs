@@ -1,4 +1,5 @@
 use super::Report;
+use crate::NoID;
 use crate::gerr_view::GErrView;
 use core::fmt::Write;
 use core::fmt::{Debug, Display};
@@ -35,7 +36,12 @@ impl PrettyReport {
         let _ = writeln!(out, "============");
     }
     fn preamble<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
-        let _ = writeln!(out, "ID: {}", err.id);
+        if let Some(id) = err.id {
+            let _ = writeln!(out, "ID: {}", id);
+        } else {
+            let _ = writeln!(out, "ID: {}", NoID);
+        };
+
         if let Some(prefix) = err.prefix {
             let _ = writeln!(out, "Prefix: {prefix}");
         }
@@ -80,7 +86,11 @@ impl PrettyReport {
                     }
                 }
 
-                let _ = writeln!(out, "     id: {}", gerr.id);
+                if let Some(ref id) = gerr.id {
+                    let _ = writeln!(out, "     id: {}", &**id);
+                } else {
+                    let _ = writeln!(out, "     id: {}", NoID);
+                };
 
                 if let Some(loc) = gerr.location {
                     let _ = writeln!(

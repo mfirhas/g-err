@@ -55,14 +55,14 @@ fn get_age(str_age: &str) -> Result<i32, UuidV4, NoPrefix> {
 
 fn get_age_usecase(req_id: u32, input: &str) -> Result<u16, UuidV4, PrefixA, (&'static str, u32)> {
     let ret = get_age(input).map_err(|e| {
-        GErr::new("get age usecase")
+        GErr::new_auto("get age usecase")
             .set_data(("req_id", req_id))
             .add_tag("usecase")
             .add_source_gerr(e)
     })?;
     let ret = u16::try_from(ret)
         .context::<NoID, PrefixB, NoData>("converting i32 to u16")
-        .map_err(|gerr| GErr::new("into u16").add_source_gerr(gerr))?;
+        .map_err(|gerr| GErr::new_auto("into u16").add_source_gerr(gerr))?;
     Ok(ret)
 }
 
@@ -158,12 +158,12 @@ fn test() {
     // println!("Root cause:\n{}", &ret.root_cause());
     println!("***************************************************************************");
 
-    let err = GErr::<NoID>::new("test").set_prefix("[HTTP]");
-    let err2 = GErr::<NoID>::new("test2");
-    let err3 = GErr::<NoID>::new("test3");
-    let err4 = GErr::<NoID>::new("test4").add_tag("nganu");
+    let err = GErr::<NoID>::new_auto("test").set_prefix("[HTTP]");
+    let err2 = GErr::<NoID>::new_auto("test2");
+    let err3 = GErr::<NoID>::new_auto("test3");
+    let err4 = GErr::<NoID>::new_auto("test4").add_tag("nganu");
     let err4_2 = GErr::<u16>::new_with_id(123, "test4_2").with_id("XYZ");
-    let err5 = GErr::<NoID>::new("test5").set_prefix("[ASD]");
+    let err5 = GErr::<NoID>::new_auto("test5").set_prefix("[ASD]");
     let err4 = err4.add_source(err5);
     let err2 = err2.add_source_gerr(err4);
     let err2 = err2.add_source_gerr(err4_2);
