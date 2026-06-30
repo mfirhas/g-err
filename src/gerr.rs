@@ -41,6 +41,16 @@ pub type Result<T, ID = NoID, P = NoPrefix, D = NoData> = core::result::Result<T
 /// Default GErr without ID, Prefix and Data.
 pub type GErrDefault = GErr<NoID, NoPrefix, NoData>;
 
+/// GErr's source
+#[derive(Debug)]
+pub enum Source {
+    /// General error.
+    Err(Box<dyn Error + Send + Sync + 'static>),
+
+    /// GErr error.
+    GErr(Box<GErrSource>),
+}
+
 /// GErr - Generic and configurable error type.
 ///
 /// It contains type parameters error id(`ID`), prefix(`P`), and generic error data(`D`).
@@ -93,10 +103,12 @@ pub type GErrDefault = GErr<NoID, NoPrefix, NoData>;
 /// own APIs or using provided [`GErrBox`].
 pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
     id: ID,
+
     message: Cow<'static, str>,
 
     prefix: Option<Cow<'static, str>>,
-    sources: Option<Vec<GErrSource>>,
+
+    sources: Option<Vec<Source>>,
 
     tags: Option<Vec<Cow<'static, str>>>,
 
@@ -259,6 +271,17 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
         self
     }
 
+    /// Set sources
+    #[must_use]
+    #[inline]
+    pub fn set_sources<I>(mut self, sources: I) -> Self
+    where
+        I: IntoIterator<Item = Source>,
+    {
+        self.sources = Some(sources.into_iter().collect());
+        self
+    }
+
     /// Add general error into list of sources.
     ///
     /// If you're passing GErr, convert it into [`GErrSource`] first using [`GErr::into_gerr_source`] or `Into`
@@ -271,7 +294,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     {
         self.sources
             .get_or_insert_default()
-            .push(GErrSource::from_error(source));
+            .push(Source::Err(Box::new(source)));
         self
     }
 
@@ -283,7 +306,9 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     where
         E: Into<GErrSource> + Error + Send + Sync + 'static,
     {
-        self.sources.get_or_insert_default().push(gerr.into());
+        self.sources
+            .get_or_insert_default()
+            .push(Source::GErr(Box::new(gerr.into())));
         self
     }
 
@@ -456,7 +481,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
     /// Error sources.
     #[inline]
-    pub fn sources(&self) -> Option<&[GErrSource]> {
+    pub fn sources(&self) -> Option<&[Source]> {
         self.sources.as_deref()
     }
 
@@ -544,7 +569,10 @@ impl<ID: Debug, P: Prefix, D: Debug> Error for GErr<ID, P, D> {
         if let Some(ref sources) = self.sources
             && !sources.is_empty()
         {
-            return sources.first().map(|s| s as &(dyn Error + 'static));
+            return sources.first().map(|s| match s {
+                Source::Err(e) => &**e as &(dyn Error + 'static),
+                Source::GErr(e) => &**e as &(dyn Error + 'static),
+            });
         }
         None
     }

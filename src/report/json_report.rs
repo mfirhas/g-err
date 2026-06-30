@@ -1,4 +1,4 @@
-use crate::GErrSource;
+use crate::gerr::Source;
 use crate::report::json_data::{DisplayJsonData, JsonData};
 use crate::types::NoID;
 use crate::{gerr_view::GErrView, report::Report};
@@ -147,23 +147,36 @@ where
     }
 }
 
-impl<'a> From<&'a GErrSource> for SourceJson<'a> {
-    fn from(gerr: &'a GErrSource) -> Self {
-        Self {
-            id: &gerr.id_json,
-            prefix: gerr.prefix.as_deref(),
-            message: gerr.message.to_string(),
-            tags: gerr.tags.as_deref(),
-            data: gerr.data_json.as_ref(),
-            location: gerr.location.map(|loc| LocationJson {
-                file: loc.file(),
-                line: loc.line(),
-                column: loc.column(),
-            }),
-            sources: gerr
-                .sources
-                .as_deref()
-                .map(|s| s.iter().map(|src| src.into()).collect()),
+pub static NO_ID_JSON: serde_json::Value = serde_json::Value::Null;
+
+impl<'a> From<&'a Source> for SourceJson<'a> {
+    fn from(source: &'a Source) -> Self {
+        match source {
+            Source::Err(err) => Self {
+                id: &NO_ID_JSON,
+                prefix: None,
+                message: err.to_string(),
+                tags: None,
+                data: None,
+                location: None,
+                sources: None,
+            },
+            Source::GErr(gerr) => Self {
+                id: &gerr.id_json,
+                prefix: gerr.prefix.as_deref(),
+                message: gerr.message.to_string(),
+                tags: gerr.tags.as_deref(),
+                data: gerr.data_json.as_ref(),
+                location: gerr.location.map(|loc| LocationJson {
+                    file: loc.file(),
+                    line: loc.line(),
+                    column: loc.column(),
+                }),
+                sources: gerr
+                    .sources
+                    .as_deref()
+                    .map(|s| s.iter().map(|src| src.into()).collect()),
+            },
         }
     }
 }

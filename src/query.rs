@@ -18,7 +18,9 @@ where
         self.iter().filter(move |item| match item {
             GErrNode::Root(gerr) => gerr.prefix().is_some_and(|p| p == prefix),
 
-            GErrNode::Leaf(gerr) => gerr.prefix.as_ref().is_some_and(|p| p == prefix),
+            GErrNode::LeafGErr(gerr) => gerr.prefix.as_ref().is_some_and(|p| p == prefix),
+
+            _ => false,
         })
     }
 
@@ -33,10 +35,12 @@ where
                 .tags()
                 .is_some_and(|tags| tags.iter().any(|t| t == tag)),
 
-            GErrNode::Leaf(gerr) => gerr
+            GErrNode::LeafGErr(gerr) => gerr
                 .tags
                 .as_ref()
                 .is_some_and(|tags| tags.iter().any(|t| t == tag)),
+
+            _ => false,
         })
     }
 
@@ -49,7 +53,9 @@ where
         self.iter().filter(|item| match item {
             GErrNode::Root(gerr) => (gerr.id() as &dyn Any).is::<T>(),
 
-            GErrNode::Leaf(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
+            GErrNode::LeafGErr(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
+
+            _ => false,
         })
     }
 
@@ -64,9 +70,11 @@ where
                 .downcast_ref::<T>()
                 .is_some_and(|id| id == value),
 
-            GErrNode::Leaf(gerr) => (&*gerr.id as &dyn Any)
+            GErrNode::LeafGErr(gerr) => (&*gerr.id as &dyn Any)
                 .downcast_ref::<T>()
                 .is_some_and(|id| id == value),
+
+            _ => false,
         })
     }
 
@@ -79,10 +87,12 @@ where
         self.iter().filter(|item| match item {
             GErrNode::Root(gerr) => gerr.data().is_some_and(|data| (data as &dyn Any).is::<T>()),
 
-            GErrNode::Leaf(gerr) => gerr
+            GErrNode::LeafGErr(gerr) => gerr
                 .data
                 .as_ref()
                 .is_some_and(|data| (&**data as &dyn Any).is::<T>()),
+
+            _ => false,
         })
     }
 
@@ -98,11 +108,13 @@ where
                 .and_then(|data| (data as &dyn Any).downcast_ref::<T>())
                 .is_some_and(|data| data == value),
 
-            GErrNode::Leaf(gerr) => gerr
+            GErrNode::LeafGErr(gerr) => gerr
                 .data
                 .as_ref()
                 .and_then(|data| (&**data as &dyn Any).downcast_ref::<T>())
                 .is_some_and(|data| data == value),
+
+            _ => false,
         })
     }
 
@@ -113,7 +125,9 @@ where
         E: Error + 'static,
     {
         self.iter().filter_map(|item| match item {
-            GErrNode::Leaf(gerr) if (gerr as &dyn Error).is::<E>() => Some(item),
+            GErrNode::LeafErr(err) if (err as &dyn Error).is::<E>() => Some(item),
+
+            GErrNode::LeafGErr(gerr) if (gerr as &dyn Error).is::<E>() => Some(item),
 
             _ => None,
         })

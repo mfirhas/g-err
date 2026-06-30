@@ -6,8 +6,10 @@
 //!
 //! [`GErrTree`] is traversed by DFS method.
 use alloc::vec::Vec;
+use core::error::Error;
 use core::fmt::{Debug, Display};
 
+use crate::gerr::Source;
 use crate::{DataSource, GErr, GErrSource, IdSource, Prefix};
 
 impl<ID, P, D> GErr<ID, P, D>
@@ -30,7 +32,8 @@ where
 /// Contained by [`GErrTree`].
 pub enum GErrNode<'a, ID, P, D> {
     Root(&'a GErr<ID, P, D>),
-    Leaf(&'a GErrSource),
+    LeafErr(&'a (dyn Error + Send + Sync + 'static)),
+    LeafGErr(&'a GErrSource),
 }
 
 impl<'a, ID, P, D> Display for GErrNode<'a, ID, P, D>
@@ -42,7 +45,8 @@ where
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Self::Root(root) => write!(f, "{}", root),
-            Self::Leaf(gerr) => write!(f, "{}", gerr),
+            Self::LeafErr(err) => write!(f, "{}", err),
+            Self::LeafGErr(gerr) => write!(f, "{}", gerr),
         }
     }
 }
@@ -56,7 +60,8 @@ where
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Self::Root(root) => write!(f, "root: {:#?}", root),
-            Self::Leaf(gerr) => write!(f, "gerr: {:#?}", gerr),
+            Self::LeafErr(err) => write!(f, "err: {:#?}", err),
+            Self::LeafGErr(gerr) => write!(f, "gerr: {:#?}", gerr),
         }
     }
 }
@@ -83,15 +88,34 @@ where
             GErrNode::Root(gerr) => {
                 if let Some(sources) = gerr.sources() {
                     for source in sources.iter().rev() {
-                        self.nodes.push(GErrNode::Leaf(source));
+                        match &source {
+                            Source::Err(err) => {
+                                self.nodes.push(GErrNode::LeafErr(err.as_ref()));
+                            }
+
+                            Source::GErr(gerr) => {
+                                self.nodes.push(GErrNode::LeafGErr(gerr.as_ref()));
+                            }
+                        }
                     }
                 }
             }
 
-            GErrNode::Leaf(gerr) => {
+            // External errors have no children.
+            GErrNode::LeafErr(_) => {}
+
+            GErrNode::LeafGErr(gerr) => {
                 if let Some(sources) = gerr.sources.as_deref() {
                     for source in sources.iter().rev() {
-                        self.nodes.push(GErrNode::Leaf(source));
+                        match &source {
+                            Source::Err(err) => {
+                                self.nodes.push(GErrNode::LeafErr(err.as_ref()));
+                            }
+
+                            Source::GErr(gerr) => {
+                                self.nodes.push(GErrNode::LeafGErr(gerr.as_ref()));
+                            }
+                        }
                     }
                 }
             }

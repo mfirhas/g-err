@@ -7,7 +7,7 @@ fn test_general_error() {
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
     // general error from non-GErr contains no tracked location.
-    assert_eq!(gerr.sources().unwrap()[0].location, None);
+    assert!(matches!(gerr.sources().unwrap()[0], Source::Err(_)));
 }
 
 #[test]
@@ -17,22 +17,22 @@ fn test_gerr_as_general_error() {
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
     // general error from GErr as general error contains no tracked location.
-    assert_eq!(gerr.sources().unwrap()[0].location, None);
+    assert!(matches!(gerr.sources().unwrap()[0], Source::Err(_)));
 }
 
 #[test]
 fn test_gerr_as_gerr_source() {
     let line = line!();
     let err = gerr!("this error");
-    let gerr: GErr = GErr::new("error").add_source(err.into_gerr_source());
+    let gerr: GErr = GErr::new("error").add_source_gerr(err);
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
-    // general error from GErr as gerr source contains everything.
-    assert_eq!(gerr.sources().unwrap()[0].location.unwrap().file(), file!());
-    assert_eq!(
-        gerr.sources().unwrap()[0].location.unwrap().line(),
-        line + 1
-    );
+    if let Source::GErr(ref ge) = gerr.sources().unwrap()[0] {
+        assert_eq!(ge.location.unwrap().file(), file!());
+        assert_eq!(ge.location.unwrap().line(), line + 1);
+    } else {
+        panic!("expected source as GErr");
+    }
 }
 
 #[test]
@@ -42,12 +42,12 @@ fn test_gerr_into_source_gerr() {
     let gerr: GErr = GErr::new("error").add_source_gerr(err);
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
-    // general error from GErr as gerr source contains everything.
-    assert_eq!(gerr.sources().unwrap()[0].location.unwrap().file(), file!());
-    assert_eq!(
-        gerr.sources().unwrap()[0].location.unwrap().line(),
-        line + 1
-    );
+    if let Source::GErr(ref ge) = gerr.sources().unwrap()[0] {
+        assert_eq!(ge.location.unwrap().file(), file!());
+        assert_eq!(ge.location.unwrap().line(), line + 1);
+    } else {
+        panic!("expected source as GErr");
+    }
 }
 
 #[test]
@@ -58,12 +58,17 @@ fn test_mixed_sources() {
     let gerr: GErr = GErr::new("error").add_source_gerr(err).add_source(int_err);
 
     assert_eq!(gerr.sources().unwrap().len(), 2);
-    assert_eq!(gerr.sources().unwrap()[1].location, None);
-    assert_eq!(gerr.sources().unwrap()[0].location.unwrap().file(), file!());
-    assert_eq!(
-        gerr.sources().unwrap()[0].location.unwrap().line(),
-        line + 1
-    );
+    if let Source::Err(_) = gerr.sources().unwrap()[1] {
+    } else {
+        panic!("expected source at index 1 as Source::Err")
+    }
+
+    if let Source::GErr(ref ge) = gerr.sources().unwrap()[0] {
+        assert_eq!(ge.location.unwrap().file(), file!());
+        assert_eq!(ge.location.unwrap().line(), line + 1);
+    } else {
+        panic!("expected source at index 0 as Source::GErr")
+    }
 }
 
 #[test]
@@ -72,87 +77,96 @@ fn test_nested_sources() {
     let line = line!();
     let err = gerr!(
         "this error";
-        gerr = gerr!("cause"; prefix = "[OUTBOUND]", gerr = gerr!("cause's case"; tags = ["tag1", "tag2"])),
+        gerr = gerr!(
+            "cause";
+            prefix = "[OUTBOUND]",
+            gerr = gerr!("cause's case"; tags = ["tag1", "tag2"])
+        ),
         source = int_err.clone(),
         gerr = gerr!("the root cause"; id = 100),
         source = gerr!("the root cause"; id = 120),
-        source = gerr!("the root cause"; id = 121).into_gerr_source(),
+        gerr = gerr!("the root cause"; id = 121).into_gerr_source(),
     );
+
     let gerr: GErr = GErr::new("error").add_source_gerr(err).add_source(int_err);
 
-    assert_eq!(gerr.sources().unwrap().len(), 2);
-    assert_eq!(gerr.sources().unwrap()[1].location, None);
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap().len(),
-        5
-    );
-    // attributes check
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap()[0]
-            .sources
-            .as_ref()
-            .unwrap()
-            .len(),
-        1
-    );
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap()[0]
-            .prefix
-            .as_ref()
-            .unwrap(),
-        "[OUTBOUND]"
-    );
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap()[0]
-            .sources
-            .as_ref()
-            .unwrap()[0]
-            .tags // tag1 and tag2
-            .as_ref()
-            .unwrap()
-            .len(),
-        2
-    );
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap()[1].location,
-        None
-    );
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap()[2]
-            .id
-            .to_string(),
-        "100"
-    );
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap()[3]
-            .id
-            .to_string(),
-        "NoID" // because gerr wrapped as general error
-    );
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap()[3]
-            .location
-            .as_ref(),
-        None
-    );
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap()[4]
-            .id
-            .to_string(),
-        "121"
-    );
-    assert_eq!(
-        gerr.sources().unwrap()[0].sources.as_ref().unwrap()[4]
-            .location
-            .as_ref()
-            .unwrap()
-            .file(),
-        file!()
-    );
+    let sources = gerr.sources().unwrap();
 
-    assert_eq!(gerr.sources().unwrap()[0].location.unwrap().file(), file!());
-    assert_eq!(
-        gerr.sources().unwrap()[0].location.unwrap().line(),
-        line + 1
-    );
+    assert_eq!(sources.len(), 2);
+
+    // second source is ParseIntError
+    match &sources[1] {
+        Source::Err(_) => {}
+        Source::GErr(_) => panic!("expected general error"),
+    }
+
+    // first source is GErr
+    let root = match &sources[0] {
+        Source::GErr(src) => src,
+        Source::Err(_) => panic!("expected GErr source"),
+    };
+
+    assert_eq!(root.location.unwrap().file(), file!());
+    assert_eq!(root.location.unwrap().line(), line + 1);
+
+    let nested = root.sources.as_ref().unwrap();
+    assert_eq!(nested.len(), 5);
+
+    // --------------------------------------------------
+    // [0] nested outbound gerr
+    // --------------------------------------------------
+    let outbound = match &nested[0] {
+        Source::GErr(src) => src,
+        Source::Err(_) => panic!("expected GErr"),
+    };
+
+    assert_eq!(outbound.prefix.as_deref(), Some("[OUTBOUND]"));
+    assert_eq!(outbound.sources.as_ref().unwrap().len(), 1);
+
+    let cause = match &outbound.sources.as_ref().unwrap()[0] {
+        Source::GErr(src) => src,
+        Source::Err(_) => panic!("expected GErr"),
+    };
+
+    assert_eq!(cause.tags.as_ref().unwrap().len(), 2);
+
+    // --------------------------------------------------
+    // [1] ParseIntError
+    // --------------------------------------------------
+    match &nested[1] {
+        Source::Err(_) => {}
+        Source::GErr(_) => panic!("expected general error"),
+    }
+
+    // --------------------------------------------------
+    // [2] gerr!(id = 100)
+    // --------------------------------------------------
+    let id100 = match &nested[2] {
+        Source::GErr(src) => src,
+        Source::Err(_) => panic!("expected GErr"),
+    };
+
+    assert_eq!(id100.id.to_string(), "100");
+
+    // --------------------------------------------------
+    // [3] source = gerr!(...)
+    // Wrapped as ordinary Error
+    // --------------------------------------------------
+    match &nested[3] {
+        Source::Err(err) => {
+            assert!(err.is::<GErr<i32>>());
+        }
+        Source::GErr(_) => panic!("expected general error"),
+    }
+
+    // --------------------------------------------------
+    // [4] into_gerr_source()
+    // --------------------------------------------------
+    let id121 = match &nested[4] {
+        Source::GErr(src) => src,
+        Source::Err(_) => panic!("expected GErr"),
+    };
+
+    assert_eq!(id121.id.to_string(), "121");
+    assert_eq!(id121.location.unwrap().file(), file!());
 }

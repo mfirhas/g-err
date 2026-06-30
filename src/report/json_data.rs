@@ -4,7 +4,7 @@ use core::str::FromStr;
 
 use crate::{
     ResultExt,
-    gerr::{GErr, Prefix},
+    gerr::{GErr, Prefix, Source},
     gerr_source::{DataSource, GErrSource},
     gerr_view::GErrView,
     types::{NoData, NoID, NoPrefix},
@@ -78,7 +78,7 @@ pub struct SourceJsonData {
     /// Error location
     pub location: Option<LocationJsonData>,
     /// Error sources
-    pub sources: Option<Vec<Box<SourceJsonData>>>,
+    pub sources: Option<Vec<SourceJsonData>>,
     /// Error help hint
     pub help: Option<String>,
 }
@@ -172,13 +172,11 @@ where
         }
 
         if let Some(sources) = sources {
-            let gerr_sources: Vec<GErrSource> = sources
+            let gerr_sources: Vec<Source> = sources
                 .into_iter()
                 .map(|s| s.into_source(Location::caller()))
                 .collect();
-            for gs in gerr_sources {
-                err = err.add_source_gerr(gs);
-            }
+            err = err.set_sources(gerr_sources);
         }
 
         if let Some(help) = help {
@@ -232,65 +230,73 @@ where
     }
 }
 
-impl From<&GErrSource> for SourceJsonData {
-    fn from(gerr: &GErrSource) -> Self {
-        Self {
-            id: serde_json::from_value({
-                match &gerr.id_json {
-                    ::serde_json::Value::Number(num) => {
-                        serde_json::Value::from(num.as_i64().unwrap_or_default())
-                    }
-                    ::serde_json::Value::String(s) => {
-                        serde_json::Value::from_str(s).unwrap_or_default()
-                    }
-                    _ => serde_json::Value::Null,
-                }
-            })
-            .unwrap_or_default(),
-            prefix: gerr.prefix.as_deref().map(|s| s.into()),
-            message: gerr.message.to_string(),
-            tags: gerr
-                .tags
-                .as_ref()
-                .map(|t| t.iter().map(|t| t.to_string()).collect()),
-            data: serde_json::from_value({
-                if let Some(json) = &gerr.data_json {
-                    match json {
-                        ::serde_json::Value::Bool(b) => ::serde_json::Value::from(*b),
+impl From<&Source> for SourceJsonData {
+    fn from(gerr: &Source) -> Self {
+        match gerr {
+            Source::Err(err) => Self {
+                message: err.to_string(),
+                ..Default::default()
+            },
+            Source::GErr(gerr) => Self {
+                id: serde_json::from_value({
+                    match &gerr.id_json {
                         ::serde_json::Value::Number(num) => {
-                            ::serde_json::Value::from(num.as_i64().unwrap_or_default())
+                            serde_json::Value::from(num.as_i64().unwrap_or_default())
                         }
                         ::serde_json::Value::String(s) => {
-                            ::serde_json::Value::from_str(s).unwrap_or_default()
+                            serde_json::Value::from_str(s).unwrap_or_default()
                         }
-                        ::serde_json::Value::Array(arr) => {
-                            let slice: &[::serde_json::Value] = arr.as_ref();
-                            ::serde_json::Value::from(slice)
-                        }
-                        serde_json::Value::Object(obj) => ::serde_json::Value::Object(obj.clone()),
-                        _ => ::serde_json::Value::Null,
+                        _ => serde_json::Value::Null,
                     }
-                } else {
-                    ::serde_json::Value::Null
-                }
-            })
-            .unwrap_or_default(),
-            help: gerr.prefix.as_deref().map(|s| s.into()),
-            sources: gerr
-                .sources
-                .as_ref()
-                .map(|s| s.iter().map(|s| Box::new(s.into())).collect()),
-            location: gerr.location.map(|loc| LocationJsonData {
-                file: loc.file().into(),
-                line: loc.line(),
-                column: loc.column(),
-            }),
+                })
+                .unwrap_or_default(),
+                prefix: gerr.prefix.as_deref().map(|s| s.into()),
+                message: gerr.message.to_string(),
+                tags: gerr
+                    .tags
+                    .as_ref()
+                    .map(|t| t.iter().map(|t| t.to_string()).collect()),
+                data: serde_json::from_value({
+                    if let Some(json) = &gerr.data_json {
+                        match json {
+                            ::serde_json::Value::Bool(b) => ::serde_json::Value::from(*b),
+                            ::serde_json::Value::Number(num) => {
+                                ::serde_json::Value::from(num.as_i64().unwrap_or_default())
+                            }
+                            ::serde_json::Value::String(s) => {
+                                ::serde_json::Value::from_str(s).unwrap_or_default()
+                            }
+                            ::serde_json::Value::Array(arr) => {
+                                let slice: &[::serde_json::Value] = arr.as_ref();
+                                ::serde_json::Value::from(slice)
+                            }
+                            serde_json::Value::Object(obj) => {
+                                ::serde_json::Value::Object(obj.clone())
+                            }
+                            _ => ::serde_json::Value::Null,
+                        }
+                    } else {
+                        ::serde_json::Value::Null
+                    }
+                })
+                .unwrap_or_default(),
+                help: gerr.prefix.as_deref().map(|s| s.into()),
+                sources: gerr
+                    .sources
+                    .as_ref()
+                    .map(|s| s.iter().map(|s| s.into()).collect()),
+                location: gerr.location.map(|loc| LocationJsonData {
+                    file: loc.file().into(),
+                    line: loc.line(),
+                    column: loc.column(),
+                }),
+            },
         }
     }
 }
 
 impl SourceJsonData {
-    fn into_source(self, location: &'static Location<'static>) -> GErrSource {
+    fn into_source(self, location: &'static Location<'static>) -> Source {
         let SourceJsonData {
             id,
             prefix,
@@ -302,7 +308,7 @@ impl SourceJsonData {
             sources,
         } = self;
 
-        GErrSource {
+        let gerr_source = GErrSource {
             id: Box::new(id.to_string()),
 
             id_json: id,
@@ -324,6 +330,8 @@ impl SourceJsonData {
             help: help.map(Cow::Owned),
 
             location: Some(location),
-        }
+        };
+
+        Source::GErr(Box::new(gerr_source))
     }
 }

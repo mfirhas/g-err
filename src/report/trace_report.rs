@@ -1,5 +1,5 @@
 use super::Report;
-use crate::GErrSource;
+use crate::gerr::Source;
 use crate::gerr_view::GErrView;
 use core::fmt::{Debug, Display, Write};
 
@@ -38,11 +38,11 @@ impl TraceReport {
     }
 
     fn write_sources(
-        sources: &[GErrSource],
+        sources: &[Source],
         out: &mut String,
         ancestors: &mut Vec<bool>, // true = ancestor was last child
     ) {
-        for (idx, ge) in sources.iter().enumerate() {
+        for (idx, src) in sources.iter().enumerate() {
             let is_last = idx + 1 == sources.len();
 
             // Draw ancestor guide lines.
@@ -52,17 +52,25 @@ impl TraceReport {
 
             let branch = if is_last { "└─ " } else { "├─ " };
 
-            let msg = match ge.prefix.as_deref() {
-                Some(prefix) => format!("{prefix} {} ({})", ge.message, ge.id),
-                None => format!("{} ({})", ge.message, ge.id),
-            };
+            match src {
+                Source::Err(e) => {
+                    let _ = writeln!(out, "{branch}{e}");
+                }
 
-            let _ = writeln!(out, "{branch}{msg}");
+                Source::GErr(ge) => {
+                    let msg = match ge.prefix.as_deref() {
+                        Some(prefix) => format!("{prefix} {} ({})", ge.message, ge.id),
+                        None => format!("{} ({})", ge.message, ge.id),
+                    };
 
-            if let Some(nested) = &ge.sources {
-                ancestors.push(is_last);
-                Self::write_sources(nested, out, ancestors);
-                ancestors.pop();
+                    let _ = writeln!(out, "{branch}{msg}");
+
+                    if let Some(nested) = &ge.sources {
+                        ancestors.push(is_last);
+                        Self::write_sources(nested, out, ancestors);
+                        ancestors.pop();
+                    }
+                }
             }
         }
     }

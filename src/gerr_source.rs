@@ -9,7 +9,7 @@ use core::{
     panic::Location,
 };
 
-use crate::NoID;
+use crate::{NoID, gerr::Source};
 
 /// Dyn-compatible trait for error id.
 pub trait IdSource: Any + Debug + Display + Send + Sync {}
@@ -48,7 +48,7 @@ pub struct GErrSource {
     pub prefix: Option<Cow<'static, str>>,
 
     /// Error sources.
-    pub sources: Option<Vec<GErrSource>>,
+    pub sources: Option<Vec<Source>>,
 
     /// Error tags.
     pub tags: Option<Vec<Cow<'static, str>>>,
@@ -130,7 +130,10 @@ impl Error for GErrSource {
         if let Some(ref sources) = self.sources
             && !sources.is_empty()
         {
-            return sources.first().map(|s| s as &(dyn Error + 'static));
+            return sources.first().map(|s| match s {
+                Source::Err(e) => &**e as &(dyn Error + 'static),
+                Source::GErr(e) => &**e as &(dyn Error + 'static),
+            });
         }
         None
     }

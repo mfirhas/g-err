@@ -8,7 +8,7 @@
 extern crate alloc;
 
 mod gerr;
-pub use gerr::{GErr, GErrDefault, Id, Prefix, Result, SetField};
+pub use gerr::{GErr, GErrDefault, Id, Prefix, Result, SetField, Source};
 
 mod gerr_source;
 pub use gerr_source::{DataSource, GErrSource, IdSource};
