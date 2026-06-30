@@ -47,12 +47,9 @@ where
         T: Any,
     {
         self.iter().filter(|item| match item {
-            GErrNode::Root(gerr) => gerr.id().map_or(false, |id| (id as &dyn Any).is::<T>()),
+            GErrNode::Root(gerr) => (gerr.id() as &dyn Any).is::<T>(),
 
-            GErrNode::Leaf(gerr) => gerr
-                .id
-                .as_ref()
-                .map_or(false, |id| (&*id as &dyn Any).is::<T>()),
+            GErrNode::Leaf(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
         })
     }
 
@@ -63,17 +60,13 @@ where
         T: Any + PartialEq,
     {
         self.iter().filter(move |item| match item {
-            GErrNode::Root(gerr) => gerr.id().map_or(false, |id| {
-                (id as &dyn Any)
-                    .downcast_ref::<T>()
-                    .is_some_and(|id| id == value)
-            }),
+            GErrNode::Root(gerr) => (gerr.id() as &dyn Any)
+                .downcast_ref::<T>()
+                .is_some_and(|id| id == value),
 
-            GErrNode::Leaf(gerr) => gerr.id.as_ref().map_or(false, |id| {
-                (&*id as &dyn Any)
-                    .downcast_ref::<T>()
-                    .is_some_and(|id| id == value)
-            }),
+            GErrNode::Leaf(gerr) => (&*gerr.id as &dyn Any)
+                .downcast_ref::<T>()
+                .is_some_and(|id| id == value),
         })
     }
 

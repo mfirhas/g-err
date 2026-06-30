@@ -24,19 +24,11 @@ impl Report for TraceReport {
 
 impl TraceReport {
     fn header<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
-        if let Some(id) = err.id {
-            if let Some(prefix) = err.prefix {
-                let _ = writeln!(out, "{prefix} {} ({})", err.message, id);
-            } else {
-                let _ = writeln!(out, "{} ({})", err.message, id);
-            }
+        if let Some(prefix) = err.prefix {
+            let _ = writeln!(out, "{prefix} {} ({})", err.message, err.id);
         } else {
-            if let Some(prefix) = err.prefix {
-                let _ = writeln!(out, "{prefix} {} (NoID)", err.message);
-            } else {
-                let _ = writeln!(out, "{} (NoID)", err.message);
-            }
-        };
+            let _ = writeln!(out, "{} ({})", err.message, err.id);
+        }
     }
 
     fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
@@ -60,13 +52,9 @@ impl TraceReport {
 
             let branch = if is_last { "└─ " } else { "├─ " };
 
-            let msg = match (ge.prefix.as_deref(), ge.id.as_deref()) {
-                (Some(prefix), Some(id)) => {
-                    format!("{prefix} {} ({})", ge.message, &*id)
-                }
-                (Some(prefix), None) => format!("{prefix} {} (NoID)", ge.message),
-                (None, Some(id)) => format!("{} ({})", ge.message, &*id),
-                _ => format!("{} (NoID)", ge.message),
+            let msg = match ge.prefix.as_deref() {
+                Some(prefix) => format!("{prefix} {} ({})", ge.message, ge.id),
+                None => format!("{} ({})", ge.message, ge.id),
             };
 
             let _ = writeln!(out, "{branch}{msg}");

@@ -2,7 +2,7 @@ use g_err::*;
 
 #[test]
 fn test_no_tags() {
-    let gerr: GErr<NoID, NoPrefix> = GErr::new_auto("test no prefix");
+    let gerr: GErr<NoID, NoPrefix> = GErr::new("test no prefix");
 
     assert_eq!(gerr.tags(), None);
 }
@@ -15,7 +15,7 @@ impl Prefix for AppPrefix {
 
 #[test]
 fn test_add_tags() {
-    let gerr: GErr<NoID, AppPrefix> = GErr::new_auto("test auto prefix").add_tags(["tag1", "tag2"]);
+    let gerr: GErr<NoID, AppPrefix> = GErr::new("test auto prefix").add_tags(["tag1", "tag2"]);
 
     assert_eq!(gerr.tags().unwrap().iter().len(), 2);
     assert!(gerr.iter_tags().eq(["tag1", "tag2"]));
@@ -23,7 +23,7 @@ fn test_add_tags() {
 
 #[test]
 fn test_add_tag() {
-    let gerr: GErr<NoID, AppPrefix> = GErr::new_auto("test auto prefix")
+    let gerr: GErr<NoID, AppPrefix> = GErr::new("test auto prefix")
         .add_tag("tag1")
         .add_tag("tag2")
         .add_tag("tag3");

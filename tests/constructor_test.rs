@@ -47,7 +47,7 @@ struct TestData {
 
 #[test]
 fn test_new_with_autogen_id_string_message() {
-    let err: GErr<NoID> = GErr::new_auto("test error message");
+    let err: GErr<NoID> = GErr::new("test error message");
 
     assert_eq!(err.message(), "test error message");
     assert_eq!(err.prefix(), None);
@@ -62,7 +62,7 @@ fn test_new_with_autogen_id_cow_message() {
     use alloc::borrow::Cow;
 
     let msg = Cow::Borrowed("borrowed message");
-    let err: GErr<NoID> = GErr::new_auto(msg);
+    let err: GErr<NoID> = GErr::new(msg);
 
     assert_eq!(err.message(), "borrowed message");
 }
@@ -70,25 +70,25 @@ fn test_new_with_autogen_id_cow_message() {
 #[test]
 fn test_new_with_autogen_id_owned_string() {
     let msg = String::from("owned message");
-    let err: GErr<NoID> = GErr::new_auto(msg);
+    let err: GErr<NoID> = GErr::new(msg);
 
     assert_eq!(err.message(), "owned message");
 }
 
 #[test]
 fn test_new_with_autogen_id_custom_id_type() {
-    let err1: GErr<AutoId> = GErr::new_auto("error1");
-    let err2: GErr<AutoId> = GErr::new_auto("error2");
+    let err1: GErr<AutoId> = GErr::new("error1");
+    let err2: GErr<AutoId> = GErr::new("error2");
 
     // IDs should be different (auto-generated)
-    assert_ne!(err1.id().unwrap().0, err2.id().unwrap().0);
+    assert_ne!(err1.id().0, err2.id().0);
     assert_eq!(err1.message(), "error1");
     assert_eq!(err2.message(), "error2");
 }
 
 #[test]
 fn test_new_with_autogen_id_and_prefix() {
-    let err: GErr<NoID, TestPrefix> = GErr::new_auto("error with prefix");
+    let err: GErr<NoID, TestPrefix> = GErr::new("error with prefix");
 
     assert_eq!(err.message(), "error with prefix");
     assert_eq!(err.prefix(), Some("[TEST]"));
@@ -96,7 +96,7 @@ fn test_new_with_autogen_id_and_prefix() {
 
 #[test]
 fn test_new_location_is_set() {
-    let err: GErr<NoID> = GErr::new_auto("test error");
+    let err: GErr<NoID> = GErr::new("test error");
     let location = err.location();
 
     assert_eq!(location.file(), file!());
@@ -177,7 +177,7 @@ fn test_from_error_with_autogen_id() {
     )));
 
     // IDs should be different
-    assert_ne!(err1.id().unwrap().0, err2.id().unwrap().0);
+    assert_ne!(err1.id().0, err2.id().0);
 }
 
 // ============================================================================
@@ -188,7 +188,7 @@ fn test_from_error_with_autogen_id() {
 fn test_new_with_id_integer() {
     let err: GErr<u32> = GErr::new_with_id(42, "error with numeric id");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error with numeric id");
 }
 
@@ -196,7 +196,7 @@ fn test_new_with_id_integer() {
 fn test_new_with_id_string() {
     let err: GErr<&'static str> = GErr::new_with_id("ERR_001", "named error");
 
-    assert_eq!(err.id().unwrap(), &"ERR_001");
+    assert_eq!(err.id(), &"ERR_001");
     assert_eq!(err.message(), "named error");
 }
 
@@ -204,7 +204,7 @@ fn test_new_with_id_string() {
 fn test_new_with_id_custom_struct() {
     let err: GErr<MockId> = GErr::new_with_id(MockId(123), "error with custom id");
 
-    assert_eq!(err.id().unwrap(), &MockId(123));
+    assert_eq!(err.id(), &MockId(123));
     assert_eq!(err.message(), "error with custom id");
 }
 
@@ -213,8 +213,8 @@ fn test_new_with_id_different_ids() {
     let err1: GErr<u32> = GErr::new_with_id(1, "error 1");
     let err2: GErr<u32> = GErr::new_with_id(2, "error 2");
 
-    assert_eq!(err1.id().unwrap(), &1);
-    assert_eq!(err2.id().unwrap(), &2);
+    assert_eq!(err1.id(), &1);
+    assert_eq!(err2.id(), &2);
     assert_ne!(err1.id(), err2.id());
 }
 
@@ -241,7 +241,7 @@ fn test_new_with_id_message_types() {
 fn test_new_with_id_and_prefix() {
     let err: GErr<u32, TestPrefix> = GErr::new_with_id(99, "error with prefix");
 
-    assert_eq!(err.id().unwrap(), &99);
+    assert_eq!(err.id(), &99);
     assert_eq!(err.message(), "error with prefix");
     assert_eq!(err.prefix(), Some("[TEST]"));
 }
@@ -261,7 +261,7 @@ fn test_new_with_id_location_is_set() {
 
 #[test]
 fn test_new_untracked_basic() {
-    let err: GErr<NoID> = GErr::new_auto("untracked error");
+    let err: GErr<NoID> = GErr::new("untracked error");
 
     assert_eq!(err.message(), "untracked error");
     assert_eq!(err.location().file(), file!());
@@ -272,7 +272,7 @@ fn test_new_untracked_basic() {
 fn test_with_id_untracked_basic() {
     let err: GErr<u32> = GErr::new_with_id(42, "untracked with id");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "untracked with id");
     assert_eq!(err.location().file(), file!());
 }
@@ -281,7 +281,7 @@ fn test_with_id_untracked_basic() {
 fn test_with_id_untracked_custom_location() {
     let err: GErr<&str> = GErr::new_with_id("ERR_CODE", "error with custom location");
 
-    assert_eq!(err.id().unwrap(), &"ERR_CODE");
+    assert_eq!(err.id(), &"ERR_CODE");
     assert_eq!(err.message(), "error with custom location");
     assert_eq!(err.location().file(), file!());
 }
@@ -292,7 +292,7 @@ fn test_with_id_untracked_custom_location() {
 
 #[test]
 fn test_constructor_no_id_no_prefix_no_data() {
-    let err: GErr<NoID, NoPrefix, NoData> = GErr::new_auto("basic error");
+    let err: GErr<NoID, NoPrefix, NoData> = GErr::new("basic error");
 
     assert_eq!(err.message(), "basic error");
     assert_eq!(err.prefix(), None);
@@ -303,7 +303,7 @@ fn test_constructor_no_id_no_prefix_no_data() {
 fn test_constructor_with_id_type_only() {
     let err: GErr<u64> = GErr::new_with_id(999, "error with id");
 
-    assert_eq!(err.id().unwrap(), &999);
+    assert_eq!(err.id(), &999);
     assert_eq!(err.message(), "error with id");
     assert_eq!(err.prefix(), None);
     assert_eq!(err.data().is_none(), true);
@@ -313,7 +313,7 @@ fn test_constructor_with_id_type_only() {
 fn test_constructor_with_id_and_prefix() {
     let err: GErr<u32, TestPrefix> = GErr::new_with_id(42, "error with id and prefix");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error with id and prefix");
     assert_eq!(err.prefix(), Some("[TEST]"));
     assert!(err.data().is_none());
@@ -324,7 +324,7 @@ fn test_constructor_with_id_prefix_and_data() {
     let err: GErr<u32, TestPrefix, TestData> =
         GErr::new_with_id(42, "error with id, prefix, and data");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error with id, prefix, and data");
     assert_eq!(err.prefix(), Some("[TEST]"));
     assert_eq!(err.data(), None);
@@ -332,14 +332,14 @@ fn test_constructor_with_id_prefix_and_data() {
 
 #[test]
 fn test_constructor_autogen_id_different_each_time() {
-    let err1: GErr<AutoId> = GErr::new_auto("first");
-    let err2: GErr<AutoId> = GErr::new_auto("second");
-    let err3: GErr<AutoId> = GErr::new_auto("third");
+    let err1: GErr<AutoId> = GErr::new("first");
+    let err2: GErr<AutoId> = GErr::new("second");
+    let err3: GErr<AutoId> = GErr::new("third");
 
     // All IDs should be unique
-    assert_ne!(err1.id().unwrap().0, err2.id().unwrap().0);
-    assert_ne!(err2.id().unwrap().0, err3.id().unwrap().0);
-    assert_ne!(err1.id().unwrap().0, err3.id().unwrap().0);
+    assert_ne!(err1.id().0, err2.id().0);
+    assert_ne!(err2.id().0, err3.id().0);
+    assert_ne!(err1.id().0, err3.id().0);
 }
 
 // ============================================================================
@@ -348,7 +348,7 @@ fn test_constructor_autogen_id_different_each_time() {
 
 #[test]
 fn test_new_with_empty_message() {
-    let err: GErr<NoID> = GErr::new_auto("");
+    let err: GErr<NoID> = GErr::new("");
 
     assert_eq!(err.message(), "");
 }
@@ -356,7 +356,7 @@ fn test_new_with_empty_message() {
 #[test]
 fn test_new_with_very_long_message() {
     let long_msg = "a".repeat(1000);
-    let err: GErr<NoID> = GErr::new_auto(long_msg.clone());
+    let err: GErr<NoID> = GErr::new(long_msg.clone());
 
     assert_eq!(err.message(), long_msg.as_str());
     assert_eq!(err.message().len(), 1000);
@@ -365,7 +365,7 @@ fn test_new_with_very_long_message() {
 #[test]
 fn test_new_with_special_characters_in_message() {
     let special_msg = "Error: ñ, 中文, Ελληνικά, 🦀";
-    let err: GErr<NoID> = GErr::new_auto(special_msg);
+    let err: GErr<NoID> = GErr::new(special_msg);
 
     assert_eq!(err.message(), special_msg);
 }
@@ -373,7 +373,7 @@ fn test_new_with_special_characters_in_message() {
 #[test]
 fn test_new_with_newlines_in_message() {
     let multiline_msg = "Line 1\nLine 2\nLine 3";
-    let err: GErr<NoID> = GErr::new_auto(multiline_msg);
+    let err: GErr<NoID> = GErr::new(multiline_msg);
 
     assert_eq!(err.message(), multiline_msg);
 }
@@ -384,7 +384,7 @@ fn test_new_with_newlines_in_message() {
 
 #[test]
 fn test_new_then_set_prefix() {
-    let err: GErr<NoID> = GErr::new_auto("error").set_prefix("[HTTP]");
+    let err: GErr<NoID> = GErr::new("error").set_prefix("[HTTP]");
 
     assert_eq!(err.message(), "error");
     assert_eq!(err.prefix(), Some("[HTTP]"));
@@ -395,14 +395,14 @@ fn test_new_with_id_then_set_data() {
     let err: GErr<u32, NoPrefix, TestData> =
         GErr::new_with_id(42, "error").set_data(TestData { code: 404 });
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error");
     assert_eq!(err.data(), Some(&TestData { code: 404 }));
 }
 
 #[test]
 fn test_new_then_add_help() {
-    let err: GErr<NoID> = GErr::new_auto("error").set_help("Try restarting the service");
+    let err: GErr<NoID> = GErr::new("error").set_help("Try restarting the service");
 
     assert_eq!(err.message(), "error");
     assert_eq!(err.help(), Some("Try restarting the service"));
@@ -428,7 +428,7 @@ fn test_constructor_chain_all_modifiers() {
         .add_tag("server")
         .add_tag("error");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "complex error");
     assert_eq!(err.prefix(), Some("[TEST]"));
     assert_eq!(err.data(), Some(&TestData { code: 500 }));
@@ -442,14 +442,14 @@ fn test_constructor_chain_all_modifiers() {
 
 #[test]
 fn test_display_new_without_prefix() {
-    let err: GErr<NoID> = GErr::new_auto("error message");
+    let err: GErr<NoID> = GErr::new("error message");
 
     assert_eq!(format!("{}", err), "error message");
 }
 
 #[test]
 fn test_display_new_with_prefix() {
-    let err: GErr<NoID, TestPrefix> = GErr::new_auto("error message");
+    let err: GErr<NoID, TestPrefix> = GErr::new("error message");
 
     assert_eq!(format!("{}", err), "[TEST] error message");
 }
@@ -467,7 +467,7 @@ fn test_display_new_with_id_set_prefix() {
 
 #[test]
 fn test_debug_impl_has_fields() {
-    let err: GErr<NoID> = GErr::new_auto("test error");
+    let err: GErr<NoID> = GErr::new("test error");
     let debug_str = format!("{:?}", err);
 
     // Debug should include key fields
@@ -496,7 +496,7 @@ fn test_debug_with_all_generics() {
 fn test_set_id_basic() {
     let err: GErr<u32> = GErr::new_with_id(1, "error").set_id(99);
 
-    assert_eq!(err.id().unwrap(), &99);
+    assert_eq!(err.id(), &99);
     assert_eq!(err.message(), "error");
 }
 
@@ -504,7 +504,7 @@ fn test_set_id_basic() {
 fn test_set_id_multiple_times() {
     let err: GErr<u32> = GErr::new_with_id(1, "error").set_id(2).set_id(3).set_id(4);
 
-    assert_eq!(err.id().unwrap(), &4);
+    assert_eq!(err.id(), &4);
 }
 
 #[test]
@@ -514,7 +514,7 @@ fn test_set_id_preserves_other_fields() {
         .set_help("help text")
         .set_id(99);
 
-    assert_eq!(err.id().unwrap(), &99);
+    assert_eq!(err.id(), &99);
     assert_eq!(err.message(), "error");
     assert_eq!(err.prefix(), Some("[PREFIX]"));
     assert_eq!(err.help(), Some("help text"));
@@ -526,14 +526,14 @@ fn test_set_id_preserves_other_fields() {
 
 #[test]
 fn test_set_prefix_basic() {
-    let err: GErr<NoID> = GErr::new_auto("error").set_prefix("[ERROR]");
+    let err: GErr<NoID> = GErr::new("error").set_prefix("[ERROR]");
 
     assert_eq!(err.prefix(), Some("[ERROR]"));
 }
 
 #[test]
 fn test_set_prefix_override() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .set_prefix("[FIRST]")
         .set_prefix("[SECOND]");
 
@@ -542,14 +542,14 @@ fn test_set_prefix_override() {
 
 #[test]
 fn test_set_prefix_with_string() {
-    let err: GErr<NoID> = GErr::new_auto("error").set_prefix(String::from("[DYNAMIC]"));
+    let err: GErr<NoID> = GErr::new("error").set_prefix(String::from("[DYNAMIC]"));
 
     assert_eq!(err.prefix(), Some("[DYNAMIC]"));
 }
 
 #[test]
 fn test_set_prefix_empty_string() {
-    let err: GErr<NoID> = GErr::new_auto("error").set_prefix("");
+    let err: GErr<NoID> = GErr::new("error").set_prefix("");
 
     assert_eq!(err.prefix(), Some(""));
 }
@@ -560,7 +560,7 @@ fn test_set_prefix_preserves_other_fields() {
         .set_help("help")
         .set_prefix("[PREFIX]");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error");
     assert_eq!(err.prefix(), Some("[PREFIX]"));
     assert_eq!(err.help(), Some("help"));
@@ -572,14 +572,14 @@ fn test_set_prefix_preserves_other_fields() {
 
 #[test]
 fn test_prepend_prefix_to_empty() {
-    let err: GErr<NoID> = GErr::new_auto("error").prepend_prefix("[BEFORE]");
+    let err: GErr<NoID> = GErr::new("error").prepend_prefix("[BEFORE]");
 
     assert_eq!(err.prefix(), Some("[BEFORE]"));
 }
 
 #[test]
 fn test_prepend_prefix_to_existing() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .set_prefix("[MIDDLE]")
         .prepend_prefix("[BEFORE]");
 
@@ -588,7 +588,7 @@ fn test_prepend_prefix_to_existing() {
 
 #[test]
 fn test_prepend_prefix_multiple_times() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .set_prefix("[C]")
         .prepend_prefix("[B]")
         .prepend_prefix("[A]");
@@ -598,7 +598,7 @@ fn test_prepend_prefix_multiple_times() {
 
 #[test]
 fn test_prepend_prefix_with_owned_string() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .set_prefix("MIDDLE")
         .prepend_prefix(String::from("BEFORE_"));
 
@@ -612,7 +612,7 @@ fn test_prepend_prefix_preserves_other_fields() {
         .add_tag("tag1")
         .prepend_prefix("[BEFORE]");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error");
     assert_eq!(err.prefix(), Some("[BEFORE][MIDDLE]"));
     assert_eq!(err.tags().unwrap().len(), 1);
@@ -624,14 +624,14 @@ fn test_prepend_prefix_preserves_other_fields() {
 
 #[test]
 fn test_append_prefix_to_empty() {
-    let err: GErr<NoID> = GErr::new_auto("error").append_prefix("[AFTER]");
+    let err: GErr<NoID> = GErr::new("error").append_prefix("[AFTER]");
 
     assert_eq!(err.prefix(), Some("[AFTER]"));
 }
 
 #[test]
 fn test_append_prefix_to_existing() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .set_prefix("[MIDDLE]")
         .append_prefix("[AFTER]");
 
@@ -640,7 +640,7 @@ fn test_append_prefix_to_existing() {
 
 #[test]
 fn test_append_prefix_multiple_times() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .set_prefix("[A]")
         .append_prefix("[B]")
         .append_prefix("[C]");
@@ -650,7 +650,7 @@ fn test_append_prefix_multiple_times() {
 
 #[test]
 fn test_append_prefix_with_owned_string() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .set_prefix("FIRST_")
         .append_prefix(String::from("SECOND"));
 
@@ -659,7 +659,7 @@ fn test_append_prefix_with_owned_string() {
 
 #[test]
 fn test_prepend_and_append_prefix_combined() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .set_prefix("[MIDDLE]")
         .prepend_prefix("[BEFORE]")
         .append_prefix("[AFTER]");
@@ -674,7 +674,7 @@ fn test_append_prefix_preserves_other_fields() {
         .set_help("help")
         .append_prefix("[AFTER]");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error");
     assert_eq!(err.prefix(), Some("[MIDDLE][AFTER]"));
     assert_eq!(err.help(), Some("help"));
@@ -686,15 +686,14 @@ fn test_append_prefix_preserves_other_fields() {
 
 #[test]
 fn test_set_data_basic() {
-    let err: GErr<NoID, NoPrefix, TestData> =
-        GErr::new_auto("error").set_data(TestData { code: 500 });
+    let err: GErr<NoID, NoPrefix, TestData> = GErr::new("error").set_data(TestData { code: 500 });
 
     assert_eq!(err.data(), Some(&TestData { code: 500 }));
 }
 
 #[test]
 fn test_set_data_override() {
-    let err: GErr<NoID, NoPrefix, TestData> = GErr::new_auto("error")
+    let err: GErr<NoID, NoPrefix, TestData> = GErr::new("error")
         .set_data(TestData { code: 400 })
         .set_data(TestData { code: 500 });
 
@@ -709,7 +708,7 @@ fn test_set_data_preserves_other_fields() {
         .add_tag("tag")
         .set_data(TestData { code: 404 });
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error");
     assert_eq!(err.prefix(), Some("[PREFIX]"));
     assert_eq!(err.help(), Some("help"));
@@ -723,14 +722,14 @@ fn test_set_data_preserves_other_fields() {
 
 #[test]
 fn test_set_help_basic() {
-    let err: GErr<NoID> = GErr::new_auto("error").set_help("Try restarting");
+    let err: GErr<NoID> = GErr::new("error").set_help("Try restarting");
 
     assert_eq!(err.help(), Some("Try restarting"));
 }
 
 #[test]
 fn test_set_help_override() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .set_help("First help")
         .set_help("Second help");
 
@@ -739,14 +738,14 @@ fn test_set_help_override() {
 
 #[test]
 fn test_set_help_with_owned_string() {
-    let err: GErr<NoID> = GErr::new_auto("error").set_help(String::from("Dynamic help text"));
+    let err: GErr<NoID> = GErr::new("error").set_help(String::from("Dynamic help text"));
 
     assert_eq!(err.help(), Some("Dynamic help text"));
 }
 
 #[test]
 fn test_set_help_empty_string() {
-    let err: GErr<NoID> = GErr::new_auto("error").set_help("");
+    let err: GErr<NoID> = GErr::new("error").set_help("");
 
     assert_eq!(err.help(), Some(""));
 }
@@ -758,7 +757,7 @@ fn test_set_help_preserves_other_fields() {
         .add_tag("tag")
         .set_help("helpful text");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error");
     assert_eq!(err.prefix(), Some("[PREFIX]"));
     assert_eq!(err.help(), Some("helpful text"));
@@ -771,7 +770,7 @@ fn test_set_help_preserves_other_fields() {
 
 #[test]
 fn test_add_tag_single() {
-    let err: GErr<NoID> = GErr::new_auto("error").add_tag("important");
+    let err: GErr<NoID> = GErr::new("error").add_tag("important");
 
     assert_eq!(err.tags().unwrap().len(), 1);
     assert_eq!(err.tags().unwrap()[0].as_ref(), "important");
@@ -779,7 +778,7 @@ fn test_add_tag_single() {
 
 #[test]
 fn test_add_tag_multiple() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .add_tag("tag1")
         .add_tag("tag2")
         .add_tag("tag3");
@@ -792,7 +791,7 @@ fn test_add_tag_multiple() {
 
 #[test]
 fn test_add_tag_with_owned_string() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .add_tag("static")
         .add_tag(String::from("dynamic"));
 
@@ -801,7 +800,7 @@ fn test_add_tag_with_owned_string() {
 
 #[test]
 fn test_add_tag_duplicate_tags() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .add_tag("tag")
         .add_tag("tag")
         .add_tag("tag");
@@ -817,7 +816,7 @@ fn test_add_tag_preserves_other_fields() {
         .add_tag("tag1")
         .add_tag("tag2");
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error");
     assert_eq!(err.prefix(), Some("[PREFIX]"));
     assert_eq!(err.help(), Some("help"));
@@ -831,7 +830,7 @@ fn test_add_tag_preserves_other_fields() {
 #[test]
 fn test_add_tags_vector() {
     let tags = vec!["tag1", "tag2", "tag3"];
-    let err: GErr<NoID> = GErr::new_auto("error").add_tags(tags);
+    let err: GErr<NoID> = GErr::new("error").add_tags(tags);
 
     assert_eq!(err.tags().unwrap().len(), 3);
     assert_eq!(err.tags().unwrap()[0].as_ref(), "tag1");
@@ -841,7 +840,7 @@ fn test_add_tags_vector() {
 
 #[test]
 fn test_add_tags_array() {
-    let err: GErr<NoID> = GErr::new_auto("error").add_tags(["tag1", "tag2"]);
+    let err: GErr<NoID> = GErr::new("error").add_tags(["tag1", "tag2"]);
 
     assert_eq!(err.tags().unwrap().len(), 2);
 }
@@ -849,14 +848,14 @@ fn test_add_tags_array() {
 #[test]
 fn test_add_tags_iterator() {
     let tags = vec!["a", "b", "c"];
-    let err: GErr<NoID> = GErr::new_auto("error").add_tags(tags.into_iter());
+    let err: GErr<NoID> = GErr::new("error").add_tags(tags.into_iter());
 
     assert_eq!(err.tags().unwrap().len(), 3);
 }
 
 #[test]
 fn test_add_tags_combined_with_add_tag() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .add_tag("single")
         .add_tags(vec!["bulk1", "bulk2"])
         .add_tag("another");
@@ -868,7 +867,7 @@ fn test_add_tags_combined_with_add_tag() {
 
 #[test]
 fn test_add_tags_empty() {
-    let err: GErr<NoID> = GErr::new_auto("error").add_tags::<Vec<&str>, &str>(vec![]);
+    let err: GErr<NoID> = GErr::new("error").add_tags::<Vec<&str>, &str>(vec![]);
     assert!(err.tags().is_none());
 }
 
@@ -878,7 +877,7 @@ fn test_add_tags_preserves_other_fields() {
         .set_help("help")
         .add_tags(vec!["tag1", "tag2"]);
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.message(), "error");
     assert_eq!(err.help(), Some("help"));
     assert_eq!(err.tags().unwrap().len(), 2);
@@ -891,14 +890,14 @@ fn test_add_tags_preserves_other_fields() {
 #[test]
 fn test_add_source_single() {
     let source = std::io::Error::new(std::io::ErrorKind::NotFound, "not found");
-    let err: GErr<NoID> = GErr::new_auto("error").add_source(source);
+    let err: GErr<NoID> = GErr::new("error").add_source(source);
 
     assert_eq!(err.sources().unwrap().len(), 1);
 }
 
 #[test]
 fn test_add_source_multiple() {
-    let err: GErr<NoID> = GErr::new_auto("error")
+    let err: GErr<NoID> = GErr::new("error")
         .add_source(std::io::Error::new(
             std::io::ErrorKind::NotFound,
             "not found",
@@ -914,7 +913,7 @@ fn test_add_source_multiple() {
 
 #[test]
 fn test_add_source_chain() {
-    let err: GErr<NoID> = GErr::new_auto("main error").add_source(std::io::Error::new(
+    let err: GErr<NoID> = GErr::new("main error").add_source(std::io::Error::new(
         std::io::ErrorKind::NotFound,
         "root cause",
     ));
@@ -931,7 +930,7 @@ fn test_add_source_preserves_other_fields() {
         .add_tag("tag")
         .add_source(std::io::Error::new(std::io::ErrorKind::Other, "source"));
 
-    assert_eq!(err.id().unwrap(), &42);
+    assert_eq!(err.id(), &42);
     assert_eq!(err.prefix(), Some("[PREFIX]"));
     assert_eq!(err.help(), Some("help"));
     assert_eq!(err.tags().unwrap().len(), 1);
@@ -947,7 +946,7 @@ fn test_with_id_changes_id_type() {
     let err1: GErr<u32> = GErr::new_with_id(42, "error");
     let err2: GErr<&'static str> = err1.with_id("NEW_ID");
 
-    assert_eq!(err2.id().unwrap(), &"NEW_ID");
+    assert_eq!(err2.id(), &"NEW_ID");
     assert_eq!(err2.message(), "error");
 }
 
@@ -960,7 +959,7 @@ fn test_with_id_preserves_other_fields() {
 
     let err2: GErr<&'static str> = err1.with_id("NEW_ID");
 
-    assert_eq!(err2.id().unwrap(), &"NEW_ID");
+    assert_eq!(err2.id(), &"NEW_ID");
     assert_eq!(err2.message(), "error");
     assert_eq!(err2.prefix(), Some("[PREFIX]"));
     assert_eq!(err2.help(), Some("help"));
@@ -973,7 +972,7 @@ fn test_with_id_chain() {
     let err2: GErr<&'static str> = err1.with_id("STR_ID");
     let err3: GErr<MockId> = err2.with_id(MockId(999));
 
-    assert_eq!(err3.id().unwrap(), &MockId(999));
+    assert_eq!(err3.id(), &MockId(999));
     assert_eq!(err3.message(), "error");
 }
 
@@ -988,7 +987,7 @@ fn test_with_prefix_changes_prefix_type() {
         const PREFIX: Option<&'static str> = Some("[NEW]");
     }
 
-    let err1: GErr<NoID, NoPrefix> = GErr::new_auto("error");
+    let err1: GErr<NoID, NoPrefix> = GErr::new("error");
     let err2: GErr<NoID, NewPrefix> = err1.with_prefix();
 
     assert_eq!(err2.prefix(), Some("[NEW]"));
@@ -1008,7 +1007,7 @@ fn test_with_prefix_preserves_other_fields() {
 
     let err2: GErr<u32, NewPrefix> = err1.with_prefix();
 
-    assert_eq!(err2.id().unwrap(), &42);
+    assert_eq!(err2.id(), &42);
     assert_eq!(err2.message(), "error");
     assert_eq!(err2.prefix(), Some("[NEW]"));
     assert_eq!(err2.help(), Some("help"));
@@ -1022,7 +1021,7 @@ fn test_with_prefix_overrides_manual_prefix() {
         const PREFIX: Option<&'static str> = Some("[NEW]");
     }
 
-    let err1: GErr<NoID, NoPrefix> = GErr::new_auto("error").set_prefix("[MANUAL]");
+    let err1: GErr<NoID, NoPrefix> = GErr::new("error").set_prefix("[MANUAL]");
     let err2: GErr<NoID, NewPrefix> = err1.with_prefix();
 
     // Manual prefix should be replaced with static prefix
@@ -1035,7 +1034,7 @@ fn test_with_prefix_overrides_manual_prefix() {
 
 #[test]
 fn test_with_data_changes_data_type() {
-    let err1: GErr<NoID, NoPrefix, NoData> = GErr::new_auto("error");
+    let err1: GErr<NoID, NoPrefix, NoData> = GErr::new("error");
     let err2: GErr<NoID, NoPrefix, TestData> = err1.with_data(TestData { code: 404 });
 
     assert_eq!(err2.data(), Some(&TestData { code: 404 }));
@@ -1050,7 +1049,7 @@ fn test_with_data_preserves_other_fields() {
 
     let err2: GErr<u32, TestPrefix, TestData> = err1.with_data(TestData { code: 500 });
 
-    assert_eq!(err2.id().unwrap(), &42);
+    assert_eq!(err2.id(), &42);
     assert_eq!(err2.message(), "error");
     assert_eq!(err2.prefix(), Some("[TEST]"));
     assert_eq!(err2.help(), Some("help"));
@@ -1069,7 +1068,7 @@ fn test_with_data_chain() {
         msg: &'static str,
     }
 
-    let err1: GErr<NoID, NoPrefix, NoData> = GErr::new_auto("error");
+    let err1: GErr<NoID, NoPrefix, NoData> = GErr::new("error");
     let err2: GErr<NoID, NoPrefix, DataType1> = err1.with_data(DataType1 { val: 42 });
     let err3: GErr<NoID, NoPrefix, DataType2> = err2.with_data(DataType2 { msg: "new data" });
 
@@ -1093,7 +1092,7 @@ fn test_complex_builder_chain_with_all_methods() {
         .set_data(TestData { code: 500 })
         .set_id(500);
 
-    assert_eq!(err.id().unwrap(), &500);
+    assert_eq!(err.id(), &500);
     assert_eq!(err.message(), "base error");
     assert_eq!(err.prefix(), Some("[API][HTTP][FAILED]"));
     assert_eq!(err.help(), Some("Contact support immediately"));
@@ -1110,7 +1109,7 @@ fn test_builder_chain_with_type_conversions() {
         .with_data(TestData { code: 400 })
         .set_help("Invalid request");
 
-    assert_eq!(err2.id().unwrap(), &"ERR_ID");
+    assert_eq!(err2.id(), &"ERR_ID");
     assert_eq!(err2.message(), "error");
     assert_eq!(err2.prefix(), Some("[TEST]"));
     assert_eq!(err2.data(), Some(&TestData { code: 400 }));
@@ -1128,7 +1127,7 @@ fn test_builder_with_from_error_chain() {
         .with_prefix::<TestPrefix>()
         .with_data(TestData { code: 404 });
 
-    assert_eq!(err.id().unwrap(), &404);
+    assert_eq!(err.id(), &404);
     assert_eq!(err.message(), "file not found");
     assert_eq!(err.prefix(), Some("[TEST]"));
     assert_eq!(err.data(), Some(&TestData { code: 404 }));
@@ -1139,7 +1138,7 @@ fn test_builder_with_from_error_chain() {
 
 #[test]
 fn test_builder_immutability() {
-    let base: GErr<NoID> = GErr::new_auto("error");
+    let base: GErr<NoID> = GErr::new("error");
     assert_eq!(base.prefix(), None);
     assert_eq!(base.tags(), None);
     let modified1 = base.set_prefix("[A]").add_tag("tag1");
@@ -1150,7 +1149,7 @@ fn test_builder_immutability() {
 
 #[test]
 fn test_builder_none_returns_new_error() {
-    let err: GErr<NoID> = GErr::new_auto("error");
+    let err: GErr<NoID> = GErr::new("error");
     let result = err.result::<()>();
 
     assert!(result.is_err());
@@ -1171,7 +1170,7 @@ fn test_set_field_with_data_impl() {
         }
     }
 
-    let err: GErr<NoID, NoPrefix, CustomData> = GErr::new_auto("error")
+    let err: GErr<NoID, NoPrefix, CustomData> = GErr::new("error")
         .set_field("key1".to_string(), "value1".to_string())
         .set_field("key2".to_string(), "value2".to_string());
 

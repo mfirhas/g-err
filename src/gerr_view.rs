@@ -15,7 +15,7 @@ use crate::{
 /// GErrView - GErr in borrowed form for reporting.
 pub struct GErrView<'a, ID, D> {
     /// Error id.
-    pub id: Option<&'a ID>,
+    pub id: &'a ID,
     /// Error message.
     pub message: &'a str,
     /// Error prefix.

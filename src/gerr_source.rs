@@ -9,6 +9,8 @@ use core::{
     panic::Location,
 };
 
+use crate::NoID;
+
 /// Dyn-compatible trait for error id.
 pub trait IdSource: Any + Debug + Display + Send + Sync {}
 
@@ -31,13 +33,13 @@ impl<T> DataSource for T where T: Any + Debug + Send + Sync {}
 #[derive(Debug)]
 pub struct GErrSource {
     /// Error id, must implement Debug and Display.
-    pub id: Option<Box<dyn IdSource>>,
+    pub id: Box<dyn IdSource>,
 
     /// Error id as json value, support for numeric and string only.
     ///
     /// Passing other than numeric and string, will be ignored at serde.
     #[cfg(feature = "serde")]
-    pub id_json: Option<serde_json::Value>,
+    pub id_json: serde_json::Value,
 
     /// Error message.
     pub message: Cow<'static, str>,
@@ -97,9 +99,9 @@ impl GErrSource {
         }
 
         Self {
-            id: None,
+            id: Box::new(NoID),
             #[cfg(feature = "serde")]
-            id_json: None,
+            id_json: serde_json::Value::Null,
             message: msg.into(),
             prefix: None,
             sources: None,

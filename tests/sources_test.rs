@@ -3,7 +3,7 @@ use g_err::*;
 #[test]
 fn test_general_error() {
     let err = "abc".parse::<u32>().unwrap_err();
-    let gerr: GErr = GErr::new_auto("Parse integer error").add_source(err);
+    let gerr: GErr = GErr::new("Parse integer error").add_source(err);
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
     // general error from non-GErr contains no tracked location.
@@ -12,8 +12,8 @@ fn test_general_error() {
 
 #[test]
 fn test_gerr_as_general_error() {
-    let err: GErr = gerr!("this error");
-    let gerr: GErr = GErr::new_auto("error").add_source(err);
+    let err = gerr!("this error");
+    let gerr: GErr = GErr::new("error").add_source(err);
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
     // general error from GErr as general error contains no tracked location.
@@ -23,8 +23,8 @@ fn test_gerr_as_general_error() {
 #[test]
 fn test_gerr_as_gerr_source() {
     let line = line!();
-    let err: GErr = gerr!("this error");
-    let gerr: GErr = GErr::new_auto("error").add_source(err.into_gerr_source());
+    let err = gerr!("this error");
+    let gerr: GErr = GErr::new("error").add_source(err.into_gerr_source());
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
     // general error from GErr as gerr source contains everything.
@@ -38,8 +38,8 @@ fn test_gerr_as_gerr_source() {
 #[test]
 fn test_gerr_into_source_gerr() {
     let line = line!();
-    let err: GErr = gerr!("this error");
-    let gerr: GErr = GErr::new_auto("error").add_source_gerr(err);
+    let err = gerr!("this error");
+    let gerr: GErr = GErr::new("error").add_source_gerr(err);
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
     // general error from GErr as gerr source contains everything.
@@ -54,10 +54,8 @@ fn test_gerr_into_source_gerr() {
 fn test_mixed_sources() {
     let int_err = "abc".parse::<u32>().unwrap_err();
     let line = line!();
-    let err: GErr = gerr!("this error");
-    let gerr: GErr = GErr::new_auto("error")
-        .add_source_gerr(err)
-        .add_source(int_err);
+    let err = gerr!("this error");
+    let gerr: GErr = GErr::new("error").add_source_gerr(err).add_source(int_err);
 
     assert_eq!(gerr.sources().unwrap().len(), 2);
     assert_eq!(gerr.sources().unwrap()[1].location, None);
@@ -71,20 +69,16 @@ fn test_mixed_sources() {
 #[test]
 fn test_nested_sources() {
     let int_err = "abc".parse::<u32>().unwrap_err();
-    let ge = gerr!(<i32>;"the root cause"; id = 121);
-    let ge_src = ge.into_gerr_source();
     let line = line!();
-    let err: GErr = gerr!(
+    let err = gerr!(
         "this error";
-        gerr = gerr!(<NoID>;"cause"; prefix = "[OUTBOUND]", gerr = gerr!(<NoID>;"cause's case"; tags = ["tag1", "tag2"])),
+        gerr = gerr!("cause"; prefix = "[OUTBOUND]", gerr = gerr!("cause's case"; tags = ["tag1", "tag2"])),
         source = int_err.clone(),
-        gerr = gerr!(<i32>;"the root cause"; id = 100),
-        source = gerr!(<NoID>;"the root cause"; prefix = "test"),
-        source = ge_src,
+        gerr = gerr!("the root cause"; id = 100),
+        source = gerr!("the root cause"; id = 120),
+        source = gerr!("the root cause"; id = 121).into_gerr_source(),
     );
-    let gerr: GErr = GErr::new_auto("error")
-        .add_source_gerr(err)
-        .add_source(int_err);
+    let gerr: GErr = GErr::new("error").add_source_gerr(err).add_source(int_err);
 
     assert_eq!(gerr.sources().unwrap().len(), 2);
     assert_eq!(gerr.sources().unwrap()[1].location, None);
@@ -126,16 +120,12 @@ fn test_nested_sources() {
     assert_eq!(
         gerr.sources().unwrap()[0].sources.as_ref().unwrap()[2]
             .id
-            .as_ref()
-            .unwrap()
             .to_string(),
         "100"
     );
     assert_eq!(
         gerr.sources().unwrap()[0].sources.as_ref().unwrap()[3]
             .id
-            .as_ref()
-            .unwrap()
             .to_string(),
         "NoID" // because gerr wrapped as general error
     );
@@ -148,8 +138,6 @@ fn test_nested_sources() {
     assert_eq!(
         gerr.sources().unwrap()[0].sources.as_ref().unwrap()[4]
             .id
-            .as_ref()
-            .unwrap()
             .to_string(),
         "121"
     );

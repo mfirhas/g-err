@@ -1,4 +1,4 @@
-use crate::{NoID, gerr_view::GErrView};
+use crate::gerr_view::GErrView;
 
 use super::Report;
 use core::fmt::{Debug, Display, Write};
@@ -34,11 +34,7 @@ impl MarkdownReport {
         let _ = writeln!(out, "# Error Report\n");
     }
     fn preamble<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
-        if let Some(id) = err.id {
-            let _ = writeln!(out, "## ID: {}\n", id);
-        } else {
-            let _ = writeln!(out, "## ID: {}\n", NoID);
-        };
+        let _ = writeln!(out, "## ID: {}\n", err.id);
 
         let _ = writeln!(out, "## Prefix: {}\n", err.prefix.unwrap_or("-"));
 
@@ -90,11 +86,7 @@ impl MarkdownReport {
 
                 let _ = writeln!(out, "### {}. {}\n", i, msg);
 
-                if let Some(id) = err.id {
-                    let _ = writeln!(out, "- **ID:** `{}`\n", id);
-                } else {
-                    let _ = writeln!(out, "- **ID:** `{}`\n", NoID);
-                };
+                let _ = writeln!(out, "- **ID:** `{}`\n", gerr.id);
 
                 if let Some(loc) = gerr.location {
                     let _ = writeln!(
