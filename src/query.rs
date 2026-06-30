@@ -125,7 +125,7 @@ where
         E: Error + 'static,
     {
         self.iter().filter_map(|item| match item {
-            GErrNode::LeafErr(err) if (err as &dyn Error).is::<E>() => Some(item),
+            GErrNode::LeafErr(err) if err.is::<E>() => Some(item),
 
             GErrNode::LeafGErr(gerr) if (gerr as &dyn Error).is::<E>() => Some(item),
 
