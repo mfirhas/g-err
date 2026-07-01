@@ -988,7 +988,7 @@ fn test_with_prefix_changes_prefix_type() {
     }
 
     let err1: GErr<NoID, NoPrefix> = GErr::new("error");
-    let err2: GErr<NoID, NewPrefix> = err1.with_prefix();
+    let err2: GErr<NoID, NewPrefix> = err1.with_prefix_auto();
 
     assert_eq!(err2.prefix(), Some("[NEW]"));
     assert_eq!(err2.message(), "error");
@@ -1005,7 +1005,7 @@ fn test_with_prefix_preserves_other_fields() {
         .set_help("help")
         .add_tag("tag");
 
-    let err2: GErr<u32, NewPrefix> = err1.with_prefix();
+    let err2: GErr<u32, NewPrefix> = err1.with_prefix_auto();
 
     assert_eq!(err2.id(), &42);
     assert_eq!(err2.message(), "error");
@@ -1022,7 +1022,7 @@ fn test_with_prefix_overrides_manual_prefix() {
     }
 
     let err1: GErr<NoID, NoPrefix> = GErr::new("error").set_prefix("[MANUAL]");
-    let err2: GErr<NoID, NewPrefix> = err1.with_prefix();
+    let err2: GErr<NoID, NewPrefix> = err1.with_prefix_auto();
 
     // Manual prefix should be replaced with static prefix
     assert_eq!(err2.prefix(), Some("[NEW]"));
@@ -1105,7 +1105,7 @@ fn test_builder_chain_with_type_conversions() {
     let err1: GErr<u32, NoPrefix, NoData> = GErr::new_with_id(42, "error");
     let err2: GErr<&'static str, TestPrefix, TestData> = err1
         .with_id("ERR_ID")
-        .with_prefix()
+        .with_prefix_auto()
         .with_data(TestData { code: 400 })
         .set_help("Invalid request");
 
@@ -1124,7 +1124,7 @@ fn test_builder_with_from_error_chain() {
         .add_tag("filesystem");
     let err = err
         .with_id(404_i64)
-        .with_prefix::<TestPrefix>()
+        .with_prefix_auto::<TestPrefix>()
         .with_data(TestData { code: 404 });
 
     assert_eq!(err.id(), &404);

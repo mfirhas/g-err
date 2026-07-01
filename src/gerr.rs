@@ -357,6 +357,34 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
         self
     }
 
+    /// Override with auto-generated id.
+    ///
+    /// This returns new GErr with different type of ID.
+    #[must_use]
+    #[inline]
+    pub fn with_id_auto<T: Id>(self) -> GErr<T, P, D> {
+        GErr {
+            id: T::id(),
+            message: self.message,
+
+            prefix: self.prefix,
+            sources: self.sources,
+
+            tags: self.tags,
+
+            data: self.data,
+
+            help: self.help,
+
+            location: self.location,
+
+            #[cfg(feature = "backtrace")]
+            backtrace: self.backtrace,
+
+            _static_prefix: PhantomData,
+        }
+    }
+
     /// Override ID value and type.
     ///
     /// This returns new GErr with different type of ID.
@@ -390,7 +418,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     /// This returns new GErr with different type of Prefix.
     #[must_use]
     #[inline]
-    pub fn with_prefix<T: Prefix>(self) -> GErr<ID, T, D> {
+    pub fn with_prefix_auto<T: Prefix>(self) -> GErr<ID, T, D> {
         GErr {
             id: self.id,
             message: self.message,
