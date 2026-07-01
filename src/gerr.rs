@@ -47,6 +47,7 @@ pub enum Source {
     /// General error.
     Err(Box<dyn Error + Send + Sync + 'static>),
 
+    // It's boxed to reduce error size.
     /// GErr error.
     GErr(Box<GErrSource>),
 }
