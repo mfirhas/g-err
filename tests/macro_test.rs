@@ -188,6 +188,7 @@ fn interpolation_style_usage() {
     assert_eq!(err.message(), "hello alice");
 }
 
+#[cfg_attr(feature = "serde", derive(::serde::Serialize))]
 #[derive(Debug, PartialEq, Eq)]
 struct AutoID;
 
@@ -294,4 +295,123 @@ fn test_macro_auto_all() {
 
     assert_eq!(gerr.id(), &AutoID);
     assert_eq!(gerr.prefix().unwrap(), "AutoPrefix");
+}
+
+#[test]
+fn test_macro_id_auto_return() {
+    let gerr: GErr<AutoID> = gerr!("test: {}", 5; id_auto, prefix="[asd]");
+
+    assert_eq!(gerr.id(), &AutoID);
+    assert_eq!(gerr.prefix().unwrap(), "[asd]");
+}
+
+#[test]
+fn test_macro_prefix_auto_return() {
+    let gerr: GErr<_, AutoPrefix> = gerr!("test: {}", 5; prefix_auto);
+
+    dbg!(&gerr);
+    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix");
+
+    let gerr: GErr<AutoID, AutoPrefix> =
+        gerr!("test: {}", 5; prefix_auto, id_auto, aprefix = "-user");
+
+    dbg!(&gerr);
+    assert_eq!(gerr.id(), &AutoID);
+    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix-user");
+}
+
+#[test]
+fn test_macro_data_type_return() {
+    let gerr: GErr<_, _, (&str, u32)> = gerr!("sdf"; data_type);
+
+    dbg!(&gerr);
+    assert!(gerr.prefix().is_none());
+    assert!(gerr.data().is_none());
+
+    let gerr: GErr<_, _, _> = gerr!("sdf"; data_type = u32);
+
+    dbg!(&gerr);
+    assert!(gerr.prefix().is_none());
+    assert!(gerr.data().is_none());
+
+    let gerr: GErr<AutoID, _, i128> = gerr!("sdf"; data_type, id_auto, prefix_auto = AutoPrefix);
+    let gerr = gerr.set_data(1230);
+
+    dbg!(&gerr);
+    assert_eq!(gerr.id(), &AutoID);
+    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix");
+    assert_eq!(gerr.data().unwrap(), &1230);
+}
+
+#[test]
+fn test_macro_all() {
+    let external_error = "anu".parse::<i32>().unwrap_err();
+    let gerr = gerr!(
+        "test all";
+        id_auto=AutoID,
+        prefix = "[APP]",
+        data="test",
+        tags=["tag1", "tag2"],
+
+        source = gerr!("error source"),
+        gerr = gerr!("another cause: {}", 123; tag="sdf", data=234, source=external_error.clone(), gerr=gerr!("dalem"; id_auto=AutoID, prefix_auto=AutoPrefix, data=("username", "babi"))),
+        source = external_error,
+
+        pprefix = "[E002]",
+        aprefix = "[User]",
+        tag = "nganu",
+    );
+
+    assert_eq!(gerr.sources().unwrap().len(), 3);
+    assert_eq!(gerr.id(), &AutoID);
+    assert_eq!(gerr.prefix().unwrap(), "[E002][APP][User]");
+    assert!(gerr.iter_tags().eq(["tag1", "tag2", "nganu"]));
+
+    let source1 = &gerr.sources().unwrap()[0];
+    let source2 = &gerr.sources().unwrap()[1];
+    let source3 = &gerr.sources().unwrap()[2];
+
+    match source1 {
+        Source::Err(err) => assert_eq!(err.to_string(), "error source"),
+        Source::GErr(_) => panic!("shouvebeen Source::Err"),
+    }
+
+    // TODO source2
+    match source2 {
+        Source::GErr(err) => {
+            assert_eq!(err.to_string(), "another cause: 123");
+            assert_eq!(err.tags.as_ref().unwrap(), &["sdf"]);
+            assert!(err.data.is_some());
+
+            assert_eq!(err.sources.as_ref().unwrap().len(), 2);
+
+            let nested_source1 = &err.sources.as_ref().unwrap()[0];
+            let nested_source2 = &err.sources.as_ref().unwrap()[1];
+
+            match nested_source1 {
+                Source::Err(_) => {}
+                Source::GErr(_) => panic!("should have been Source::Err"),
+            }
+
+            match nested_source2 {
+                Source::GErr(inner) => {
+                    assert_eq!(inner.to_string(), "AutoPrefix dalem");
+                    assert_eq!(inner.id.to_string(), "AutoID");
+                    assert_eq!(inner.prefix.as_ref().unwrap(), "AutoPrefix");
+
+                    assert!(inner.data.is_some());
+
+                    assert!(inner.sources.is_none());
+                    assert!(inner.tags.is_none());
+                }
+                Source::Err(_) => panic!("should have been Source::GErr"),
+            }
+        }
+        Source::Err(_) => panic!("should have been Source::GErr"),
+    }
+
+    match source3 {
+        Source::Err(_) => {}
+        Source::GErr(_) => panic!("shouvebeen Source::Err"),
+    }
 }
