@@ -187,3 +187,111 @@ fn interpolation_style_usage() {
 
     assert_eq!(err.message(), "hello alice");
 }
+
+#[derive(Debug, PartialEq, Eq)]
+struct AutoID;
+
+impl core::fmt::Display for AutoID {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "AutoID")
+    }
+}
+
+impl Id for AutoID {
+    fn id() -> Self {
+        Self
+    }
+}
+
+struct AutoPrefix;
+
+impl Prefix for AutoPrefix {
+    const PREFIX: Option<&'static str> = Some("AutoPrefix");
+}
+
+#[test]
+fn test_macro_default() {
+    let gerr = gerr!("sdf: {}", "qwe");
+
+    dbg!(&gerr);
+    assert!(gerr.prefix().is_none());
+    assert!(gerr.data().is_none());
+}
+
+#[test]
+fn test_macro_set_manual_id() {
+    let gerr = gerr!(
+        "test: {}", 123;
+        id=123,
+    );
+
+    dbg!(&gerr);
+    assert_eq!(gerr.id(), &123);
+}
+
+#[test]
+fn test_macro_set_manual_prefix() {
+    let gerr = gerr!(
+        "test: {}", 123;
+        prefix="anu",
+        pprefix = "[TEST]",
+        aprefix = "-asd",
+    );
+
+    dbg!(&gerr);
+    assert_eq!(gerr.prefix().unwrap(), "[TEST]anu-asd");
+}
+
+#[test]
+fn test_macro_set_manual_data() {
+    let gerr = gerr!("test data: {}", "data"; data = ("username", "ajo"));
+
+    dbg!(&gerr);
+    assert_eq!(gerr.data().unwrap(), &("username", "ajo"));
+}
+
+#[test]
+fn test_macro_set_manual_all() {
+    let gerr =
+        gerr!("manual all: {}", 4; prefix = "[TEST]", aprefix = "-user", id=123, data=234_u64);
+
+    dbg!(&gerr);
+
+    assert_eq!(gerr.id(), &123);
+    assert_eq!(gerr.prefix().unwrap(), "[TEST]-user");
+    assert_eq!(gerr.data().unwrap(), &234);
+}
+
+#[test]
+fn test_macro_id_auto() {
+    let gerr = gerr!("asdsdf: {}", 234; id_auto=AutoID);
+    dbg!(&gerr);
+
+    assert_eq!(gerr.id().to_string(), "AutoID");
+}
+
+#[test]
+fn test_macro_prefix_auto() {
+    let gerr = gerr!("asdsdf: {}", 234; prefix_auto=AutoPrefix, aprefix="-user");
+    dbg!(&gerr);
+
+    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix-user");
+}
+
+#[test]
+fn test_macro_data_type() {
+    let gerr = gerr!("sldkvm: {}", 345; data=123, data_type = (&str, u64));
+
+    dbg!(&gerr);
+
+    assert!(gerr.data().is_none());
+}
+
+#[test]
+fn test_macro_auto_all() {
+    let gerr = gerr!("test: {}", 4; prefix_auto=AutoPrefix, id_auto=AutoID, data_type = i128);
+    dbg!(&gerr);
+
+    assert_eq!(gerr.id(), &AutoID);
+    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix");
+}

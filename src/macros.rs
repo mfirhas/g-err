@@ -101,6 +101,19 @@ macro_rules! gerr {
     (@build $err:ident,) => { $err };
 
     // ==================================================
+    // id_auto = ...
+    // ==================================================
+
+    (
+        @build $err:ident,
+        id_auto = $id_auto:ty
+        $(, $($rest:tt)*)?
+    ) => {{
+        let err = $err.with_id_auto::<$id_auto>();
+        $crate::gerr!(@build err $(, $($rest)*)?)
+    }};
+
+    // ==================================================
     // id = ...
     // ==================================================
 
@@ -110,6 +123,19 @@ macro_rules! gerr {
         $(, $($rest:tt)*)?
     ) => {{
         let err = $err.with_id($id);
+        $crate::gerr!(@build err $(, $($rest)*)?)
+    }};
+
+    // ==================================================
+    // prefix_auto = ...
+    // ==================================================
+
+    (
+        @build $err:ident,
+        prefix_auto = $prefix_auto:ty
+        $(, $($rest:tt)*)?
+    ) => {{
+        let err = $err.with_prefix_auto::<$prefix_auto>();
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
@@ -149,6 +175,19 @@ macro_rules! gerr {
         $(, $($rest:tt)*)?
     ) => {{
         let err = $err.append_prefix($aprefix);
+        $crate::gerr!(@build err $(, $($rest)*)?)
+    }};
+
+    // ==================================================
+    // data_type = ...
+    // ==================================================
+
+    (
+        @build $err:ident,
+        data_type = $data_type:ty
+        $(, $($rest:tt)*)?
+    ) => {{
+        let err = $err.with_data_type::<$data_type>();
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
