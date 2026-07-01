@@ -441,6 +441,32 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
         }
     }
 
+    /// Override Data(D) type.
+    #[must_use]
+    #[inline]
+    pub fn with_data_type<T>(self) -> GErr<ID, P, T> {
+        GErr {
+            id: self.id,
+            message: self.message,
+
+            prefix: self.prefix,
+            sources: self.sources,
+
+            tags: self.tags,
+
+            data: None,
+
+            help: self.help,
+
+            location: self.location,
+
+            #[cfg(feature = "backtrace")]
+            backtrace: self.backtrace,
+
+            _static_prefix: PhantomData,
+        }
+    }
+
     /// Override Data(D) value and type.
     ///
     /// This returns new GErr with different type of Data.
