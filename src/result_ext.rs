@@ -112,7 +112,7 @@ where
 /// Result extension where `E` is GErr or any error implementing `Into<GErrSource>`.
 ///
 /// Use this extension if you pass GErr or `Into<GErrSource>` from Result's E and want to keep the detail attributes.
-pub trait GResultExt<T>: sealed::Sealed {
+pub trait GResultExt<T, E>: sealed::Sealed {
     /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`, and id is manually-set.
     #[track_caller]
     fn gerr<ID, P, D>(self, id: ID, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
@@ -142,9 +142,12 @@ pub trait GResultExt<T>: sealed::Sealed {
         P: Prefix,
         F: FnOnce() -> M,
         M: Into<Cow<'static, str>>;
+
+    /// Box `E`
+    fn boxed(self) -> core::result::Result<T, Box<E>>;
 }
 
-impl<T, E> GResultExt<T> for core::result::Result<T, E>
+impl<T, E> GResultExt<T, E> for core::result::Result<T, E>
 where
     E: Into<GErrSource> + Error + Send + Sync + 'static,
 {
@@ -198,17 +201,7 @@ where
             GErr::<ID, P, D>::new_untracked(func().into(), location).add_source_gerr(source)
         })
     }
-}
 
-pub trait GErrBoxExt<T, E>: crate::sealed::Sealed {
-    /// Box `E`
-    fn boxed(self) -> core::result::Result<T, Box<E>>;
-}
-
-impl<T, E> GErrBoxExt<T, E> for core::result::Result<T, E>
-where
-    E: Into<GErrSource> + Error + Send + Sync + 'static,
-{
     #[inline]
     fn boxed(self) -> core::result::Result<T, Box<E>> {
         self.map_err(Box::new)

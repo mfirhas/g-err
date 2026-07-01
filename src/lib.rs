@@ -39,7 +39,7 @@ mod types;
 pub use types::{NoData, NoID, NoPrefix};
 
 mod result_ext;
-pub use result_ext::{GErrBoxExt, GResultExt, ResultExt};
+pub use result_ext::{GResultExt, ResultExt};
 
 pub mod iterator;
 mod query;
