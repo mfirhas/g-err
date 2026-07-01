@@ -376,7 +376,6 @@ fn test_macro_all() {
         Source::GErr(_) => panic!("shouvebeen Source::Err"),
     }
 
-    // TODO source2
     match source2 {
         Source::GErr(err) => {
             assert_eq!(err.to_string(), "another cause: 123");
