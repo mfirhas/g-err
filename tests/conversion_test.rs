@@ -146,7 +146,7 @@ fn test_result_context_with_standard_error() {
         "file not found",
     ));
 
-    let gerr_result: Result<i32, NoID> = result.context("failed to read file");
+    let gerr_result: Result<i32, NoID> = result.context_auto("failed to read file");
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -162,7 +162,7 @@ fn test_result_context_with_owned_string() {
     ));
 
     let msg = String::from("operation failed");
-    let gerr_result: Result<i32, NoID> = result.context(msg);
+    let gerr_result: Result<i32, NoID> = result.context_auto(msg);
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -174,7 +174,7 @@ fn test_result_context_with_custom_id_type() {
     let result: core::result::Result<i32, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<i32, AutoId> = result.context("wrapped error");
+    let gerr_result: Result<i32, AutoId> = result.context_auto("wrapped error");
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -190,7 +190,7 @@ fn test_result_context_with_prefix() {
         "not found",
     ));
 
-    let gerr_result: Result<i32, u32, TestPrefix> = result.to_gerr_with_id(123);
+    let gerr_result: Result<i32, u32, TestPrefix> = result.context(123, "io error");
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -201,7 +201,7 @@ fn test_result_context_with_prefix() {
 fn test_result_context_success_case() {
     let result: core::result::Result<i32, std::io::Error> = Ok(42);
 
-    let gerr_result: Result<i32, NoID> = result.context("should not be used");
+    let gerr_result: Result<i32, NoID> = result.context_auto("should not be used");
 
     assert!(gerr_result.is_ok());
     assert_eq!(gerr_result.unwrap(), 42);
@@ -212,7 +212,7 @@ fn test_result_context_preserves_source() {
     let original_error = std::io::Error::new(std::io::ErrorKind::NotFound, "file not found");
     let result: core::result::Result<i32, std::io::Error> = Err(original_error);
 
-    let gerr_result: Result<i32, NoID> = result.context("wrapped");
+    let gerr_result: Result<i32, NoID> = result.context_auto("wrapped");
 
     let err = gerr_result.unwrap_err();
     assert!(err.sources().is_some());
@@ -230,7 +230,7 @@ fn test_result_with_context_basic() {
         "not found",
     ));
 
-    let gerr_result: Result<i32, NoID> = result.with_context(|| "dynamic message");
+    let gerr_result: Result<i32, NoID> = result.with_context_auto(|| "dynamic message");
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -242,7 +242,7 @@ fn test_result_with_context_closure_called_only_on_error() {
     let mut called = false;
     let result: core::result::Result<i32, std::io::Error> = Ok(42);
 
-    let gerr_result: Result<i32, NoID> = result.with_context(|| {
+    let gerr_result: Result<i32, NoID> = result.with_context_auto(|| {
         called = true;
         "should not be called"
     });
@@ -260,7 +260,7 @@ fn test_result_with_context_closure_formatting() {
     ));
 
     let gerr_result: Result<i32, NoID> =
-        result.with_context(|| format!("error code: {}", error_code));
+        result.with_context_auto(|| format!("error code: {}", error_code));
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.message(), "error code: 404");
@@ -271,7 +271,8 @@ fn test_result_with_context_owned_string_return() {
     let result: core::result::Result<i32, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<i32, NoID> = result.with_context(|| String::from("allocated message"));
+    let gerr_result: Result<i32, NoID> =
+        result.with_context_auto(|| String::from("allocated message"));
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.message(), "allocated message");
@@ -282,7 +283,8 @@ fn test_result_with_context_with_prefix() {
     let result: core::result::Result<i32, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<i32, NoID, TestPrefix> = result.with_context(|| "contextual error");
+    let gerr_result: Result<i32, NoID, TestPrefix> =
+        result.with_context_auto(|| "contextual error");
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.prefix(), Some("[TEST]"));
@@ -300,11 +302,15 @@ fn test_result_into_gerr_basic() {
         "file not found",
     ));
 
-    let gerr_result: Result<i32, NoID> = result.to_gerr();
+    let gerr_result: Result<i32, NoID> = result.context_auto("io error");
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
-    assert_eq!(err.message(), "file not found");
+    assert_eq!(err.message(), "io error");
+    match err.sources().unwrap()[0] {
+        g_err::Source::Err(ref err) => assert_eq!(err.to_string(), "file not found"),
+        g_err::Source::GErr(_) => panic!("shouvebeen Source::Err"),
+    }
 }
 
 #[test]
@@ -312,7 +318,7 @@ fn test_result_into_gerr_with_autogen_id() {
     let result: core::result::Result<i32, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<i32, AutoId> = result.to_gerr();
+    let gerr_result: Result<i32, AutoId> = result.context_auto("io error");
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -324,7 +330,7 @@ fn test_result_into_gerr_with_autogen_id() {
 fn test_result_into_gerr_success_case() {
     let result: core::result::Result<i32, std::io::Error> = Ok(42);
 
-    let gerr_result: Result<i32, NoID> = result.to_gerr();
+    let gerr_result: Result<i32, NoID> = result.context_auto("io error");
 
     assert!(gerr_result.is_ok());
     assert_eq!(gerr_result.unwrap(), 42);
@@ -335,7 +341,7 @@ fn test_result_into_gerr_error_message_extracted() {
     use std::num::ParseIntError;
 
     let parse_result: core::result::Result<i32, ParseIntError> = "not a number".parse();
-    let gerr_result: Result<i32, NoID> = parse_result.to_gerr();
+    let gerr_result: Result<i32, NoID> = parse_result.context_auto("Parse integer error");
 
     let err = gerr_result.unwrap_err();
     assert!(!err.message().is_empty());
@@ -346,7 +352,7 @@ fn test_result_into_gerr_with_prefix() {
     let result: core::result::Result<i32, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<i32, NoID, TestPrefix> = result.to_gerr();
+    let gerr_result: Result<i32, NoID, TestPrefix> = result.context_auto("io error");
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.prefix(), Some("[TEST]"));
@@ -594,7 +600,7 @@ fn test_conversion_chain_standard_error_to_gerr_to_gerr_source() {
     let std_err = std::io::Error::new(std::io::ErrorKind::NotFound, "file not found");
     let result: core::result::Result<i32, std::io::Error> = Err(std_err);
 
-    let gerr_result: Result<i32, NoID> = result.context("wrapped in gerr");
+    let gerr_result: Result<i32, NoID> = result.context_auto("wrapped in gerr");
     assert!(gerr_result.is_err());
 
     let gerr = gerr_result.unwrap_err();
@@ -609,7 +615,7 @@ fn test_conversion_chain_result_ext_to_gerr_ext() {
     let std_err = std::io::Error::new(std::io::ErrorKind::Other, "error");
     let result1: core::result::Result<i32, std::io::Error> = Err(std_err);
 
-    let gerr_result1: Result<i32> = result1.context("step 1");
+    let gerr_result1: Result<i32> = result1.context_auto("step 1");
 
     assert!(gerr_result1.is_err());
 
@@ -628,7 +634,8 @@ fn test_conversion_with_type_parameters() {
     let std_err = std::io::Error::new(std::io::ErrorKind::Other, "error");
     let result: core::result::Result<i32, std::io::Error> = Err(std_err);
 
-    let gerr_result: Result<i32, NoID, TestPrefix, TestData> = result.context("error occurred");
+    let gerr_result: Result<i32, NoID, TestPrefix, TestData> =
+        result.context_auto("error occurred");
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.prefix(), Some("[TEST]"));
@@ -701,7 +708,7 @@ fn test_result_type_conversion_compatibility() {
     let std_result: core::result::Result<u32, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<u32, NoID, NoPrefix, NoData> = std_result.to_gerr();
+    let gerr_result: Result<u32, NoID, NoPrefix, NoData> = std_result.context_auto("io error");
 
     assert!(gerr_result.is_err());
 }
@@ -711,7 +718,8 @@ fn test_result_type_conversion_with_custom_types() {
     let std_result: core::result::Result<String, std::io::Error> =
         Err(std::io::Error::new(std::io::ErrorKind::Other, "error"));
 
-    let gerr_result: Result<String, AutoId, TestPrefix, TestData> = std_result.context("wrapped");
+    let gerr_result: Result<String, AutoId, TestPrefix, TestData> =
+        std_result.context_auto("wrapped");
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.prefix(), Some("[TEST]"));
@@ -722,7 +730,7 @@ fn test_multiple_error_types_conversion() {
     use std::num::ParseIntError;
 
     let parse_result: core::result::Result<i32, ParseIntError> = "invalid".parse();
-    let gerr_result: Result<i32, NoID> = parse_result.to_gerr();
+    let gerr_result: Result<i32, NoID> = parse_result.context_auto("io error");
 
     assert!(gerr_result.is_err());
 }
@@ -762,7 +770,7 @@ fn test_conversion_with_nested_sources() {
     let inner_err = std::io::Error::new(std::io::ErrorKind::NotFound, "inner");
     let result1: core::result::Result<i32, std::io::Error> = Err(inner_err);
 
-    let gerr1: Result<i32, u32> = result1.to_gerr_with_id(4);
+    let gerr1: Result<i32, u32> = result1.context(4, "io error");
 
     assert!(gerr1.is_err());
 
@@ -786,7 +794,7 @@ fn test_result_context_location() {
     ));
 
     let line = line!();
-    let gerr_result: Result<i32, NoID> = result.context("errored");
+    let gerr_result: Result<i32, NoID> = result.context_auto("errored");
 
     let line = line + 1;
     let column = 49;
@@ -809,7 +817,7 @@ fn test_result_with_context_location() {
     ));
 
     let line = line!();
-    let gerr_result: Result<i32, NoID> = result.with_context(|| {
+    let gerr_result: Result<i32, NoID> = result.with_context_auto(|| {
         called = true;
         "should be called"
     });
@@ -835,7 +843,7 @@ fn test_result_to_gerr_location() {
     ));
 
     let line = line!();
-    let gerr_result: Result<i32, NoID> = result.to_gerr();
+    let gerr_result: Result<i32, NoID> = result.context_auto("io error");
 
     let line = line + 1;
     let column = 49;
@@ -857,7 +865,7 @@ fn test_result_to_gerr_with_id_location() {
     ));
 
     let line = line!();
-    let gerr_result: Result<i32, u32> = result.to_gerr_with_id(123);
+    let gerr_result: Result<i32, u32> = result.context(123, "io error");
 
     let line = line + 1;
     let column = 48;

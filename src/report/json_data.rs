@@ -155,12 +155,12 @@ where
             backtrace: _,
         } = value;
 
-        let de_id: ID = serde_json::from_value(id).context("converting id")?;
+        let de_id: ID = serde_json::from_value(id).context_auto("converting id")?;
 
         let mut err = GErr::<ID, P, D>::with_id_untracked(de_id, message, Location::caller());
 
         if let Some(data) = data {
-            err = err.with_data(serde_json::from_value(data).context("converting data")?);
+            err = err.with_data(serde_json::from_value(data).context_auto("converting data")?);
         }
 
         if let Some(prefix) = prefix {
@@ -206,12 +206,12 @@ where
             help,
         } = value;
 
-        let de_id: ID = serde_json::from_value(id).context("converting id")?;
+        let de_id: ID = serde_json::from_value(id).context_auto("converting id")?;
 
         let mut err = GErr::<ID, P, D>::with_id_untracked(de_id, message, Location::caller());
 
         if let Some(data) = data {
-            err = err.with_data(serde_json::from_value(data).context("converting data")?);
+            err = err.with_data(serde_json::from_value(data).context_auto("converting data")?);
         }
 
         if let Some(prefix) = prefix {

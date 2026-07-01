@@ -19,42 +19,39 @@ impl<T, E> sealed::Sealed for core::result::Result<T, E> {}
 ///
 /// Passing GErr will be parsed as general error.
 pub trait ResultExt<T>: sealed::Sealed {
+    /// Wrap `E` inside GErr as source with manually-set id.
+    #[track_caller]
+    fn context<ID, P, D>(
+        self,
+        id: ID,
+        message: impl Into<Cow<'static, str>>,
+    ) -> Result<T, ID, P, D>
+    where
+        P: Prefix;
+
+    /// Wrap `E` inside GErr as source with manually-set id, with a closure generating the error message.
+    #[track_caller]
+    fn with_context<ID, P, D, F, M>(self, id: ID, func: F) -> Result<T, ID, P, D>
+    where
+        P: Prefix,
+        F: FnOnce() -> M,
+        M: Into<Cow<'static, str>>;
+
     /// Wrap `E` inside GErr as source with auto-generated id.
     #[track_caller]
-    fn context<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
+    fn context_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix;
 
     /// Wrap `E` inside GErr as source with auto-generated id, with a closure generating the error message.
     #[track_caller]
-    fn with_context<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
+    fn with_context_auto<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
         F: FnOnce() -> M,
         M: Into<Cow<'static, str>>;
-
-    /// Returns any `E` as GErr with auto-generated id.
-    ///
-    /// Useful if the return type is GErr, accepting any errors.
-    ///
-    /// Make sure GErr return type ID: Id and P: Prefix.
-    #[track_caller]
-    fn to_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
-    where
-        ID: Id,
-        P: Prefix;
-
-    /// Returns any `E` as GErr with manual id.
-    ///
-    /// Useful if the return type is GErr, accepting any errors.
-    ///
-    /// Make sure GErr return type P: Prefix.
-    #[track_caller]
-    fn to_gerr_with_id<ID, P, D>(self, id: ID) -> Result<T, ID, P, D>
-    where
-        P: Prefix;
 }
 
 impl<T, E> ResultExt<T> for core::result::Result<T, E>
@@ -62,7 +59,31 @@ where
     E: Error + Send + Sync + 'static,
 {
     #[track_caller]
-    fn context<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
+    fn context<ID, P, D>(self, id: ID, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
+    where
+        P: Prefix,
+    {
+        let location = Location::caller();
+        self.map_err(|source| {
+            GErr::<ID, P, D>::with_id_untracked(id, message.into(), location).add_source(source)
+        })
+    }
+
+    #[track_caller]
+    fn with_context<ID, P, D, F, M>(self, id: ID, func: F) -> Result<T, ID, P, D>
+    where
+        P: Prefix,
+        F: FnOnce() -> M,
+        M: Into<Cow<'static, str>>,
+    {
+        let location = Location::caller();
+        self.map_err(|source| {
+            GErr::<ID, P, D>::with_id_untracked(id, func().into(), location).add_source(source)
+        })
+    }
+
+    #[track_caller]
+    fn context_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
@@ -74,7 +95,7 @@ where
     }
 
     #[track_caller]
-    fn with_context<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
+    fn with_context_auto<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
     where
         ID: Id,
         P: Prefix,
@@ -85,25 +106,6 @@ where
         self.map_err(|source| {
             GErr::<ID, P, D>::new_untracked(func().into(), location).add_source(source)
         })
-    }
-
-    #[track_caller]
-    fn to_gerr<ID, P, D>(self) -> Result<T, ID, P, D>
-    where
-        ID: Id,
-        P: Prefix,
-    {
-        let location = Location::caller();
-        self.map_err(|source| GErr::<ID, P, D>::new_untracked(source.to_string(), location))
-    }
-
-    #[track_caller]
-    fn to_gerr_with_id<ID, P, D>(self, id: ID) -> Result<T, ID, P, D>
-    where
-        P: Prefix,
-    {
-        let location = Location::caller();
-        self.map_err(|source| GErr::<ID, P, D>::with_id_untracked(id, source.to_string(), location))
     }
 }
 

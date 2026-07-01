@@ -45,7 +45,7 @@ mod tags_test;
 mod gerr_box_test;
 
 fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
-    str_age.parse().to_gerr()
+    str_age.parse().context_auto("string age parsing")
 }
 
 fn get_age(str_age: &str) -> Result<i32, UuidV4, NoPrefix> {
@@ -61,7 +61,7 @@ fn get_age_usecase(req_id: u32, input: &str) -> Result<u16, UuidV4, PrefixA, (&'
             .add_source_gerr(e)
     })?;
     let ret = u16::try_from(ret)
-        .context::<NoID, PrefixB, NoData>("converting i32 to u16")
+        .context_auto::<NoID, PrefixB, NoData>("converting i32 to u16")
         .map_err(|gerr| GErr::new("into u16").add_source_gerr(gerr))?;
     Ok(ret)
 }
