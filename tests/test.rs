@@ -49,7 +49,7 @@ fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
 }
 
 fn get_age(str_age: &str) -> Result<i32, UuidV4, NoPrefix> {
-    let age = parse_age(str_age).with_gerr(|| format!("get age with input {}", str_age))?;
+    let age = parse_age(str_age).with_gerr_auto(|| format!("get age with input {}", str_age))?;
     Ok(age)
 }
 
@@ -133,7 +133,7 @@ impl SetField<String, serde_json::Value> for ErrData {
 #[test]
 fn test() {
     let ret: GErr<NoID, PrefixA> = handler(123456, "anu")
-        .gerr("handler error")
+        .gerr_auto("handler error")
         .unwrap_err()
         .set_help("figure it out!");
     dbg!(&ret);

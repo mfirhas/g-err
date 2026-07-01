@@ -367,7 +367,7 @@ fn test_result_gerr_with_gerr_source() {
     let source_err: GErr<u32> = GErr::new_with_id(100, "source error");
     let result: core::result::Result<i32, GErrSource> = Err(source_err.into());
 
-    let gerr_result: Result<i32, NoID> = result.gerr("wrapped with gerr");
+    let gerr_result: Result<i32, NoID> = result.gerr_auto("wrapped with gerr");
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -384,7 +384,7 @@ fn test_result_gerr_preserves_gerr_source_details() {
         .set_data(TestData { code: 100 });
 
     let result: core::result::Result<i32, GErrSource> = Err(source_err.into());
-    let gerr_result: Result<i32, NoID> = result.gerr("wrapper message");
+    let gerr_result: Result<i32, NoID> = result.gerr_auto("wrapper message");
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.message(), "wrapper message");
@@ -396,7 +396,7 @@ fn test_result_gerr_preserves_gerr_source_details() {
 fn test_result_gerr_success_case() {
     let result: core::result::Result<i32, GErrSource> = Ok(42);
 
-    let gerr_result: Result<i32, NoID> = result.gerr("should not be used");
+    let gerr_result: Result<i32, NoID> = result.gerr_auto("should not be used");
 
     assert!(gerr_result.is_ok());
     assert_eq!(gerr_result.unwrap(), 42);
@@ -407,7 +407,7 @@ fn test_result_gerr_with_autogen_id() {
     let source_err: GErr<u32> = GErr::new_with_id(100, "error");
     let result: core::result::Result<i32, GErrSource> = Err(source_err.into());
 
-    let gerr_result: Result<i32, AutoId> = result.gerr("wrapped");
+    let gerr_result: Result<i32, AutoId> = result.gerr_auto("wrapped");
 
     let err = gerr_result.unwrap_err();
     assert!(err.id().0.to_string().len() > 0);
@@ -418,7 +418,7 @@ fn test_result_gerr_with_prefix() {
     let source_err: GErr<u32> = GErr::new_with_id(100, "error");
     let result: core::result::Result<i32, GErrSource> = Err(source_err.into());
 
-    let gerr_result: Result<i32, NoID, TestPrefix> = result.gerr("wrapped");
+    let gerr_result: Result<i32, NoID, TestPrefix> = result.gerr_auto("wrapped");
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.prefix(), Some("[TEST]"));
@@ -433,7 +433,7 @@ fn test_result_with_gerr_basic() {
     let source_err: GErr<u32> = GErr::new_with_id(100, "source error");
     let result: core::result::Result<i32, GErrSource> = Err(source_err.into());
 
-    let gerr_result: Result<i32, NoID> = result.with_gerr(|| "dynamic gerr message");
+    let gerr_result: Result<i32, NoID> = result.with_gerr_auto(|| "dynamic gerr message");
 
     assert!(gerr_result.is_err());
     let err = gerr_result.unwrap_err();
@@ -445,7 +445,7 @@ fn test_result_with_gerr_closure_not_called_on_success() {
     let mut called = false;
     let result: core::result::Result<i32, GErrSource> = Ok(42);
 
-    let gerr_result: Result<i32, NoID> = result.with_gerr(|| {
+    let gerr_result: Result<i32, NoID> = result.with_gerr_auto(|| {
         called = true;
         "should not be called"
     });
@@ -460,7 +460,8 @@ fn test_result_with_gerr_closure_with_formatting() {
     let source_err: GErr<u32> = GErr::new_with_id(100, "error");
     let result: core::result::Result<i32, GErrSource> = Err(source_err.into());
 
-    let gerr_result: Result<i32, NoID> = result.with_gerr(|| format!("error code: {}", error_code));
+    let gerr_result: Result<i32, NoID> =
+        result.with_gerr_auto(|| format!("error code: {}", error_code));
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.message(), "error code: 500");
@@ -471,7 +472,8 @@ fn test_result_with_gerr_owned_string() {
     let source_err: GErr<u32> = GErr::new_with_id(100, "error");
     let result: core::result::Result<i32, GErrSource> = Err(source_err.into());
 
-    let gerr_result: Result<i32, NoID> = result.with_gerr(|| String::from("allocated message"));
+    let gerr_result: Result<i32, NoID> =
+        result.with_gerr_auto(|| String::from("allocated message"));
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.message(), "allocated message");
@@ -482,7 +484,7 @@ fn test_result_with_gerr_with_prefix() {
     let source_err: GErr<u32> = GErr::new_with_id(100, "error");
     let result: core::result::Result<i32, GErrSource> = Err(source_err.into());
 
-    let gerr_result: Result<i32, NoID, TestPrefix> = result.with_gerr(|| "gerr message");
+    let gerr_result: Result<i32, NoID, TestPrefix> = result.with_gerr_auto(|| "gerr message");
 
     let err = gerr_result.unwrap_err();
     assert_eq!(err.prefix(), Some("[TEST]"));
@@ -622,7 +624,7 @@ fn test_conversion_chain_result_ext_to_gerr_ext() {
     let inner_err = gerr_result1.unwrap_err().into_gerr_source();
     let result2: core::result::Result<i32, GErrSource> = Err(inner_err);
 
-    let gerr_result2: Result<i32, NoID> = result2.gerr("step 2");
+    let gerr_result2: Result<i32, NoID> = result2.gerr_auto("step 2");
     let final_err = gerr_result2.unwrap_err();
 
     assert_eq!(final_err.message(), "step 2");
@@ -650,7 +652,7 @@ fn test_conversion_preserves_error_details() {
         .set_data(TestData { code: 100 });
 
     let result: core::result::Result<i32, GErrSource> = Err(detail_err.into());
-    let gerr_result: Result<i32, NoID> = result.gerr("wrapper");
+    let gerr_result: Result<i32, NoID> = result.gerr_auto("wrapper");
 
     let final_err = gerr_result.unwrap_err();
     assert_eq!(final_err.message(), "wrapper");
@@ -777,7 +779,7 @@ fn test_conversion_with_nested_sources() {
     let source1: GErrSource = gerr1.unwrap_err().into_gerr_source();
     let result2: core::result::Result<i32, GErrSource> = Err(source1);
 
-    let gerr2: Result<i32, AutoId> = result2.gerr("level 2");
+    let gerr2: Result<i32, AutoId> = result2.gerr_auto("level 2");
 
     let err = gerr2.unwrap_err();
     assert_eq!(err.message(), "level 2");
@@ -887,7 +889,7 @@ fn test_result_gerr_location() {
     let gerr: Result<i32, u8> = Err(gerr);
 
     let line = line!();
-    let gerr_result: Result<i32, AutoId> = gerr.gerr("the error context");
+    let gerr_result: Result<i32, AutoId> = gerr.gerr_auto("the error context");
     let line = line + 1;
     let column = 49;
 
@@ -907,7 +909,7 @@ fn test_result_with_gerr_location() {
     let gerr: Result<i32, u8> = Err(gerr);
 
     let line = line!();
-    let gerr_result: Result<i32, AutoId> = gerr.with_gerr(|| "the error context");
+    let gerr_result: Result<i32, AutoId> = gerr.with_gerr_auto(|| "the error context");
     let line = line + 1;
     let column = 49;
 
@@ -927,7 +929,7 @@ fn test_result_with_id_location() {
     let gerr: Result<i32, u8> = Err(gerr);
 
     let line = line!();
-    let gerr_result: Result<i32, &'static str> = gerr.with_id("nganu", "anu");
+    let gerr_result: Result<i32, &'static str> = gerr.gerr("nganu", "anu");
     let line = line + 1;
     let column = 55;
 
