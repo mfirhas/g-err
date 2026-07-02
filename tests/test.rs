@@ -23,6 +23,9 @@ mod macro_test;
 #[path = "constructor_test.rs"]
 mod constructor_test;
 
+#[path = "builder_test.rs"]
+mod builder_test;
+
 #[path = "conversion_test.rs"]
 mod conversion_test;
 
