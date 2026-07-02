@@ -3,7 +3,7 @@ use core::fmt::{Debug, Display};
 use crate::gerr::{Id, Prefix};
 
 /// Type for generic parameter `ID` for GErr without id.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct NoID;
 
 impl Display for NoID {
@@ -46,7 +46,7 @@ pub struct NoPrefix;
 impl Prefix for NoPrefix {}
 
 /// Type for generic parameter `D` for GErr without data.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct NoData;
 
 #[cfg(feature = "serde")]

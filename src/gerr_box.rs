@@ -38,3 +38,10 @@ impl<'a, ID, P: Prefix, D> From<&'a GErrBox<ID, P, D>> for GErrView<'a, ID, D> {
         (&**err).into()
     }
 }
+
+impl<T, ID, P, D> From<GErrBox<ID, P, D>> for core::result::Result<T, GErrBox<ID, P, D>> {
+    #[inline]
+    fn from(value: GErrBox<ID, P, D>) -> Self {
+        core::result::Result::Err(value)
+    }
+}

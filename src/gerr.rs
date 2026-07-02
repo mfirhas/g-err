@@ -705,3 +705,10 @@ where
         self.into()
     }
 }
+
+impl<T, ID, P, D> From<GErr<ID, P, D>> for core::result::Result<T, GErr<ID, P, D>> {
+    #[inline]
+    fn from(value: GErr<ID, P, D>) -> Self {
+        core::result::Result::Err(value)
+    }
+}
