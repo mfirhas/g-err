@@ -946,7 +946,7 @@
 
 #[path = "setup_test.rs"]
 mod setup_test;
-use g_err::{GErr, GErrSource, GErrView, NoData, NoPrefix, gerr};
+use g_err::{GErr, GErrBox, GErrSource, GErrView, NoData, NoPrefix, gerr};
 use setup_test::*;
 
 #[test]
@@ -1049,4 +1049,38 @@ fn test_manual_into_gerr_view() {
             assert!(gerr.tags.as_ref().unwrap().iter().eq(["qwe", "wex"]));
         }
     }
+}
+
+#[test]
+fn test_box_into_gerr_source() {
+    let gerr: GErrBox<AutoID, AutoPrefix, NoData> = GErr::new("nganu")
+        .add_tag("tag1")
+        .append_prefix("-user")
+        .set_help("please halp!!")
+        .boxed();
+
+    let gerr_source: GErrSource = gerr.into();
+    assert_eq!(gerr_source.id.to_string(), "AutoID");
+    assert_eq!(gerr_source.message, "nganu");
+    assert_eq!(gerr_source.tags.unwrap()[0], "tag1");
+    assert_eq!(gerr_source.prefix.unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr_source.help.unwrap(), "please halp!!");
+}
+
+#[test]
+fn test_box_into_gerr_view() {
+    let gerr: Box<GErr<AutoID, AutoPrefix, NoData>> = GErr::new("nganu")
+        .add_tag("tag1")
+        .add_tag("tag2")
+        .append_prefix("-user")
+        .set_help("please halp!!")
+        .boxed();
+
+    let gerr_source: GErrView<_, _> = (&gerr).into();
+    assert_eq!(gerr_source.id.to_string(), "AutoID");
+    assert_eq!(gerr_source.message, "nganu");
+    assert_eq!(gerr_source.tags.unwrap()[0], "tag1");
+    assert_eq!(gerr_source.tags.unwrap()[1], "tag2");
+    assert_eq!(gerr_source.prefix.unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr_source.help.unwrap(), "please halp!!");
 }
