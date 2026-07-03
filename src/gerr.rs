@@ -600,13 +600,13 @@ impl<ID, P: Prefix, D> Display for GErr<ID, P, D> {
 
 impl<ID: Debug, P: Prefix, D: Debug> Debug for GErr<ID, P, D> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let mut debug = f.debug_struct("Err");
+        let mut debug = f.debug_struct("GErr");
 
         debug
             .field("id", &self.id)
             .field("prefix", &self.prefix.as_deref().or(P::PREFIX))
             .field("message", &self.message)
-            .field("source", &self.sources)
+            .field("sources", &self.sources)
             .field("tags", &self.tags)
             .field("data", &self.data)
             .field("help", &self.help())
