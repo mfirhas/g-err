@@ -1038,10 +1038,10 @@ fn test_manual_into_gerr_view() {
     assert_eq!(gerr_source.sources.unwrap().len(), 2);
     match gerr_source.sources.unwrap()[0] {
         g_err::Source::Err(ref err) => assert_eq!(err.to_string(), "invalid digit found in string"),
-        g_err::Source::GErr(_) => panic!("halp!!"),
+        g_err::Source::GErr(_) => panic!("expected Source::Err"),
     }
     match gerr_source.sources.unwrap()[1] {
-        g_err::Source::Err(_) => panic!("halp!!"),
+        g_err::Source::Err(_) => panic!("expected Source::GErr"),
         g_err::Source::GErr(ref gerr) => {
             assert_eq!(gerr.message, "source 2");
             assert_eq!(gerr.id.to_string(), "123");
