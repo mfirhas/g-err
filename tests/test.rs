@@ -29,6 +29,9 @@ mod builder_test;
 #[path = "conversion_test.rs"]
 mod conversion_test;
 
+#[path = "error_display_debug_test.rs"]
+mod error_display_debug_test;
+
 #[path = "prefix_test.rs"]
 mod prefix_test;
 
