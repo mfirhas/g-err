@@ -47,6 +47,9 @@ mod sources_test;
 #[path = "tags_test.rs"]
 mod tags_test;
 
+#[path = "result_test.rs"]
+mod result_test;
+
 fn parse_age(str_age: &str) -> Result<i32, NoID, PrefixB> {
     str_age.parse().context_auto("string age parsing")
 }
