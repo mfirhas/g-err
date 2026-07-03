@@ -5,6 +5,7 @@
 
 use g_err::{Id, Prefix, SetField};
 
+#[allow(dead_code)]
 #[cfg_attr(feature = "serde", derive(::serde::Serialize))]
 #[derive(Debug, PartialEq, Eq)]
 pub struct AutoID;
