@@ -10,7 +10,37 @@ use core::error::Error;
 use core::fmt::{Debug, Display};
 
 use crate::gerr::Source;
-use crate::{DataSource, GErr, GErrSource, IdSource, Prefix};
+use crate::{DataSource, GErr, GErrBox, GErrSource, IdSource, Prefix};
+
+impl<'a, ID, P, D> IntoIterator for &'a GErr<ID, P, D>
+where
+    ID: IdSource + 'static,
+    P: Prefix,
+    D: DataSource + 'static,
+{
+    type Item = GErrNode<'a, ID, P, D>;
+    type IntoIter = GErrTree<'a, ID, P, D>;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a, ID, P, D> IntoIterator for &'a GErrBox<ID, P, D>
+where
+    ID: IdSource + 'static,
+    P: Prefix,
+    D: DataSource + 'static,
+{
+    type Item = GErrNode<'a, ID, P, D>;
+    type IntoIter = GErrTree<'a, ID, P, D>;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        (*self).iter()
+    }
+}
 
 impl<ID, P, D> GErr<ID, P, D>
 where
