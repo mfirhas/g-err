@@ -29,14 +29,6 @@ pub trait ResultExt<T>: sealed::Sealed {
     where
         P: Prefix;
 
-    /// Wrap `E` inside GErr as source with manually-set id, with a closure generating the error message.
-    #[track_caller]
-    fn with_context<ID, P, D, F, M>(self, id: ID, func: F) -> Result<T, ID, P, D>
-    where
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>;
-
     /// Wrap `E` inside GErr as source with auto-generated id.
     #[track_caller]
     fn context_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
@@ -44,14 +36,11 @@ pub trait ResultExt<T>: sealed::Sealed {
         ID: Id,
         P: Prefix;
 
-    /// Wrap `E` inside GErr as source with auto-generated id, with a closure generating the error message.
+    /// Wrap `E` inside GErr
     #[track_caller]
-    fn with_context_auto<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
+    fn wrap_err<ID, P, D>(self, gerr: GErr<ID, P, D>) -> Result<T, ID, P, D>
     where
-        ID: Id,
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>;
+        P: Prefix;
 }
 
 impl<T, E> ResultExt<T> for core::result::Result<T, E>
@@ -70,19 +59,6 @@ where
     }
 
     #[track_caller]
-    fn with_context<ID, P, D, F, M>(self, id: ID, func: F) -> Result<T, ID, P, D>
-    where
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>,
-    {
-        let location = Location::caller();
-        self.map_err(|source| {
-            GErr::<ID, P, D>::with_id_untracked(id, func().into(), location).add_source(source)
-        })
-    }
-
-    #[track_caller]
     fn context_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
@@ -95,17 +71,11 @@ where
     }
 
     #[track_caller]
-    fn with_context_auto<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
+    fn wrap_err<ID, P, D>(self, gerr: GErr<ID, P, D>) -> Result<T, ID, P, D>
     where
-        ID: Id,
         P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>,
     {
-        let location = Location::caller();
-        self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(func().into(), location).add_source(source)
-        })
+        self.map_err(|err| gerr.add_source(err))
     }
 }
 
@@ -119,14 +89,6 @@ pub trait GResultExt<T, E>: sealed::Sealed {
     where
         P: Prefix;
 
-    /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`, with closure producing error message, and id is manually-set.
-    #[track_caller]
-    fn with_gerr<ID, P, D, F, M>(self, id: ID, func: F) -> Result<T, ID, P, D>
-    where
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>;
-
     /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`, and id is auto-generated.
     #[track_caller]
     fn gerr_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
@@ -134,14 +96,11 @@ pub trait GResultExt<T, E>: sealed::Sealed {
         ID: Id,
         P: Prefix;
 
-    /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`, with closure producing error message, and id is auto-generated.
+    /// Wrap `E` inside GErr
     #[track_caller]
-    fn with_gerr_auto<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
+    fn wrap_gerr<ID, P, D>(self, gerr: GErr<ID, P, D>) -> Result<T, ID, P, D>
     where
-        ID: Id,
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>;
+        P: Prefix;
 
     /// Box `E`
     fn boxed(self) -> core::result::Result<T, Box<E>>;
@@ -164,19 +123,6 @@ where
     }
 
     #[track_caller]
-    fn with_gerr<ID, P, D, F, M>(self, id: ID, func: F) -> Result<T, ID, P, D>
-    where
-        P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>,
-    {
-        let location = Location::caller();
-        self.map_err(|source| {
-            GErr::<ID, P, D>::with_id_untracked(id, func().into(), location).add_source_gerr(source)
-        })
-    }
-
-    #[track_caller]
     fn gerr_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
     where
         ID: Id,
@@ -188,18 +134,13 @@ where
         })
     }
 
+    /// Wrap `E` inside GErr
     #[track_caller]
-    fn with_gerr_auto<ID, P, D, F, M>(self, func: F) -> Result<T, ID, P, D>
+    fn wrap_gerr<ID, P, D>(self, gerr: GErr<ID, P, D>) -> Result<T, ID, P, D>
     where
-        ID: Id,
         P: Prefix,
-        F: FnOnce() -> M,
-        M: Into<Cow<'static, str>>,
     {
-        let location = Location::caller();
-        self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(func().into(), location).add_source_gerr(source)
-        })
+        self.map_err(|err| gerr.add_source_gerr(err))
     }
 
     #[inline]
