@@ -19,6 +19,9 @@ mod prefix_test;
 #[path = "query_test.rs"]
 mod query_test;
 
+#[path = "iterator_test.rs"]
+mod iterator_test;
+
 #[path = "report_test.rs"]
 mod report_test;
 
