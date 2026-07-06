@@ -11,10 +11,13 @@ where
 {
     /// Iterate over GErr's prefixes.
     #[inline]
-    pub fn iter_by_prefix<'a>(
+    pub fn iter_by_prefix<'a, 'b>(
         &'a self,
-        prefix: &'a str,
-    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>> + 'a {
+        prefix: &'b str,
+    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>> + 'a
+    where
+        'b: 'a,
+    {
         self.iter().filter(move |item| match item {
             GErrNode::Root(gerr) => gerr.prefix().is_some_and(|p| p == prefix),
 
@@ -26,10 +29,13 @@ where
 
     /// Iterate over GErr's tags.
     #[inline]
-    pub fn iter_by_tag<'a>(
+    pub fn iter_by_tag<'a, 'b>(
         &'a self,
-        tag: &'a str,
-    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>> + 'a {
+        tag: &'b str,
+    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>> + 'a
+    where
+        'b: 'a,
+    {
         self.iter().filter(move |item| match item {
             GErrNode::Root(gerr) => gerr
                 .tags()
@@ -61,9 +67,13 @@ where
 
     /// Iterate over GErr's id.
     #[inline]
-    pub fn iter_by_id<T>(&self, value: &T) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
+    pub fn iter_by_id<'a, 'b, T>(
+        &'a self,
+        value: &'b T,
+    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>>
     where
         T: Any + PartialEq,
+        'b: 'a,
     {
         self.iter().filter(move |item| match item {
             GErrNode::Root(gerr) => (gerr.id() as &dyn Any)
@@ -98,9 +108,13 @@ where
 
     /// Iterate over GErr's data.
     #[inline]
-    pub fn iter_by_data<T>(&self, value: &T) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
+    pub fn iter_by_data<'a, 'b, T>(
+        &'a self,
+        value: &'b T,
+    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>>
     where
         T: Any + PartialEq,
+        'b: 'a,
     {
         self.iter().filter(move |item| match item {
             GErrNode::Root(gerr) => gerr
@@ -131,62 +145,5 @@ where
 
             _ => None,
         })
-    }
-
-    /// Find GErr's id by type.
-    #[inline]
-    pub fn find_id<T>(&self) -> Option<GErrNode<'_, ID, P, D>>
-    where
-        T: Any,
-    {
-        self.iter_id::<T>().next()
-    }
-
-    /// Find GErr's id by value.
-    #[inline]
-    pub fn find_by_id<T>(&self, value: &T) -> Option<GErrNode<'_, ID, P, D>>
-    where
-        T: Any + PartialEq,
-    {
-        self.iter_by_id(value).next()
-    }
-
-    /// Find GErr's prefix by value.
-    #[inline]
-    pub fn find_by_prefix<'a>(&'a self, value: &'a str) -> Option<GErrNode<'a, ID, P, D>> {
-        self.iter_by_prefix(value).next()
-    }
-
-    /// Find GErr's data by type.
-    #[inline]
-    pub fn find_data<T>(&self) -> Option<GErrNode<'_, ID, P, D>>
-    where
-        T: Any,
-    {
-        self.iter_data::<T>().next()
-    }
-
-    /// Find GErr's data by value.
-    #[inline]
-    pub fn find_by_data<T>(&self, value: &T) -> Option<GErrNode<'_, ID, P, D>>
-    where
-        T: Any + PartialEq,
-    {
-        self.iter_by_data(value).next()
-    }
-
-    /// Find GErr's tags by value.
-    #[inline]
-    pub fn find_by_tag<'a>(&'a self, value: &'a str) -> Option<GErrNode<'a, ID, P, D>> {
-        self.iter_by_tag(value).next()
-    }
-
-    /// Find GErr's sources by source's type.
-    #[inline]
-    pub fn find_source<E>(&self) -> Option<GErrNode<'_, ID, P, D>>
-    where
-        E: Error + 'static,
-    {
-        self.iter_source::<E>().next()
     }
 }
