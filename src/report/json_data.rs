@@ -241,12 +241,17 @@ impl From<&Source> for SourceJsonData {
                 id: serde_json::from_value({
                     match &gerr.id_json {
                         ::serde_json::Value::Number(num) => {
-                            serde_json::Value::from(num.as_i64().unwrap_or_default())
+                            ::serde_json::Value::from(num.as_i64().unwrap_or_default())
                         }
                         ::serde_json::Value::String(s) => {
-                            serde_json::Value::from_str(s).unwrap_or_default()
+                            ::serde_json::Value::from_str(s).unwrap_or_default()
                         }
-                        _ => serde_json::Value::Null,
+                        ::serde_json::Value::Bool(b) => ::serde_json::Value::from(*b),
+                        ::serde_json::Value::Array(arr) => {
+                            ::serde_json::Value::from(arr.as_slice())
+                        }
+                        ::serde_json::Value::Object(obj) => ::serde_json::Value::from(obj.clone()),
+                        _ => ::serde_json::Value::Null,
                     }
                 })
                 .unwrap_or_default(),
