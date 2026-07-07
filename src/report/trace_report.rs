@@ -25,9 +25,9 @@ impl Report for TraceReport {
 impl TraceReport {
     fn header<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(prefix) = err.prefix {
-            let _ = writeln!(out, "{prefix} {} ({})", err.message, err.id);
+            let _ = writeln!(out, "[{}] {prefix} {}", err.id, err.message);
         } else {
-            let _ = writeln!(out, "{} ({})", err.message, err.id);
+            let _ = writeln!(out, "[{}] {}", err.id, err.message);
         }
     }
 
@@ -59,8 +59,8 @@ impl TraceReport {
 
                 Source::GErr(ge) => {
                     let msg = match ge.prefix.as_deref() {
-                        Some(prefix) => format!("{prefix} {} ({})", ge.message, ge.id),
-                        None => format!("{} ({})", ge.message, ge.id),
+                        Some(prefix) => format!("[{}] {prefix} {}", ge.id, ge.message),
+                        None => format!("[{}] {}", ge.id, ge.message),
                     };
 
                     let _ = writeln!(out, "{branch}{msg}");

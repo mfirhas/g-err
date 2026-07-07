@@ -425,3 +425,99 @@ fn test_markdown_report() {
     println!("{}", markdown_report);
     assert_eq!(markdown_report, EXPECTED_MARKDOWN_REPORT);
 }
+
+const EXPECTED_TRACE_REPORT: &str = r#"[AutoID] AutoPrefix pretty error: l2k3mr2l3r
+├─ invalid digit found in string
+├─ [40] [400][NOT_FOUND] input is invalid: qwe
+│  ├─ invalid digit found in string
+│  └─ [NoID] [OUTBOUND] upstream error
+│     └─ [NoID] got error from user service
+└─ [AutoID] timeout checks
+   └─ [NoID] too many open files
+"#;
+
+const EXPECTED_TRACE_REPORT_NO_PREFIX: &str = r#"[AutoID] pretty error: l2k3mr2l3r
+├─ invalid digit found in string
+├─ [40] [400][NOT_FOUND] input is invalid: qwe
+│  ├─ invalid digit found in string
+│  └─ [NoID] [OUTBOUND] upstream error
+│     └─ [NoID] got error from user service
+└─ [AutoID] timeout checks
+   └─ [NoID] too many open files
+"#;
+
+#[test]
+fn test_trace_report() {
+    let user_id = 123;
+    let user_name = "ajo".into();
+    let req_id = "l2k3mr2l3r";
+    let input = "qwe";
+    let input_err = input.parse::<u64>().unwrap_err();
+    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
+        id_auto,
+        prefix_auto,
+        tag="tag1",
+        tags=["tag2", "tag3"],
+        data= Data {
+            user_id,
+            user_name,
+        },
+        help="send valid request",
+        source=input_err.clone(),
+        gerr=gerr!("input is invalid: {}", input;
+            id=40,
+            prefix="[400]",
+            tag="bad_request",
+            tag="invalid_input",
+            help="pass valid input",
+            aprefix = "[NOT_FOUND]",
+            data=("user_name".to_string(), "ajo".to_string()),
+            source = input_err,
+            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+        ),
+        gerr=gerr!("timeout checks";
+            id_auto=AutoID,
+            tags=["user_service", "timeout"],
+            gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
+    );
+
+    let trace_report = gerr.report_as::<TraceReport>();
+    assert_eq!(trace_report, EXPECTED_TRACE_REPORT);
+
+    // ----------------------------------------------------------
+
+    let user_id = 123;
+    let user_name = "ajo".into();
+    let req_id = "l2k3mr2l3r";
+    let input = "qwe";
+    let input_err = input.parse::<u64>().unwrap_err();
+    let gerr: GErr<AutoID, _, Data> = gerr!("pretty error: {req_id}";
+        id_auto,
+        tag="tag1",
+        tags=["tag2", "tag3"],
+        data= Data {
+            user_id,
+            user_name,
+        },
+        help="send valid request",
+        source=input_err.clone(),
+        gerr=gerr!("input is invalid: {}", input;
+            id=40,
+            prefix="[400]",
+            tag="bad_request",
+            tag="invalid_input",
+            help="pass valid input",
+            aprefix = "[NOT_FOUND]",
+            data=("user_name".to_string(), "ajo".to_string()),
+            source = input_err,
+            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+        ),
+        gerr=gerr!("timeout checks";
+            id_auto=AutoID,
+            tags=["user_service", "timeout"],
+            gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
+    );
+
+    let trace_report = gerr.report_as::<TraceReport>();
+    assert_eq!(trace_report, EXPECTED_TRACE_REPORT_NO_PREFIX);
+}
