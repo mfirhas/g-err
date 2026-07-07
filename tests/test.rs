@@ -25,6 +25,10 @@ mod iterator_test;
 #[path = "report_test.rs"]
 mod report_test;
 
+#[cfg(feature = "serde")]
+#[path = "json_report_test.rs"]
+mod json_report_test;
+
 #[path = "sources_test.rs"]
 mod sources_test;
 
