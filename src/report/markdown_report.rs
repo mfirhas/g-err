@@ -1,4 +1,4 @@
-use crate::gerr_view::GErrView;
+use crate::{Source, gerr_view::GErrView};
 
 use super::Report;
 use core::fmt::{Debug, Display, Write};
@@ -110,13 +110,95 @@ impl MarkdownReport {
                             let _ = writeln!(out, "- **Tags:** *{}*\n", tags.join(", "));
                         }
 
+                        if let Some(help) = &gerr.help {
+                            let _ = writeln!(out, "- **Help:** *{}*\n", help);
+                        }
+
                         if let Some(data) = &gerr.data {
                             let _ = writeln!(out, "- **Data:**\n");
                             let _ = writeln!(out, "```");
                             let _ = writeln!(out, "{data:#?}");
                             let _ = writeln!(out, "```");
                         }
+
+                        if let Some(sources) = &gerr.sources {
+                            let _ = writeln!(out, "- **Causes:**");
+                            let _ = writeln!(out);
+
+                            Self::write_sources(out, sources, 1);
+                        }
                     }
+                }
+            }
+        }
+    }
+    fn write_sources(out: &mut String, sources: &[Source], depth: usize) {
+        let indent = "    ".repeat(depth);
+        let item_indent = format!("{indent}    ");
+
+        for (i, src) in sources.iter().enumerate() {
+            let _ = write!(out, "{indent}{}. ", i + 1);
+
+            match src {
+                Source::Err(err) => {
+                    let _ = writeln!(out, "{err}");
+                    let _ = writeln!(out);
+                }
+
+                Source::GErr(gerr) => {
+                    match gerr.prefix.as_deref() {
+                        Some(prefix) => {
+                            let _ = writeln!(out, "{prefix} {}", gerr.message);
+                        }
+                        None => {
+                            let _ = writeln!(out, "{}", gerr.message);
+                        }
+                    }
+
+                    let _ = writeln!(out);
+                    let _ = writeln!(out, "{item_indent}- **ID:** `{}`", gerr.id);
+
+                    if let Some(loc) = gerr.location {
+                        let _ = writeln!(
+                            out,
+                            "{item_indent}- **Location:** `{}:{}:{}`",
+                            loc.file(),
+                            loc.line(),
+                            loc.column()
+                        );
+                    }
+
+                    if let Some(tags) = &gerr.tags
+                        && !tags.is_empty()
+                    {
+                        let _ = writeln!(out, "{item_indent}- **Tags:** *{}*", tags.join(", "));
+                    }
+
+                    if let Some(help) = &gerr.help {
+                        let _ = writeln!(out, "{item_indent}- **Help:** *{help}*");
+                    }
+
+                    if let Some(data) = &gerr.data {
+                        let _ = writeln!(out);
+                        let _ = writeln!(out, "{item_indent}- **Data:**");
+                        let _ = writeln!(out);
+                        let _ = writeln!(out, "{item_indent}```text");
+
+                        let pretty = format!("{data:#?}");
+                        for line in pretty.lines() {
+                            let _ = writeln!(out, "{item_indent}{line}");
+                        }
+
+                        let _ = writeln!(out, "{item_indent}```");
+                    }
+
+                    if let Some(sources) = &gerr.sources {
+                        let _ = writeln!(out, "{item_indent}- **Causes:**");
+
+                        Self::write_sources(out, sources, depth + 2);
+                    }
+
+                    let _ = writeln!(out);
                 }
             }
         }

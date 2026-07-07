@@ -166,3 +166,262 @@ fn test_pretty_report() {
     let pretty_report = gerr.report_as::<PrettyReport>();
     assert_eq!(pretty_report, EXPECTED_REPORT);
 }
+
+#[cfg(not(feature = "backtrace"))]
+const EXPECTED_MARKDOWN_REPORT: &str = r#"# Error Report
+
+## ID: AutoID
+
+## Prefix: AutoPrefix
+
+## Message
+
+> pretty error: l2k3mr2l3r
+
+## Data
+
+```
+Data {
+    user_id: 123,
+    user_name: "ajo",
+}
+```
+
+## Help
+
+> send valid request
+
+## Tags
+
+- tag1
+- tag2
+- tag3
+
+## Location
+
+tests/report_test.rs:397:48
+
+## Causes
+
+### 1. invalid digit found in string
+
+### 2. [400] input is invalid: qwe
+
+- **ID:** `40`
+
+- **Location:** `tests/report_test.rs:408:14`
+
+- **Tags:** *bad_request, invalid_input*
+
+- **Help:** *pass valid input*
+
+- **Data:**
+
+```
+(
+    "user_name",
+    "ajo",
+)
+```
+- **Causes:**
+
+    1. invalid digit found in string
+
+    2. [OUTBOUND] upstream error
+
+        - **ID:** `NoID`
+        - **Location:** `tests/report_test.rs:416:18`
+        - **Causes:**
+            1. got error from user service
+
+                - **ID:** `NoID`
+                - **Location:** `tests/report_test.rs:416:68`
+                - **Help:** *contact user service steward*
+
+                - **Data:**
+
+                ```text
+                (
+                    "caused by:",
+                    "timout",
+                )
+                ```
+
+
+### 3. timeout checks
+
+- **ID:** `AutoID`
+
+- **Location:** `tests/report_test.rs:418:14`
+
+- **Tags:** *user_service, timeout*
+
+- **Causes:**
+
+    1. too many open files
+
+        - **ID:** `NoID`
+        - **Location:** `tests/report_test.rs:421:18`
+        - **Tags:** *tmof*
+
+        - **Data:**
+
+        ```text
+        (
+            "MAX",
+            50000,
+        )
+        ```
+
+"#;
+#[cfg(feature = "backtrace")]
+const EXPECTED_MARKDOWN_REPORT: &str = r#"# Error Report
+
+## ID: AutoID
+
+## Prefix: AutoPrefix
+
+## Message
+
+> pretty error: l2k3mr2l3r
+
+## Data
+
+```
+Data {
+    user_id: 123,
+    user_name: "ajo",
+}
+```
+
+## Help
+
+> send valid request
+
+## Tags
+
+- tag1
+- tag2
+- tag3
+
+## Location
+
+tests/report_test.rs:397:48
+
+## Causes
+
+### 1. invalid digit found in string
+
+### 2. [400] input is invalid: qwe
+
+- **ID:** `40`
+
+- **Location:** `tests/report_test.rs:408:14`
+
+- **Tags:** *bad_request, invalid_input*
+
+- **Help:** *pass valid input*
+
+- **Data:**
+
+```
+(
+    "user_name",
+    "ajo",
+)
+```
+- **Causes:**
+
+    1. invalid digit found in string
+
+    2. [OUTBOUND] upstream error
+
+        - **ID:** `NoID`
+        - **Location:** `tests/report_test.rs:416:18`
+        - **Causes:**
+            1. got error from user service
+
+                - **ID:** `NoID`
+                - **Location:** `tests/report_test.rs:416:68`
+                - **Help:** *contact user service steward*
+
+                - **Data:**
+
+                ```text
+                (
+                    "caused by:",
+                    "timout",
+                )
+                ```
+
+
+### 3. timeout checks
+
+- **ID:** `AutoID`
+
+- **Location:** `tests/report_test.rs:418:14`
+
+- **Tags:** *user_service, timeout*
+
+- **Causes:**
+
+    1. too many open files
+
+        - **ID:** `NoID`
+        - **Location:** `tests/report_test.rs:421:18`
+        - **Tags:** *tmof*
+
+        - **Data:**
+
+        ```text
+        (
+            "MAX",
+            50000,
+        )
+        ```
+
+## Backtrace
+
+```
+<disabled>
+```
+"#;
+
+#[test]
+fn test_markdown_report() {
+    let user_id = 123;
+    let user_name = "ajo".into();
+    let req_id = "l2k3mr2l3r";
+    let input = "qwe";
+    let input_err = input.parse::<u64>().unwrap_err();
+    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
+        id_auto,
+        prefix_auto,
+        tag="tag1",
+        tags=["tag2", "tag3"],
+        data= Data {
+            user_id,
+            user_name,
+        },
+        help="send valid request",
+        source=input_err.clone(),
+        gerr=gerr!("input is invalid: {}", input;
+            id=40,
+            prefix="[400]",
+            tag="bad_request",
+            tag="invalid_input",
+            help="pass valid input",
+            data=("user_name".to_string(), "ajo".to_string()),
+            source = input_err,
+            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+        ),
+        gerr=gerr!("timeout checks";
+            id_auto=AutoID,
+            tags=["user_service", "timeout"],
+            gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
+    );
+
+    let markdown_report = gerr.report_as::<MarkdownReport>();
+    println!("{}", markdown_report);
+    assert_eq!(markdown_report, EXPECTED_MARKDOWN_REPORT);
+}
