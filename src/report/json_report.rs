@@ -70,6 +70,7 @@ struct DisplayJsonReportData<'a> {
     pub message: &'a str,
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub data: Option<serde_json::Value>,
+    pub help: Option<&'a str>,
 }
 
 #[derive(serde::Serialize)]
@@ -81,6 +82,7 @@ struct JsonReportData<'a> {
     pub data: Option<serde_json::Value>,
     pub location: LocationJson<'a>,
     pub sources: Option<Vec<SourceJson<'a>>>,
+    pub help: Option<&'a str>,
 
     #[cfg(feature = "backtrace")]
     pub backtrace: String,
@@ -102,6 +104,7 @@ struct SourceJson<'a> {
     pub data: Option<&'a serde_json::Value>,
     pub location: Option<LocationJson<'a>>,
     pub sources: Option<Vec<SourceJson<'a>>>,
+    pub help: Option<&'a str>,
 }
 
 impl<'a, ID, D> From<&'a GErrView<'a, ID, D>> for DisplayJsonReportData<'a>
@@ -117,6 +120,7 @@ where
             message: value.message,
             tags: value.tags,
             data: serde_json::to_value(value.data).ok(),
+            help: value.help,
         }
     }
 }
@@ -140,6 +144,7 @@ where
                 column: value.location.column(),
             },
             sources: value.sources.map(|s| s.iter().map(|v| v.into()).collect()),
+            help: value.help,
 
             #[cfg(feature = "backtrace")]
             backtrace: format!("{:#?}", value.backtrace),
@@ -160,6 +165,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
                 data: None,
                 location: None,
                 sources: None,
+                help: None,
             },
             Source::GErr(gerr) => Self {
                 id: &gerr.id_json,
@@ -176,6 +182,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
                     .sources
                     .as_deref()
                     .map(|s| s.iter().map(|src| src.into()).collect()),
+                help: gerr.help.as_deref(),
             },
         }
     }
