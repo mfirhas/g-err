@@ -307,7 +307,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                             GErr(
                                                 GErrSource {
                                                     id: AutoID,
-                                                    id_json: Null,
+                                                    id_json: String("AutoID"),
                                                     prefix: Some(
                                                         "AutoPrefix",
                                                     ),
