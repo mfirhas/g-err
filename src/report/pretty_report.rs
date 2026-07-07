@@ -44,7 +44,12 @@ impl PrettyReport {
     }
     fn data<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
         if let Some(data) = err.data {
-            let _ = writeln!(out, "Data:\n {data:#?}");
+            let _ = writeln!(out, "Data:");
+            let pretty = format!("{data:#?}");
+
+            for line in pretty.lines() {
+                let _ = writeln!(out, "   {line}");
+            }
         }
     }
     fn tags<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
@@ -105,9 +110,80 @@ impl PrettyReport {
                             let _ = writeln!(out, "     tags: {}", tags.join(", "));
                         }
 
-                        if let Some(data) = &gerr.data {
-                            let _ = writeln!(out, "     data: {data:#?}");
+                        if let Some(help) = &gerr.help {
+                            let _ = writeln!(out, "     help: {}", help);
                         }
+
+                        if let Some(data) = &gerr.data {
+                            let _ = writeln!(out, "     data:");
+                            let pretty = format!("{data:#?}");
+
+                            for line in pretty.lines() {
+                                let _ = writeln!(out, "       {line}");
+                            }
+                        }
+
+                        if let Some(sources) = &gerr.sources {
+                            let _ = writeln!(out, "     caused by:");
+                            Self::write_sources(out, sources, 6);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    fn write_sources(out: &mut String, sources: &[Source], indent: usize) {
+        let pad = " ".repeat(indent);
+
+        for src in sources {
+            match src {
+                Source::Err(err) => {
+                    let _ = writeln!(out, "{pad}- {err}");
+                }
+
+                Source::GErr(gerr) => {
+                    match gerr.prefix.as_deref() {
+                        Some(prefix) => {
+                            let _ = writeln!(out, "{pad}- {prefix} {}", gerr.message);
+                        }
+                        None => {
+                            let _ = writeln!(out, "{pad}- {}", gerr.message);
+                        }
+                    }
+
+                    let _ = writeln!(out, "{pad}  id: {}", gerr.id);
+
+                    if let Some(loc) = gerr.location {
+                        let _ = writeln!(
+                            out,
+                            "{pad}  at: {}:{}:{}",
+                            loc.file(),
+                            loc.line(),
+                            loc.column()
+                        );
+                    }
+
+                    if let Some(tags) = &gerr.tags
+                        && !tags.is_empty()
+                    {
+                        let _ = writeln!(out, "{pad}  tags: {}", tags.join(", "));
+                    }
+
+                    if let Some(help) = &gerr.help {
+                        let _ = writeln!(out, "{pad}  help: {help}");
+                    }
+
+                    if let Some(data) = &gerr.data {
+                        let _ = writeln!(out, "{pad}  data:");
+                        let pretty = format!("{data:#?}");
+                        for line in pretty.lines() {
+                            let _ = writeln!(out, "{pad}    {line}");
+                        }
+                    }
+
+                    if let Some(sources) = &gerr.sources {
+                        let _ = writeln!(out, "{pad}  caused by:");
+                        Self::write_sources(out, sources, indent + 3);
                     }
                 }
             }
