@@ -25,7 +25,7 @@ mod json_data;
 pub use json_data::{DisplayJsonData, JsonData, LocationJsonData, SourceJsonData};
 
 #[cfg(feature = "serde")]
-pub use json_report::{DisplayJsonReport, JsonReport};
+pub use json_report::JsonReport;
 
 use crate::{
     gerr::{GErr, Prefix},
@@ -107,6 +107,6 @@ where
     /// Public JSON data of GErr.
     #[inline]
     pub fn display_json_data(&self) -> DisplayJsonData {
-        DisplayJsonReport::data(self)
+        JsonReport::display_data(self)
     }
 }

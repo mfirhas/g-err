@@ -26,7 +26,7 @@ pub use report::{MarkdownReport, PrettyReport, TraceReport};
 pub mod json {
     //! Contains JSON reporting and data for [`GErr`](super::GErr).
     pub use super::report::{
-        DisplayJsonData, DisplayJsonReport, JsonData, JsonReport, LocationJsonData, SourceJsonData,
+        DisplayJsonData, JsonData, JsonReport, LocationJsonData, SourceJsonData,
     };
 }
 
