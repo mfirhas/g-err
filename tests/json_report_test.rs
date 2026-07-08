@@ -45,7 +45,5 @@ fn test_display_json_report() {
 
     let display_json_report = gerr.report_as::<DisplayJsonReport>();
     let display_json_data = serde_json::to_string_pretty(&gerr.display_json_data()).unwrap();
-    println!("{}", display_json_report);
-    println!("{}", display_json_data);
     assert_eq!(display_json_report, display_json_data);
 }
