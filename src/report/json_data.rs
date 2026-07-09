@@ -1,6 +1,5 @@
 use alloc::borrow::Cow;
 use core::panic::Location;
-use core::str::FromStr;
 
 use crate::{
     ResultExt,
@@ -108,7 +107,11 @@ where
             #[cfg(not(feature = "backtrace"))]
             backtrace: None,
             #[cfg(feature = "backtrace")]
-            backtrace: Some(err.backtrace.to_string()),
+            backtrace: match err.backtrace.status() {
+                std::backtrace::BacktraceStatus::Disabled => Some("<disabled>".into()),
+                std::backtrace::BacktraceStatus::Captured => Some(err.backtrace.to_string()),
+                _ => Some("<unsupported>".into()),
+            },
         }
     }
 }
@@ -243,9 +246,7 @@ impl From<&Source> for SourceJsonData {
                         ::serde_json::Value::Number(num) => {
                             ::serde_json::Value::from(num.as_i64().unwrap_or_default())
                         }
-                        ::serde_json::Value::String(s) => {
-                            ::serde_json::Value::from_str(s).unwrap_or_default()
-                        }
+                        ::serde_json::Value::String(s) => ::serde_json::Value::from(s.as_str()),
                         ::serde_json::Value::Bool(b) => ::serde_json::Value::from(*b),
                         ::serde_json::Value::Array(arr) => {
                             ::serde_json::Value::from(arr.as_slice())
@@ -268,9 +269,7 @@ impl From<&Source> for SourceJsonData {
                             ::serde_json::Value::Number(num) => {
                                 ::serde_json::Value::from(num.as_i64().unwrap_or_default())
                             }
-                            ::serde_json::Value::String(s) => {
-                                ::serde_json::Value::from_str(s).unwrap_or_default()
-                            }
+                            ::serde_json::Value::String(s) => ::serde_json::Value::from(s.as_str()),
                             ::serde_json::Value::Array(arr) => {
                                 let slice: &[::serde_json::Value] = arr.as_ref();
                                 ::serde_json::Value::from(slice)
@@ -285,7 +284,7 @@ impl From<&Source> for SourceJsonData {
                     }
                 })
                 .unwrap_or_default(),
-                help: gerr.prefix.as_deref().map(|s| s.into()),
+                help: gerr.help.as_deref().map(|s| s.into()),
                 sources: gerr
                     .sources
                     .as_ref()
