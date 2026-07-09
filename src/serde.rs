@@ -65,7 +65,7 @@ pub mod json {
 ///
 /// Attribute:
 ///
-/// `#[serde(with = "g_err::serde::display_json")]`
+/// `#[serde(serialize_with = "g_err::serde::display_json::serialize")]`
 pub mod display_json {
     use super::*;
 
