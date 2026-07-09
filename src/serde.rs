@@ -61,14 +61,12 @@ pub mod json {
     }
 }
 
-/// Serialize and deserialize into/from json for public.
+/// Serialize into/from json for public.
 ///
 /// Attribute:
 ///
 /// `#[serde(with = "g_err::serde::display_json")]`
 pub mod display_json {
-    use crate::json::DisplayJsonData;
-
     use super::*;
 
     /// Serialize GErr into JSON through [`DisplayJsonData`]
@@ -81,18 +79,5 @@ pub mod display_json {
         GErr<ID, P, D>: Error + 'static,
     {
         err.display_json_data().serialize(serializer)
-    }
-
-    /// deserialize GErr from JSON through [`DisplayJsonData`]
-    pub fn deserialize<'de, De, ID, P, D>(deserializer: De) -> Result<GErr<ID, P, D>, De::Error>
-    where
-        De: serde::Deserializer<'de>,
-        ID: for<'a> serde::Deserialize<'a>,
-        P: Prefix,
-        D: for<'a> serde::Deserialize<'a>,
-    {
-        <DisplayJsonData as serde::Deserialize>::deserialize(deserializer)?
-            .try_into()
-            .map_err(::serde::de::Error::custom)
     }
 }

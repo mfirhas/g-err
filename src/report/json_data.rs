@@ -24,6 +24,17 @@ pub struct DisplayJsonData {
     pub data: Option<serde_json::Value>,
     /// Error help hint.
     pub help: Option<String>,
+    /// Error causes
+    pub causes: Option<Vec<DisplayCausesJsonData>>,
+}
+
+/// Display JSON data causes
+#[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
+pub struct DisplayCausesJsonData {
+    /// Cause message
+    pub message: String,
+    /// caused by
+    pub caused_by: Option<Vec<DisplayCausesJsonData>>,
 }
 
 /// JSON data for internal display.
@@ -132,6 +143,9 @@ where
                 .data
                 .map(|d| serde_json::to_value(d).unwrap_or_default()),
             help: err.help.map(Into::into),
+            causes: err
+                .sources
+                .map(|sources| sources.iter().map(|src| src.into()).collect::<Vec<_>>()),
         }
     }
 }
@@ -180,49 +194,6 @@ where
                 .map(|s| s.into_source(Location::caller()))
                 .collect();
             err = err.set_sources(gerr_sources);
-        }
-
-        if let Some(help) = help {
-            err = err.set_help(help);
-        }
-
-        Ok(err)
-    }
-}
-
-impl<ID, P, D> TryFrom<DisplayJsonData> for GErr<ID, P, D>
-where
-    ID: for<'a> ::serde::Deserialize<'a>,
-    P: Prefix,
-    D: for<'a> ::serde::Deserialize<'a>,
-{
-    type Error = GErr<NoID, NoPrefix, NoData>;
-
-    #[track_caller]
-    fn try_from(value: DisplayJsonData) -> Result<Self, Self::Error> {
-        let DisplayJsonData {
-            id,
-            prefix,
-            message,
-            tags,
-            data,
-            help,
-        } = value;
-
-        let de_id: ID = serde_json::from_value(id).context_auto("converting id")?;
-
-        let mut err = GErr::<ID, P, D>::with_id_untracked(de_id, message, Location::caller());
-
-        if let Some(data) = data {
-            err = err.with_data(serde_json::from_value(data).context_auto("converting data")?);
-        }
-
-        if let Some(prefix) = prefix {
-            err = err.set_prefix(prefix);
-        }
-
-        if let Some(tags) = tags {
-            err = err.add_tags(tags);
         }
 
         if let Some(help) = help {
@@ -294,6 +265,24 @@ impl From<&Source> for SourceJsonData {
                     line: loc.line(),
                     column: loc.column(),
                 }),
+            },
+        }
+    }
+}
+
+impl From<&Source> for DisplayCausesJsonData {
+    fn from(value: &Source) -> Self {
+        match value {
+            Source::Err(err) => Self {
+                message: err.to_string(),
+                caused_by: None,
+            },
+            Source::GErr(gerr) => Self {
+                message: gerr.to_string(),
+                caused_by: gerr
+                    .sources
+                    .as_deref()
+                    .map(|s| s.iter().map(|i| i.into()).collect::<Vec<_>>()),
             },
         }
     }
