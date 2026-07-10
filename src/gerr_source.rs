@@ -6,10 +6,9 @@ use core::{
     any::Any,
     error::Error,
     fmt::{Debug, Display},
-    panic::Location,
 };
 
-use crate::gerr::Source;
+use crate::gerr::{ErrorLocation, Source};
 
 /// Dyn-compatible trait for error id.
 pub trait IdSource: Any + Debug + Display + Send + Sync {}
@@ -63,7 +62,7 @@ pub struct GErrSource {
     pub data_json: Option<serde_json::Value>,
 
     /// Error location.
-    pub location: Option<&'static Location<'static>>,
+    pub location: Option<ErrorLocation>,
 }
 
 impl Debug for GErrSource {

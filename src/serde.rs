@@ -69,7 +69,7 @@ pub mod json {
 pub mod display_json {
     use super::*;
 
-    /// Serialize GErr into JSON through [`DisplayJsonData`]
+    /// Serialize GErr into JSON through [`crate::json::DisplayJsonData`]
     pub fn serialize<S, ID, P, D>(err: &GErr<ID, P, D>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,

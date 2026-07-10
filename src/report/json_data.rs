@@ -110,9 +110,9 @@ where
                 .map(|d| serde_json::to_value(d).unwrap_or_default()),
             help: err.help.map(Into::into),
             location: Some(LocationJsonData {
-                file: err.location.file().into(),
-                line: err.location.line(),
-                column: err.location.column(),
+                file: err.location.file.to_string(),
+                line: err.location.line,
+                column: err.location.column,
             }),
             sources: err.sources.map(|s| s.iter().map(|i| i.into()).collect()),
             #[cfg(not(feature = "backtrace"))]
@@ -260,10 +260,10 @@ impl From<&Source> for SourceJsonData {
                     .sources
                     .as_ref()
                     .map(|s| s.iter().map(|s| s.into()).collect()),
-                location: gerr.location.map(|loc| LocationJsonData {
-                    file: loc.file().into(),
-                    line: loc.line(),
-                    column: loc.column(),
+                location: gerr.location.as_ref().map(|loc| LocationJsonData {
+                    file: loc.file.to_string(),
+                    line: loc.line,
+                    column: loc.column,
                 }),
             },
         }
@@ -322,7 +322,7 @@ impl SourceJsonData {
 
             help: help.map(Cow::Owned),
 
-            location: Some(location),
+            location: Some(location.into()),
         };
 
         Source::GErr(Box::new(gerr_source))

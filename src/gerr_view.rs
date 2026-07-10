@@ -1,13 +1,11 @@
 extern crate alloc;
 
-use core::panic::Location;
-
 use alloc::borrow::Cow;
 
 #[cfg(feature = "backtrace")]
 use std::backtrace::Backtrace;
 
-use crate::gerr::{GErr, Prefix, Source};
+use crate::gerr::{ErrorLocation, GErr, Prefix, Source};
 
 /// GErrView - GErr in borrowed form for reporting.
 pub struct GErrView<'a, ID, D> {
@@ -26,7 +24,7 @@ pub struct GErrView<'a, ID, D> {
     /// Error help hint.
     pub help: Option<&'a str>,
     /// Error location.
-    pub location: &'a Location<'static>,
+    pub location: &'a ErrorLocation,
     /// Error backtrace.
     #[cfg(feature = "backtrace")]
     pub backtrace: &'a Backtrace,

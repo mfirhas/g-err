@@ -68,9 +68,7 @@ impl MarkdownReport {
         let _ = writeln!(
             out,
             "## Location\n\n{}:{}:{}\n",
-            err.location.file(),
-            err.location.line(),
-            err.location.column()
+            err.location.file, err.location.line, err.location.column
         );
     }
     fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
@@ -94,13 +92,11 @@ impl MarkdownReport {
 
                         let _ = writeln!(out, "- **ID:** `{}`\n", gerr.id);
 
-                        if let Some(loc) = gerr.location {
+                        if let Some(ref loc) = gerr.location {
                             let _ = writeln!(
                                 out,
                                 "- **Location:** `{}:{}:{}`\n",
-                                loc.file(),
-                                loc.line(),
-                                loc.column()
+                                loc.file, loc.line, loc.column
                             );
                         }
 
@@ -158,13 +154,11 @@ impl MarkdownReport {
                     let _ = writeln!(out);
                     let _ = writeln!(out, "{item_indent}- **ID:** `{}`", gerr.id);
 
-                    if let Some(loc) = gerr.location {
+                    if let Some(ref loc) = gerr.location {
                         let _ = writeln!(
                             out,
                             "{item_indent}- **Location:** `{}:{}:{}`",
-                            loc.file(),
-                            loc.line(),
-                            loc.column()
+                            loc.file, loc.line, loc.column
                         );
                     }
 

@@ -93,9 +93,9 @@ where
             tags: value.tags,
             data: serde_json::to_value(value.data).ok(),
             location: LocationJson {
-                file: value.location.file(),
-                line: value.location.line(),
-                column: value.location.column(),
+                file: &value.location.file,
+                line: value.location.line,
+                column: value.location.column,
             },
             sources: value.sources.map(|s| s.iter().map(|v| v.into()).collect()),
             help: value.help,
@@ -127,10 +127,10 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
                 message: gerr.message.to_string(),
                 tags: gerr.tags.as_deref(),
                 data: gerr.data_json.as_ref(),
-                location: gerr.location.map(|loc| LocationJson {
-                    file: loc.file(),
-                    line: loc.line(),
-                    column: loc.column(),
+                location: gerr.location.as_ref().map(|loc| LocationJson {
+                    file: &loc.file,
+                    line: loc.line,
+                    column: loc.column,
                 }),
                 sources: gerr
                     .sources

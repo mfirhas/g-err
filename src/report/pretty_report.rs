@@ -66,9 +66,7 @@ impl PrettyReport {
         let _ = writeln!(
             out,
             "Location: {}:{}:{}",
-            err.location.file(),
-            err.location.line(),
-            err.location.column()
+            err.location.file, err.location.line, err.location.column
         );
     }
     fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
@@ -94,14 +92,9 @@ impl PrettyReport {
 
                         let _ = writeln!(out, "     id: {}", gerr.id);
 
-                        if let Some(loc) = gerr.location {
-                            let _ = writeln!(
-                                out,
-                                "     at: {}:{}:{}",
-                                loc.file(),
-                                loc.line(),
-                                loc.column()
-                            );
+                        if let Some(ref loc) = gerr.location {
+                            let _ =
+                                writeln!(out, "     at: {}:{}:{}", loc.file, loc.line, loc.column);
                         }
 
                         if let Some(tags) = &gerr.tags
@@ -153,14 +146,9 @@ impl PrettyReport {
 
                     let _ = writeln!(out, "{pad}  id: {}", gerr.id);
 
-                    if let Some(loc) = gerr.location {
-                        let _ = writeln!(
-                            out,
-                            "{pad}  at: {}:{}:{}",
-                            loc.file(),
-                            loc.line(),
-                            loc.column()
-                        );
+                    if let Some(ref loc) = gerr.location {
+                        let _ =
+                            writeln!(out, "{pad}  at: {}:{}:{}", loc.file, loc.line, loc.column);
                     }
 
                     if let Some(tags) = &gerr.tags

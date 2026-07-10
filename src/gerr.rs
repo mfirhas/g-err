@@ -117,12 +117,19 @@ pub struct GErr<ID = NoID, P = NoPrefix, D = NoData> {
 
     help: Option<Cow<'static, str>>,
 
-    location: &'static Location<'static>,
+    location: ErrorLocation,
 
     #[cfg(feature = "backtrace")]
     backtrace: Backtrace,
 
     _static_prefix: PhantomData<P>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct ErrorLocation {
+    pub file: Cow<'static, str>,
+    pub line: u32,
+    pub column: u32,
 }
 
 impl<ID: Id, P: Prefix, D> GErr<ID, P, D> {
@@ -192,7 +199,7 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
             help: None,
 
-            location,
+            location: location.into(),
 
             #[cfg(feature = "backtrace")]
             backtrace: Backtrace::capture(),
@@ -542,8 +549,8 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
 
     /// Error location.
     #[inline]
-    pub fn location(&self) -> &'static Location<'static> {
-        self.location
+    pub fn location(&self) -> &ErrorLocation {
+        &self.location
     }
 
     /// Error help hint.
@@ -710,5 +717,16 @@ impl<T, ID, P, D> From<GErr<ID, P, D>> for core::result::Result<T, GErr<ID, P, D
     #[inline]
     fn from(value: GErr<ID, P, D>) -> Self {
         core::result::Result::Err(value)
+    }
+}
+
+impl From<&'static core::panic::Location<'static>> for ErrorLocation {
+    #[inline]
+    fn from(location: &'static core::panic::Location<'static>) -> Self {
+        Self {
+            file: Cow::Borrowed(location.file()),
+            line: location.line(),
+            column: location.column(),
+        }
     }
 }
