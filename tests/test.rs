@@ -29,6 +29,10 @@ mod report_test;
 #[path = "json_report_test.rs"]
 mod json_report_test;
 
+#[cfg(feature = "serde")]
+#[path = "json_serde_test.rs"]
+mod json_serde_test;
+
 #[path = "sources_test.rs"]
 mod sources_test;
 

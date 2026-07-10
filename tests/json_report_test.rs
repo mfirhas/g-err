@@ -1,7 +1,10 @@
+#[cfg(feature = "serde")]
 #[path = "setup_test.rs"]
 mod setup_test;
+#[cfg(feature = "serde")]
 use setup_test::*;
 
+#[cfg(feature = "serde")]
 use g_err::*;
 
 #[cfg(feature = "serde")]
@@ -48,6 +51,7 @@ fn test_json_report() {
     assert_eq!(json_report, json_data);
 }
 
+#[cfg(feature = "serde")]
 const EXPECTED_DISPLAY_JSON_DATA_DEBUG: &str = r#"{
   "id": "AutoID",
   "prefix": "AutoPrefix",
@@ -138,6 +142,7 @@ fn test_display_json_data() {
     assert_eq!(display_data_str, EXPECTED_DISPLAY_JSON_DATA_DEBUG);
 }
 
+#[cfg(feature = "serde")]
 const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
   "id": "AutoID",
   "prefix": "AutoPrefix",
@@ -153,7 +158,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
   },
   "location": {
     "file": "tests/json_report_test.rs",
-    "line": 297,
+    "line": 302,
     "column": 48
   },
   "sources": [
@@ -181,7 +186,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
       ],
       "location": {
         "file": "tests/json_report_test.rs",
-        "line": 308,
+        "line": 313,
         "column": 14
       },
       "sources": [
@@ -203,7 +208,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
           "data": null,
           "location": {
             "file": "tests/json_report_test.rs",
-            "line": 317,
+            "line": 322,
             "column": 18
           },
           "sources": [
@@ -218,7 +223,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
               ],
               "location": {
                 "file": "tests/json_report_test.rs",
-                "line": 317,
+                "line": 322,
                 "column": 68
               },
               "sources": null,
@@ -241,7 +246,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
       "data": null,
       "location": {
         "file": "tests/json_report_test.rs",
-        "line": 319,
+        "line": 324,
         "column": 14
       },
       "sources": [
@@ -258,7 +263,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
           ],
           "location": {
             "file": "tests/json_report_test.rs",
-            "line": 322,
+            "line": 327,
             "column": 18
           },
           "sources": null,
@@ -275,7 +280,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
       "data": null,
       "location": {
         "file": "tests/json_report_test.rs",
-        "line": 323,
+        "line": 328,
         "column": 14
       },
       "sources": null,

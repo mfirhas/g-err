@@ -2,11 +2,11 @@ use alloc::borrow::Cow;
 use core::panic::Location;
 
 use crate::{
-    ResultExt,
-    gerr::{GErr, Prefix, Source},
+    GErrDefault, gerr,
+    gerr::{ErrorLocation, GErr, Prefix, Source},
     gerr_source::{DataSource, GErrSource},
     gerr_view::GErrView,
-    types::{NoData, NoID, NoPrefix},
+    types::NoID,
 };
 
 /// JSON data for public display.
@@ -156,9 +156,8 @@ where
     P: Prefix,
     D: for<'a> ::serde::Deserialize<'a>,
 {
-    type Error = GErr<NoID, NoPrefix, NoData>;
+    type Error = GErrDefault;
 
-    #[track_caller]
     fn try_from(value: JsonData) -> Result<Self, Self::Error> {
         let JsonData {
             id,
@@ -167,17 +166,31 @@ where
             tags,
             data,
             help,
-            location: _,
+            location,
             sources,
             backtrace: _,
         } = value;
 
-        let de_id: ID = serde_json::from_value(id).context_auto("converting id")?;
+        let de_id: ID = serde_json::from_value(id).map_err(|err| {
+            gerr!(
+                "failed converting id to ID = {}",
+                core::any::type_name::<ID>()
+            )
+            .add_tags(["deserialization", "id"])
+            .add_source(err)
+        })?;
 
         let mut err = GErr::<ID, P, D>::with_id_untracked(de_id, message, Location::caller());
 
         if let Some(data) = data {
-            err = err.with_data(serde_json::from_value(data).context_auto("converting data")?);
+            err = err.set_data(serde_json::from_value(data).map_err(|err| {
+                gerr!(
+                    "failed converting data into D = {}",
+                    core::any::type_name::<D>()
+                )
+                .add_tags(["deserialization", "data"])
+                .add_source(err)
+            })?);
         }
 
         if let Some(prefix) = prefix {
@@ -189,15 +202,20 @@ where
         }
 
         if let Some(sources) = sources {
-            let gerr_sources: Vec<Source> = sources
-                .into_iter()
-                .map(|s| s.into_source(Location::caller()))
-                .collect();
+            let gerr_sources: Vec<Source> = sources.into_iter().map(|s| s.into_source()).collect();
             err = err.set_sources(gerr_sources);
         }
 
         if let Some(help) = help {
             err = err.set_help(help);
+        }
+
+        if let Some(loc) = location {
+            err = err.set_location(ErrorLocation {
+                file: Cow::Owned(loc.file),
+                line: loc.line,
+                column: loc.column,
+            });
         }
 
         Ok(err)
@@ -289,7 +307,7 @@ impl From<&Source> for DisplayCausesJsonData {
 }
 
 impl SourceJsonData {
-    fn into_source(self, location: &'static Location<'static>) -> Source {
+    fn into_source(self) -> Source {
         let SourceJsonData {
             id,
             prefix,
@@ -297,7 +315,7 @@ impl SourceJsonData {
             tags,
             data,
             help,
-            location: _,
+            location,
             sources,
         } = self;
 
@@ -310,7 +328,7 @@ impl SourceJsonData {
 
             prefix: prefix.map(Cow::Owned),
 
-            sources: sources.map(|s| s.into_iter().map(|sj| sj.into_source(location)).collect()),
+            sources: sources.map(|s| s.into_iter().map(|sj| sj.into_source()).collect()),
 
             tags: tags.map(|tags| tags.into_iter().map(Cow::Owned).collect()),
 
@@ -322,7 +340,11 @@ impl SourceJsonData {
 
             help: help.map(Cow::Owned),
 
-            location: Some(location.into()),
+            location: location.map(|loc| ErrorLocation {
+                file: Cow::Owned(loc.file),
+                line: loc.line,
+                column: loc.column,
+            }),
         };
 
         Source::GErr(Box::new(gerr_source))

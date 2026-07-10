@@ -219,6 +219,13 @@ impl<ID, P: Prefix, D> GErr<ID, P, D> {
     {
         Self::with_id_untracked(id, err.to_string(), Location::caller()).add_source(err)
     }
+
+    #[allow(dead_code)]
+    #[inline]
+    pub(crate) fn set_location(mut self, loc: ErrorLocation) -> Self {
+        self.location = loc;
+        self
+    }
 }
 
 impl<ID, P: Prefix, D> GErr<ID, P, D> {
