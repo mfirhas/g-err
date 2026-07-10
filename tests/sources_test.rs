@@ -28,8 +28,8 @@ fn test_gerr_as_gerr_source() {
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
     if let Source::GErr(ref ge) = gerr.sources().unwrap()[0] {
-        assert_eq!(ge.location.unwrap().file(), file!());
-        assert_eq!(ge.location.unwrap().line(), line + 1);
+        assert_eq!(ge.location.as_ref().unwrap().file, file!());
+        assert_eq!(ge.location.as_ref().unwrap().line, line + 1);
     } else {
         panic!("expected source as GErr");
     }
@@ -43,8 +43,8 @@ fn test_gerr_into_source_gerr() {
 
     assert_eq!(gerr.sources().unwrap().len(), 1);
     if let Source::GErr(ref ge) = gerr.sources().unwrap()[0] {
-        assert_eq!(ge.location.unwrap().file(), file!());
-        assert_eq!(ge.location.unwrap().line(), line + 1);
+        assert_eq!(ge.location.as_ref().unwrap().file, file!());
+        assert_eq!(ge.location.as_ref().unwrap().line, line + 1);
     } else {
         panic!("expected source as GErr");
     }
@@ -64,8 +64,8 @@ fn test_mixed_sources() {
     }
 
     if let Source::GErr(ref ge) = gerr.sources().unwrap()[0] {
-        assert_eq!(ge.location.unwrap().file(), file!());
-        assert_eq!(ge.location.unwrap().line(), line + 1);
+        assert_eq!(ge.location.as_ref().unwrap().file, file!());
+        assert_eq!(ge.location.as_ref().unwrap().line, line + 1);
     } else {
         panic!("expected source at index 0 as Source::GErr")
     }
@@ -106,8 +106,8 @@ fn test_nested_sources() {
         Source::Err(_) => panic!("expected GErr source"),
     };
 
-    assert_eq!(root.location.unwrap().file(), file!());
-    assert_eq!(root.location.unwrap().line(), line + 1);
+    assert_eq!(root.location.as_ref().unwrap().file, file!());
+    assert_eq!(root.location.as_ref().unwrap().line, line + 1);
 
     let nested = root.sources.as_ref().unwrap();
     assert_eq!(nested.len(), 5);
@@ -168,5 +168,5 @@ fn test_nested_sources() {
     };
 
     assert_eq!(id121.id.to_string(), "121");
-    assert_eq!(id121.location.unwrap().file(), file!());
+    assert_eq!(id121.location.as_ref().unwrap().file, file!());
 }

@@ -69,7 +69,7 @@ impl Prefix for AutoPrefix {
     const PREFIX: Option<&'static str> = Some("AutoPrefix");
 }
 
-#[cfg_attr(feature = "serde", derive(::serde::Serialize))]
+#[cfg_attr(feature = "serde", derive(::serde::Serialize, ::serde::Deserialize))]
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct Data {
     pub user_id: u64,

@@ -134,7 +134,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                     ),
                                                                     help: None,
                                                                     location: Some(
-                                                                        Location {
+                                                                        ErrorLocation {
                                                                             file: "tests/result_test.rs",
                                                                             line: 10,
                                                                             column: 10,
@@ -153,7 +153,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                     ),
                                                     help: None,
                                                     location: Some(
-                                                        Location {
+                                                        ErrorLocation {
                                                             file: "tests/result_test.rs",
                                                             line: 21,
                                                             column: 10,
@@ -188,7 +188,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                                     tags: None,
                                                                                     data: None,
                                                                                     help: None,
-                                                                                    location: Location {
+                                                                                    location: ErrorLocation {
                                                                                         file: "tests/result_test.rs",
                                                                                         line: 28,
                                                                                         column: 16,
@@ -200,7 +200,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                     tags: None,
                                                                     data: None,
                                                                     help: None,
-                                                                    location: Location {
+                                                                    location: ErrorLocation {
                                                                         file: "tests/result_test.rs",
                                                                         line: 30,
                                                                         column: 14,
@@ -218,7 +218,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                     ),
                                                     help: None,
                                                     location: Some(
-                                                        Location {
+                                                        ErrorLocation {
                                                             file: "tests/result_test.rs",
                                                             line: 36,
                                                             column: 33,
@@ -232,7 +232,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                     data: None,
                                     help: None,
                                     location: Some(
-                                        Location {
+                                        ErrorLocation {
                                             file: "tests/result_test.rs",
                                             line: 54,
                                             column: 35,
@@ -246,7 +246,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                     data: None,
                     help: None,
                     location: Some(
-                        Location {
+                        ErrorLocation {
                             file: "tests/result_test.rs",
                             line: 61,
                             column: 9,
@@ -268,7 +268,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
     help: Some(
         "please pass valid email and age",
     ),
-    location: Location {
+    location: ErrorLocation {
         file: "tests/result_test.rs",
         line: 66,
         column: 46,
@@ -346,7 +346,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                     ),
                                                                     help: None,
                                                                     location: Some(
-                                                                        Location {
+                                                                        ErrorLocation {
                                                                             file: "tests/result_test.rs",
                                                                             line: 10,
                                                                             column: 10,
@@ -371,7 +371,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                     ),
                                                     help: None,
                                                     location: Some(
-                                                        Location {
+                                                        ErrorLocation {
                                                             file: "tests/result_test.rs",
                                                             line: 21,
                                                             column: 10,
@@ -407,7 +407,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                                     tags: None,
                                                                                     data: None,
                                                                                     help: None,
-                                                                                    location: Location {
+                                                                                    location: ErrorLocation {
                                                                                         file: "tests/result_test.rs",
                                                                                         line: 28,
                                                                                         column: 16,
@@ -420,7 +420,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                     tags: None,
                                                                     data: None,
                                                                     help: None,
-                                                                    location: Location {
+                                                                    location: ErrorLocation {
                                                                         file: "tests/result_test.rs",
                                                                         line: 30,
                                                                         column: 14,
@@ -445,7 +445,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                     ),
                                                     help: None,
                                                     location: Some(
-                                                        Location {
+                                                        ErrorLocation {
                                                             file: "tests/result_test.rs",
                                                             line: 36,
                                                             column: 33,
@@ -460,7 +460,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                     data_json: None,
                                     help: None,
                                     location: Some(
-                                        Location {
+                                        ErrorLocation {
                                             file: "tests/result_test.rs",
                                             line: 54,
                                             column: 35,
@@ -475,7 +475,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                     data_json: None,
                     help: None,
                     location: Some(
-                        Location {
+                        ErrorLocation {
                             file: "tests/result_test.rs",
                             line: 61,
                             column: 9,
@@ -497,7 +497,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
     help: Some(
         "please pass valid email and age",
     ),
-    location: Location {
+    location: ErrorLocation {
         file: "tests/result_test.rs",
         line: 66,
         column: 46,

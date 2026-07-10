@@ -8,9 +8,9 @@ use g_err::{GErr, GErrSource, NoPrefix, gerr};
 #[test]
 fn test_gerr_debug() {
     #[cfg(not(feature = "serde"))]
-    const EXPECTED_DEBUG: &str = r#"GErr { id: "AJO-123", prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(Location { file: "tests/error_display_debug_test.rs", line: 149, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: Location { file: "tests/error_display_debug_test.rs", line: 142, column: 46 } }"#;
+    const EXPECTED_DEBUG: &str = r#"GErr { id: "AJO-123", prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 149, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 142, column: 46 } }"#;
     #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG: &str = r#"GErr { id: "AJO-123", prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, id_json: Number(123), prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(Location { file: "tests/error_display_debug_test.rs", line: 149, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: Location { file: "tests/error_display_debug_test.rs", line: 142, column: 46 }, backtrace: <disabled> }"#;
+    const EXPECTED_DEBUG: &str = r#"GErr { id: "AJO-123", prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, id_json: Number(123), prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 149, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 142, column: 46 }, backtrace: <disabled> }"#;
     #[cfg(not(feature = "serde"))]
     const EXPECTED_DEBUG_FORMAT: &str = r#"GErr {
     id: "AJO-123",
@@ -42,7 +42,7 @@ fn test_gerr_debug() {
                     data: None,
                     help: None,
                     location: Some(
-                        Location {
+                        ErrorLocation {
                             file: "tests/error_display_debug_test.rs",
                             line: 149,
                             column: 26,
@@ -67,7 +67,7 @@ fn test_gerr_debug() {
     help: Some(
         "please halp!!",
     ),
-    location: Location {
+    location: ErrorLocation {
         file: "tests/error_display_debug_test.rs",
         line: 142,
         column: 46,
@@ -106,7 +106,7 @@ fn test_gerr_debug() {
                     data_json: None,
                     help: None,
                     location: Some(
-                        Location {
+                        ErrorLocation {
                             file: "tests/error_display_debug_test.rs",
                             line: 149,
                             column: 26,
@@ -131,7 +131,7 @@ fn test_gerr_debug() {
     help: Some(
         "please halp!!",
     ),
-    location: Location {
+    location: ErrorLocation {
         file: "tests/error_display_debug_test.rs",
         line: 142,
         column: 46,
@@ -199,9 +199,9 @@ fn test_gerr_display() {
 #[test]
 fn test_gerr_source_debug() {
     #[cfg(not(feature = "serde"))]
-    const EXPECTED_DEBUG: &str = r#"GErrSource { id: "AJO-123", prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(Location { file: "tests/error_display_debug_test.rs", line: 351, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: Some(Location { file: "tests/error_display_debug_test.rs", line: 344, column: 16 }) }"#;
+    const EXPECTED_DEBUG: &str = r#"GErrSource { id: "AJO-123", prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 351, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 344, column: 16 }) }"#;
     #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG: &str = r#"GErrSource { id: "AJO-123", id_json: String("AJO-123"), prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, id_json: Number(123), prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(Location { file: "tests/error_display_debug_test.rs", line: 351, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), data_json: Some(Object {"user_id": Number(234), "user_name": String("ajo_sidi")}), help: Some("please halp!!"), location: Some(Location { file: "tests/error_display_debug_test.rs", line: 344, column: 16 }) }"#;
+    const EXPECTED_DEBUG: &str = r#"GErrSource { id: "AJO-123", id_json: String("AJO-123"), prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, id_json: Number(123), prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 351, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), data_json: Some(Object {"user_id": Number(234), "user_name": String("ajo_sidi")}), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 344, column: 16 }) }"#;
 
     #[cfg(not(feature = "serde"))]
     const EXPECTED_DEBUG_FORMAT: &str = r#"GErrSource {
@@ -234,7 +234,7 @@ fn test_gerr_source_debug() {
                     data: None,
                     help: None,
                     location: Some(
-                        Location {
+                        ErrorLocation {
                             file: "tests/error_display_debug_test.rs",
                             line: 351,
                             column: 26,
@@ -260,7 +260,7 @@ fn test_gerr_source_debug() {
         "please halp!!",
     ),
     location: Some(
-        Location {
+        ErrorLocation {
             file: "tests/error_display_debug_test.rs",
             line: 344,
             column: 16,
@@ -301,7 +301,7 @@ fn test_gerr_source_debug() {
                     data_json: None,
                     help: None,
                     location: Some(
-                        Location {
+                        ErrorLocation {
                             file: "tests/error_display_debug_test.rs",
                             line: 351,
                             column: 26,
@@ -333,7 +333,7 @@ fn test_gerr_source_debug() {
         "please halp!!",
     ),
     location: Some(
-        Location {
+        ErrorLocation {
             file: "tests/error_display_debug_test.rs",
             line: 344,
             column: 16,
