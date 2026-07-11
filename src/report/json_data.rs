@@ -176,7 +176,6 @@ where
                 "failed converting id to ID = {}",
                 core::any::type_name::<ID>()
             )
-            .add_tags(["deserialization", "id"])
             .add_source(err)
         })?;
 
@@ -188,7 +187,6 @@ where
                     "failed converting data into D = {}",
                     core::any::type_name::<D>()
                 )
-                .add_tags(["deserialization", "data"])
                 .add_source(err)
             })?);
         }
