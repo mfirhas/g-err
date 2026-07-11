@@ -13,8 +13,8 @@ impl JsonReport {
     pub fn data<E, ID, D>(err: &E) -> JsonData
     where
         for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: Display + serde::Serialize,
-        D: Debug + serde::Serialize,
+        ID: serde::Serialize,
+        D: serde::Serialize,
     {
         let err = &err.into();
         err.into()
@@ -24,8 +24,8 @@ impl JsonReport {
     pub fn display_data<E, ID, D>(err: &E) -> DisplayJsonData
     where
         for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: Display + serde::Serialize,
-        D: Debug + serde::Serialize,
+        ID: serde::Serialize,
+        D: serde::Serialize,
     {
         let err = &err.into();
         err.into()

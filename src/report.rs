@@ -97,7 +97,15 @@ where
     {
         R::report::<_, ID, D>(self)
     }
+}
 
+#[cfg(feature = "serde")]
+impl<ID, P, D> GErr<ID, P, D>
+where
+    ID: serde::Serialize,
+    P: Prefix,
+    D: serde::Serialize,
+{
     /// JSON data of GErr.
     #[inline]
     pub fn json_data(&self) -> JsonData {
