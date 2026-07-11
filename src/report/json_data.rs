@@ -320,9 +320,7 @@ impl SourceJsonData {
         let gerr_source = GErrSource {
             id: match id {
                 serde_json::Value::Bool(b) => Box::new(b),
-                serde_json::Value::Number(ref num) if let Some(num_id) = num.as_i64() => {
-                    Box::new(num_id)
-                }
+                serde_json::Value::Number(ref num) => Box::new(num.as_i64().unwrap_or_default()),
                 _ => Box::new(id.to_string()),
             },
 
