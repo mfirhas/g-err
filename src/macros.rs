@@ -2,7 +2,27 @@
 ///
 /// Creates GErr easily with formatting support and rich data.
 ///
+/// Without metadatas, the default generic params are `NoID`, `NoPrefix`, and `NoData`, just like `GErrDefault`.
+///
 /// Error message and its metadata are separated by `;`.
+///
+/// # Supported metadata:
+/// - `id_auto`: auto-generated id inferred from return type.
+/// - `id_auto=$type`: auto-generated id defined manually.
+/// - `id=$expr`: manually-set id.
+/// - `prefix_auto`: auto-generated prefix inferred from return type.
+/// - `prefix_auto=$type`: auto-generated prefix defined manually.
+/// - `prefix=$expr`: manually-set prefix.
+/// - `pprefix=$expr`: prepend prefix.
+/// - `aprefix=$expr`: append prefix.
+/// - `data_type`: infer error data type from return type.
+/// - `data_type=$type`: define error data type.
+/// - `data=$expr`: set data, along with its type.
+/// - `source=$expr`: set non-GErr error source.
+/// - `gerr=$expr`: set GErr error source, or any error convertible to GErrSource.
+/// - `tag=$expr`: add tag.
+/// - `tags=$expr`: add multiple tags, e.g: `["tag1", "tag2",...]`.
+/// - `help=$expr`: set help message.
 ///
 /// You can override the metadatas, and latest ones will be used.
 ///
