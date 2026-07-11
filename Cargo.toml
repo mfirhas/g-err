@@ -9,6 +9,7 @@ repository = "https://github.com/mfirhas/g-err"
 documentation = "https://docs.rs/g-err"
 keywords = ["error", "error-handling", "macro"]
 categories = ["rust-patterns", "data-structures"]
+rust-version = "1.88.0"
 exclude = [
   "**/*_test.rs",
   "tests/**",
