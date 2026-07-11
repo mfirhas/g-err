@@ -78,6 +78,12 @@ pub struct Data {
     pub user_name: String,
 }
 
+impl core::fmt::Display for Data {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "id: {}; user_name: {}", self.user_id, self.user_name)
+    }
+}
+
 impl SetField<&'static str, u64> for Data {
     fn set_field(&mut self, key: &'static str, value: u64) {
         if key == "user_id" {
