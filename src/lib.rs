@@ -28,6 +28,8 @@ pub mod json {
     pub use super::report::{
         DisplayJsonData, JsonData, JsonReport, LocationJsonData, SourceJsonData,
     };
+
+    pub use ::serde_json::Value;
 }
 
 #[cfg(feature = "serde")]
