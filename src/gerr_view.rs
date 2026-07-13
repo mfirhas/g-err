@@ -5,16 +5,16 @@ use alloc::borrow::Cow;
 #[cfg(feature = "backtrace")]
 use std::backtrace::Backtrace;
 
-use crate::gerr::{ErrorLocation, GErr, Prefix, Source};
+use crate::gerr::{Config, ErrorLocation, GErr, Source};
 
 /// GErrView - GErr in borrowed form for reporting.
-pub struct GErrView<'a, ID, D> {
+pub struct GErrView<'a, C: Config, D> {
     /// Error id.
-    pub id: &'a ID,
+    pub id: Option<&'a C::Id>,
     /// Error message.
     pub message: &'a str,
-    /// Error prefix.
-    pub prefix: Option<&'a str>,
+    /// Error code.
+    pub code: Option<&'a str>,
     /// Error data.
     pub data: Option<&'a D>,
     /// Error tags.
@@ -30,12 +30,12 @@ pub struct GErrView<'a, ID, D> {
     pub backtrace: &'a Backtrace,
 }
 
-impl<'a, ID, P: Prefix, D> From<&'a GErr<ID, P, D>> for GErrView<'a, ID, D> {
-    fn from(err: &'a GErr<ID, P, D>) -> Self {
+impl<'a, C: Config, D> From<&'a GErr<C, D>> for GErrView<'a, C, D> {
+    fn from(err: &'a GErr<C, D>) -> Self {
         Self {
             id: err.id(),
             message: err.message(),
-            prefix: err.prefix(),
+            code: err.code(),
 
             data: err.data(),
 

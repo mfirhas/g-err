@@ -61,7 +61,7 @@ fn test_iterator() {
             0 => {
                 if let GErrNode::Root(root) = e {
                     assert_eq!(root.message(), "default auto errors");
-                    assert_eq!(root.prefix().unwrap(), "@AutoPrefix[user]");
+                    assert_eq!(root.code().unwrap(), "@AutoPrefix[user]");
                     assert_eq!(root.iter_tags().count(), 3);
                 } else {
                     panic!("first node should be root");
@@ -93,7 +93,7 @@ fn test_iterator() {
                 if let GErrNode::LeafGErr(gerr_source) = e {
                     assert_eq!(gerr_source.message, "the cause");
                     assert_eq!(gerr_source.id.as_ref().to_string(), "NoID");
-                    assert_eq!(gerr_source.prefix.as_ref().unwrap(), "AutoPrefix");
+                    assert_eq!(gerr_source.code.as_ref().unwrap(), "AutoPrefix");
                     if let Some(data) = (&**gerr_source.data.as_ref().unwrap()
                         as &dyn core::any::Any)
                         .downcast_ref::<(&'static str, &'static str)>()
@@ -114,7 +114,7 @@ fn test_iterator() {
                     }
                     if let Source::GErr(ref err) = gerr_source.sources.as_ref().unwrap()[1] {
                         assert_eq!(err.message, "undefined error!");
-                        assert_eq!(err.prefix.as_ref().unwrap(), "[UNDEFINED]");
+                        assert_eq!(err.code.as_ref().unwrap(), "[UNDEFINED]");
                     } else {
                         panic!("fourth node's second source should be exist");
                     }
@@ -136,7 +136,7 @@ fn test_iterator() {
             5 => {
                 if let GErrNode::LeafGErr(ge) = e {
                     assert_eq!(ge.message, "undefined error!");
-                    assert_eq!(ge.prefix.as_ref().unwrap(), "[UNDEFINED]");
+                    assert_eq!(ge.code.as_ref().unwrap(), "[UNDEFINED]");
                 } else {
                     panic!("fourth node's second source should be exist");
                 }

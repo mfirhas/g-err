@@ -1,12 +1,11 @@
 use core::any::Any;
 use core::error::Error;
 
-use crate::{DataSource, GErr, IdSource, Prefix, iterator::GErrNode};
+use crate::{Config, DataSource, GErr, IdSource, iterator::GErrNode};
 
-impl<ID, P, D> GErr<ID, P, D>
+impl<C: Config, D> GErr<C, D>
 where
-    ID: IdSource + 'static,
-    P: Prefix,
+    C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
     /// Iterate over GErr's prefixes.
@@ -14,14 +13,14 @@ where
     pub fn iter_by_prefix<'a, 'b>(
         &'a self,
         prefix: &'b str,
-    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>> + 'a
+    ) -> impl Iterator<Item = GErrNode<'a, C, D>> + 'a
     where
         'b: 'a,
     {
         self.iter().filter(move |item| match item {
-            GErrNode::Root(gerr) => gerr.prefix().is_some_and(|p| p == prefix),
+            GErrNode::Root(gerr) => gerr.code().is_some_and(|p| p == prefix),
 
-            GErrNode::LeafGErr(gerr) => gerr.prefix.as_ref().is_some_and(|p| p == prefix),
+            GErrNode::LeafGErr(gerr) => gerr.code.as_ref().is_some_and(|p| p == prefix),
 
             _ => false,
         })
@@ -32,7 +31,7 @@ where
     pub fn iter_by_tag<'a, 'b>(
         &'a self,
         tag: &'b str,
-    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>> + 'a
+    ) -> impl Iterator<Item = GErrNode<'a, C, D>> + 'a
     where
         'b: 'a,
     {
@@ -52,14 +51,17 @@ where
 
     /// Iterate over GErr's id type.
     #[inline]
-    pub fn iter_id<T>(&self) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
+    pub fn iter_id<T>(&self) -> impl Iterator<Item = GErrNode<'_, C, D>>
     where
         T: Any,
     {
         self.iter().filter(|item| match item {
-            GErrNode::Root(gerr) => (gerr.id() as &dyn Any).is::<T>(),
+            GErrNode::Root(gerr) => gerr.id().is_some_and(|id| (&*id as &dyn Any).is::<T>()),
 
-            GErrNode::LeafGErr(gerr) => (&*gerr.id as &dyn Any).is::<T>(),
+            GErrNode::LeafGErr(gerr) => gerr
+                .id
+                .as_ref()
+                .is_some_and(|id| (&**id as &dyn Any).is::<T>()),
 
             _ => false,
         })
@@ -67,22 +69,22 @@ where
 
     /// Iterate over GErr's id.
     #[inline]
-    pub fn iter_by_id<'a, 'b, T>(
-        &'a self,
-        value: &'b T,
-    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>>
+    pub fn iter_by_id<'a, 'b, T>(&'a self, value: &'b T) -> impl Iterator<Item = GErrNode<'a, C, D>>
     where
         T: Any + PartialEq,
         'b: 'a,
     {
         self.iter().filter(move |item| match item {
-            GErrNode::Root(gerr) => (gerr.id() as &dyn Any)
-                .downcast_ref::<T>()
-                .is_some_and(|id| id == value),
-
-            GErrNode::LeafGErr(gerr) => (&*gerr.id as &dyn Any)
-                .downcast_ref::<T>()
-                .is_some_and(|id| id == value),
+            GErrNode::Root(gerr) => gerr.id().is_some_and(|id| {
+                (&*id as &dyn Any)
+                    .downcast_ref::<T>()
+                    .is_some_and(|id| id == value)
+            }),
+            GErrNode::LeafGErr(gerr) => gerr.id.as_ref().is_some_and(|id| {
+                (&**id as &dyn Any)
+                    .downcast_ref::<T>()
+                    .is_some_and(|id| id == value)
+            }),
 
             _ => false,
         })
@@ -90,7 +92,7 @@ where
 
     /// Iterate over GErr's data's type.
     #[inline]
-    pub fn iter_data<T>(&self) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
+    pub fn iter_data<T>(&self) -> impl Iterator<Item = GErrNode<'_, C, D>>
     where
         T: Any,
     {
@@ -111,7 +113,7 @@ where
     pub fn iter_by_data<'a, 'b, T>(
         &'a self,
         value: &'b T,
-    ) -> impl Iterator<Item = GErrNode<'a, ID, P, D>>
+    ) -> impl Iterator<Item = GErrNode<'a, C, D>>
     where
         T: Any + PartialEq,
         'b: 'a,
@@ -134,7 +136,7 @@ where
 
     /// Iterate over GErr's sources by source's type.
     #[inline]
-    pub fn iter_source<E>(&self) -> impl Iterator<Item = GErrNode<'_, ID, P, D>>
+    pub fn iter_source<E>(&self) -> impl Iterator<Item = GErrNode<'_, C, D>>
     where
         E: Error + 'static,
     {

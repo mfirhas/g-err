@@ -10,7 +10,7 @@ fn test_new_auto_default() {
 
     assert_eq!(gerr.message(), "auto default");
     assert_eq!(gerr.id(), &NoID);
-    assert!(gerr.prefix().is_none());
+    assert!(gerr.code().is_none());
     assert!(gerr.data().is_none());
 }
 
@@ -70,7 +70,7 @@ fn test_new_manual() {
     let gerr = GErr::<_>::new_with_id(23, "test");
     assert_eq!(gerr.id(), &23);
     assert_eq!(gerr.message(), "test");
-    assert!(gerr.prefix().is_none());
+    assert!(gerr.code().is_none());
 
     let gerr = GErr::<&'static str>::new_with_id("zxc", "test").set_prefix("prefix");
     assert_eq!(gerr.id(), &"zxc");
@@ -92,6 +92,6 @@ fn test_from_non_gerr_id() {
     let err = "asd".parse::<i32>().unwrap_err();
     let gerr: GErr<_, AutoPrefix> = GErr::from_error_with_id(123, err);
     assert_eq!(gerr.id(), &123);
-    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix");
+    assert_eq!(gerr.code().unwrap(), "AutoPrefix");
     assert_eq!(gerr.message(), "invalid digit found in string");
 }

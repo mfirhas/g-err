@@ -120,7 +120,7 @@ fn test_nested_sources() {
         Source::Err(_) => panic!("expected GErr"),
     };
 
-    assert_eq!(outbound.prefix.as_deref(), Some("[OUTBOUND]"));
+    assert_eq!(outbound.code.as_deref(), Some("[OUTBOUND]"));
     assert_eq!(outbound.sources.as_ref().unwrap().len(), 1);
 
     let cause = match &outbound.sources.as_ref().unwrap()[0] {

@@ -1,4 +1,5 @@
 use super::Report;
+use crate::Config;
 use crate::gerr::Source;
 use crate::gerr_view::GErrView;
 use core::fmt::Write;
@@ -8,23 +9,23 @@ use core::fmt::{Debug, Display};
 pub struct PrettyReport;
 
 impl Report for PrettyReport {
-    fn report<E, ID, D>(err: &E) -> String
+    fn report<E, C: Config, D>(err: &E) -> String
     where
-        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: Display,
+        for<'a> &'a E: Into<GErrView<'a, C, D>>,
+        C::Id: Display,
         D: Debug,
     {
         let err = &err.into();
         let mut out: String = String::new();
         Self::header(&mut out);
-        Self::preamble::<ID, D>(err, &mut out);
-        Self::data::<ID, D>(err, &mut out);
-        Self::help::<ID, D>(err, &mut out);
-        Self::tags::<ID, D>(err, &mut out);
-        Self::location::<ID, D>(err, &mut out);
-        Self::sources::<ID, D>(err, &mut out);
+        Self::preamble::<C, D>(err, &mut out);
+        Self::data::<C, D>(err, &mut out);
+        Self::help::<C, D>(err, &mut out);
+        Self::tags::<C, D>(err, &mut out);
+        Self::location::<C, D>(err, &mut out);
+        Self::sources::<C, D>(err, &mut out);
         #[cfg(feature = "backtrace")]
-        Self::backtrace::<ID, D>(err, &mut out);
+        Self::backtrace::<C, D>(err, &mut out);
 
         out
     }
@@ -35,14 +36,21 @@ impl PrettyReport {
         let _ = writeln!(out, "Error Report");
         let _ = writeln!(out, "============");
     }
-    fn preamble<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
-        let _ = writeln!(out, "ID: {}", err.id);
-        if let Some(prefix) = err.prefix {
+    fn preamble<C: Config, D: Debug>(err: &GErrView<C, D>, out: &mut String)
+    where
+        C::Id: Display,
+    {
+        if let Some(id) = err.id {
+            let _ = writeln!(out, "ID: {}", id);
+        } else {
+            let _ = writeln!(out, "ID: -");
+        }
+        if let Some(prefix) = err.code {
             let _ = writeln!(out, "Prefix: {prefix}");
         }
         let _ = writeln!(out, "Message: {}", err.message);
     }
-    fn data<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
+    fn data<C: Config, D: Debug>(err: &GErrView<C, D>, out: &mut String) {
         if let Some(data) = err.data {
             let _ = writeln!(out, "Data:");
             let pretty = format!("{data:#?}");
@@ -52,7 +60,7 @@ impl PrettyReport {
             }
         }
     }
-    fn tags<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
+    fn tags<C: Config, D: Debug>(err: &GErrView<C, D>, out: &mut String) {
         if let Some(tags) = err.tags
             && !tags.is_empty()
         {
@@ -62,14 +70,14 @@ impl PrettyReport {
             }
         }
     }
-    fn location<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
+    fn location<C: Config, D: Debug>(err: &GErrView<C, D>, out: &mut String) {
         let _ = writeln!(
             out,
             "Location: {}:{}:{}",
             err.location.file, err.location.line, err.location.column
         );
     }
-    fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
+    fn sources<C: Config, D: Debug>(err: &GErrView<C, D>, out: &mut String) {
         if let Some(sources) = err.sources {
             let _ = writeln!(out, "Caused by:");
             for (i, src) in sources.iter().enumerate() {
@@ -81,7 +89,7 @@ impl PrettyReport {
                     }
 
                     Source::GErr(gerr) => {
-                        match gerr.prefix.as_deref() {
+                        match gerr.code.as_deref() {
                             Some(prefix) => {
                                 let _ = writeln!(out, "  {i}: {prefix} {}", gerr.message);
                             }
@@ -90,7 +98,11 @@ impl PrettyReport {
                             }
                         }
 
-                        let _ = writeln!(out, "     id: {}", gerr.id);
+                        if let Some(id) = gerr.id.as_ref() {
+                            let _ = writeln!(out, "     id: {}", id);
+                        } else {
+                            let _ = writeln!(out, "     id: -");
+                        }
 
                         if let Some(ref loc) = gerr.location {
                             let _ =
@@ -135,7 +147,7 @@ impl PrettyReport {
                 }
 
                 Source::GErr(gerr) => {
-                    match gerr.prefix.as_deref() {
+                    match gerr.code.as_deref() {
                         Some(prefix) => {
                             let _ = writeln!(out, "{pad}- {prefix} {}", gerr.message);
                         }
@@ -144,7 +156,11 @@ impl PrettyReport {
                         }
                     }
 
-                    let _ = writeln!(out, "{pad}  id: {}", gerr.id);
+                    if let Some(id) = gerr.id.as_ref() {
+                        let _ = writeln!(out, "{pad}  id: {}", id);
+                    } else {
+                        let _ = writeln!(out, "{pad}  id: -");
+                    }
 
                     if let Some(ref loc) = gerr.location {
                         let _ =
@@ -177,13 +193,13 @@ impl PrettyReport {
             }
         }
     }
-    fn help<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
+    fn help<C: Config, D: Debug>(err: &GErrView<C, D>, out: &mut String) {
         if let Some(help) = err.help {
             let _ = writeln!(out, "Help: {}", help);
         }
     }
     #[cfg(feature = "backtrace")]
-    fn backtrace<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
+    fn backtrace<C: Config, D: Debug>(err: &GErrView<C, D>, out: &mut String) {
         let _ = writeln!(out, "Backtrace:");
         let _ = writeln!(out, "{:#?}", err.backtrace);
     }

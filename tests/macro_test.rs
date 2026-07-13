@@ -172,7 +172,7 @@ fn test_macro_prefix_auto_return() {
     let gerr: GErr<_, AutoPrefix> = gerr!("test: {}", 5; prefix_auto);
 
     dbg!(&gerr);
-    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix");
+    assert_eq!(gerr.code().unwrap(), "AutoPrefix");
 
     let gerr: GErr<AutoID, AutoPrefix> =
         gerr!("test: {}", 5; prefix_auto, id_auto, aprefix = "-user");
@@ -187,13 +187,13 @@ fn test_macro_data_type_return() {
     let gerr: GErr<_, _, (&str, u32)> = gerr!("sdf"; data_type);
 
     dbg!(&gerr);
-    assert!(gerr.prefix().is_none());
+    assert!(gerr.code().is_none());
     assert!(gerr.data().is_none());
 
     let gerr: GErr<_, _, _> = gerr!("sdf"; data_type = u32);
 
     dbg!(&gerr);
-    assert!(gerr.prefix().is_none());
+    assert!(gerr.code().is_none());
     assert!(gerr.data().is_none());
 
     let gerr: GErr<AutoID, _, i128> = gerr!("sdf"; data_type, id_auto, prefix_auto = AutoPrefix);
@@ -258,7 +258,7 @@ fn test_macro_all() {
                 Source::GErr(inner) => {
                     assert_eq!(inner.to_string(), "AutoPrefix dalem");
                     assert_eq!(inner.id.to_string(), "AutoID");
-                    assert_eq!(inner.prefix.as_ref().unwrap(), "AutoPrefix");
+                    assert_eq!(inner.code.as_ref().unwrap(), "AutoPrefix");
 
                     assert!(inner.data.is_some());
 

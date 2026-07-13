@@ -1,7 +1,7 @@
 use crate::gerr::Source;
 use crate::report::json_data::{DisplayJsonData, JsonData};
 use crate::types::NoID;
-use crate::{gerr_view::GErrView, report::Report};
+use crate::{Config, gerr_view::GErrView, report::Report};
 use alloc::borrow::Cow;
 use core::fmt::{Debug, Display};
 
@@ -10,10 +10,10 @@ pub struct JsonReport;
 
 impl JsonReport {
     /// Internal JSON report data.
-    pub fn data<E, ID, D>(err: &E) -> JsonData
+    pub fn data<E, C: Config, D>(err: &E) -> JsonData
     where
-        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: serde::Serialize,
+        for<'a> &'a E: Into<GErrView<'a, C, D>>,
+        C::Id: serde::Serialize,
         D: serde::Serialize,
     {
         let err = &err.into();
@@ -21,10 +21,10 @@ impl JsonReport {
     }
 
     /// Public JSON report data.
-    pub fn display_data<E, ID, D>(err: &E) -> DisplayJsonData
+    pub fn display_data<E, C: Config, D>(err: &E) -> DisplayJsonData
     where
-        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: serde::Serialize,
+        for<'a> &'a E: Into<GErrView<'a, C, D>>,
+        C::Id: serde::Serialize,
         D: serde::Serialize,
     {
         let err = &err.into();
@@ -33,10 +33,10 @@ impl JsonReport {
 }
 
 impl Report for JsonReport {
-    fn report<E, ID, D>(err: &E) -> String
+    fn report<E, C: Config, D>(err: &E) -> String
     where
-        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: Display + serde::Serialize,
+        for<'a> &'a E: Into<GErrView<'a, C, D>>,
+        C::Id: Display + serde::Serialize,
         D: Debug + serde::Serialize,
     {
         let err = &err.into();
@@ -79,16 +79,16 @@ struct SourceJson<'a> {
     pub help: Option<&'a str>,
 }
 
-impl<'a, ID, D> From<&'a GErrView<'a, ID, D>> for JsonReportData<'a>
+impl<'a, C: Config, D> From<&'a GErrView<'a, C, D>> for JsonReportData<'a>
 where
-    ID: serde::Serialize,
+    C::Id: serde::Serialize,
     D: serde::Serialize,
 {
-    fn from(value: &'a GErrView<ID, D>) -> Self {
+    fn from(value: &'a GErrView<C, D>) -> Self {
         Self {
             id: serde_json::to_value(value.id)
                 .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
-            prefix: value.prefix,
+            prefix: value.code,
             message: value.message,
             tags: value.tags,
             data: serde_json::to_value(value.data).ok(),
@@ -123,7 +123,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
             },
             Source::GErr(gerr) => Self {
                 id: &gerr.id_json,
-                prefix: gerr.prefix.as_deref(),
+                prefix: gerr.code.as_deref(),
                 message: gerr.message.to_string(),
                 tags: gerr.tags.as_deref(),
                 data: gerr.data_json.as_ref(),

@@ -1,6 +1,6 @@
 use core::fmt::{Debug, Display};
 
-use crate::gerr::{Id, Prefix};
+use crate::gerr::Config;
 
 /// Type for generic parameter `ID` for GErr without id.
 #[derive(Debug, PartialEq, Eq)]
@@ -9,13 +9,6 @@ pub struct NoID;
 impl Display for NoID {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "NoID")
-    }
-}
-
-impl Id for NoID {
-    #[inline]
-    fn id() -> NoID {
-        NoID
     }
 }
 
@@ -40,11 +33,6 @@ impl<'de> ::serde::Deserialize<'de> for NoID {
     }
 }
 
-/// Type for generic parameter `P` for GErr without prefix.
-pub struct NoPrefix;
-
-impl Prefix for NoPrefix {}
-
 /// Type for generic parameter `D` for GErr without data.
 #[derive(Debug, PartialEq, Eq)]
 pub struct NoData;
@@ -68,4 +56,10 @@ impl<'de> ::serde::Deserialize<'de> for NoData {
         <()>::deserialize(deserializer)?;
         Ok(NoData)
     }
+}
+
+pub struct DefaultConfig;
+
+impl Config for DefaultConfig {
+    type Id = NoID;
 }

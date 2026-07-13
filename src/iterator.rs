@@ -10,16 +10,15 @@ use core::error::Error;
 use core::fmt::{Debug, Display};
 
 use crate::gerr::Source;
-use crate::{DataSource, GErr, GErrBox, GErrSource, IdSource, Prefix};
+use crate::{Config, DataSource, GErr, GErrBox, GErrSource, IdSource};
 
-impl<'a, ID, P, D> IntoIterator for &'a GErr<ID, P, D>
+impl<'a, C: Config, D> IntoIterator for &'a GErr<C, D>
 where
-    ID: IdSource + 'static,
-    P: Prefix,
+    C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
-    type Item = GErrNode<'a, ID, P, D>;
-    type IntoIter = GErrTree<'a, ID, P, D>;
+    type Item = GErrNode<'a, C, D>;
+    type IntoIter = GErrTree<'a, C, D>;
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
@@ -27,14 +26,13 @@ where
     }
 }
 
-impl<'a, ID, P, D> IntoIterator for &'a GErrBox<ID, P, D>
+impl<'a, C: Config, D> IntoIterator for &'a GErrBox<C, D>
 where
-    ID: IdSource + 'static,
-    P: Prefix,
+    C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
-    type Item = GErrNode<'a, ID, P, D>;
-    type IntoIter = GErrTree<'a, ID, P, D>;
+    type Item = GErrNode<'a, C, D>;
+    type IntoIter = GErrTree<'a, C, D>;
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
@@ -42,15 +40,14 @@ where
     }
 }
 
-impl<ID, P, D> GErr<ID, P, D>
+impl<C: Config, D> GErr<C, D>
 where
-    ID: IdSource + 'static,
-    P: Prefix,
+    C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
     /// Produces iterator of GErr's nodes(including self).
     #[inline]
-    pub fn iter(&self) -> GErrTree<'_, ID, P, D> {
+    pub fn iter(&self) -> GErrTree<'_, C, D> {
         GErrTree {
             nodes: vec![GErrNode::Root(self)],
         }
@@ -60,16 +57,15 @@ where
 /// A node in GErrTree.
 ///
 /// Contained by [`GErrTree`].
-pub enum GErrNode<'a, ID, P, D> {
-    Root(&'a GErr<ID, P, D>),
+pub enum GErrNode<'a, C: Config, D> {
+    Root(&'a GErr<C, D>),
     LeafErr(&'a (dyn Error + Send + Sync + 'static)),
     LeafGErr(&'a GErrSource),
 }
 
-impl<'a, ID, P, D> Display for GErrNode<'a, ID, P, D>
+impl<'a, C: Config, D> Display for GErrNode<'a, C, D>
 where
-    ID: IdSource + 'static,
-    P: Prefix,
+    C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -81,10 +77,9 @@ where
     }
 }
 
-impl<'a, ID, P, D> Debug for GErrNode<'a, ID, P, D>
+impl<'a, C: Config, D> Debug for GErrNode<'a, C, D>
 where
-    ID: IdSource + 'static,
-    P: Prefix,
+    C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -99,17 +94,16 @@ where
 /// Iterator of GErr error nodes.
 ///
 /// Produced by [`GErr::iter`].
-pub struct GErrTree<'a, ID, P, D> {
-    nodes: Vec<GErrNode<'a, ID, P, D>>,
+pub struct GErrTree<'a, C: Config, D> {
+    nodes: Vec<GErrNode<'a, C, D>>,
 }
 
-impl<'a, ID, P, D> Iterator for GErrTree<'a, ID, P, D>
+impl<'a, C: Config, D> Iterator for GErrTree<'a, C, D>
 where
-    ID: IdSource + 'static,
-    P: Prefix,
+    C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
-    type Item = GErrNode<'a, ID, P, D>;
+    type Item = GErrNode<'a, C, D>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let current = self.nodes.pop()?;

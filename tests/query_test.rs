@@ -60,7 +60,7 @@ fn test_iterator_id() {
                 if let GErrNode::Root(root) = v {
                     assert_eq!(root.message(), "id iterator error: 1");
                     assert_eq!(root.id(), &AutoID);
-                    assert_eq!(root.prefix().unwrap(), "AutoPrefix");
+                    assert_eq!(root.code().unwrap(), "AutoPrefix");
                     assert_eq!(root.sources().as_ref().unwrap().len(), 3);
                 } else {
                     panic!("first node shouvebeen Root");
@@ -70,7 +70,7 @@ fn test_iterator_id() {
                 if let GErrNode::LeafGErr(gerr) = v {
                     assert_eq!(gerr.message, "error");
                     assert_eq!(gerr.id.as_ref().to_string(), "AutoID");
-                    assert_eq!(gerr.prefix.as_ref().unwrap(), "anu");
+                    assert_eq!(gerr.code.as_ref().unwrap(), "anu");
                 } else {
                     panic!("second node shouvebeen gerr");
                 }
@@ -197,7 +197,7 @@ fn test_iter_data() {
     let data = iter_by_data.next().unwrap();
     if let GErrNode::LeafGErr(gerr) = data {
         assert_eq!(gerr.message, "error");
-        assert_eq!(gerr.prefix.as_ref().unwrap(), "anu");
+        assert_eq!(gerr.code.as_ref().unwrap(), "anu");
         assert_eq!(gerr.id.as_ref().to_string(), "AutoID");
         if let Some(data) = (&**gerr.data.as_ref().unwrap() as &dyn core::any::Any)
             .downcast_ref::<(&'static str, &'static str)>()
@@ -219,7 +219,7 @@ fn test_iter_data() {
     let data = iter_by_data.next().unwrap();
     if let GErrNode::LeafGErr(gerr) = data {
         assert_eq!(gerr.message, "error");
-        assert_eq!(gerr.prefix.as_ref().unwrap(), "anu");
+        assert_eq!(gerr.code.as_ref().unwrap(), "anu");
         assert_eq!(gerr.id.as_ref().to_string(), "AutoID");
     } else {
         panic!("shouvebeen root");
@@ -263,7 +263,7 @@ fn test_iter_source() {
             1 => {
                 if let GErrNode::LeafGErr(gerr) = v {
                     assert_eq!(gerr.message, "error");
-                    assert_eq!(gerr.prefix.as_ref().unwrap(), "anu");
+                    assert_eq!(gerr.code.as_ref().unwrap(), "anu");
                 } else {
                     panic!("shouvebeen gerr");
                 }

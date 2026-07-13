@@ -1,5 +1,5 @@
 use super::Report;
-use crate::gerr::Source;
+use crate::gerr::{Config, Source};
 use crate::gerr_view::GErrView;
 use core::fmt::{Debug, Display, Write};
 
@@ -7,10 +7,10 @@ use core::fmt::{Debug, Display, Write};
 pub struct TraceReport;
 
 impl Report for TraceReport {
-    fn report<E, ID, D>(err: &E) -> String
+    fn report<E, C: Config, D>(err: &E) -> String
     where
-        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: Display,
+        for<'a> &'a E: Into<GErrView<'a, C, D>>,
+        C::Id: Display,
         D: Debug,
     {
         let err = &err.into();
@@ -23,15 +23,27 @@ impl Report for TraceReport {
 }
 
 impl TraceReport {
-    fn header<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
-        if let Some(prefix) = err.prefix {
-            let _ = writeln!(out, "[{}] {prefix} {}", err.id, err.message);
-        } else {
-            let _ = writeln!(out, "[{}] {}", err.id, err.message);
+    fn header<C: Config, D: Debug>(err: &GErrView<C, D>, out: &mut String)
+    where
+        C::Id: Display,
+    {
+        match (err.id, err.code) {
+            (Some(id), Some(code)) => {
+                let _ = writeln!(out, "[{id}] {code} {}", err.message);
+            }
+            (Some(id), None) => {
+                let _ = writeln!(out, "[{id}] {}", err.message);
+            }
+            (None, Some(code)) => {
+                let _ = writeln!(out, "[-] {code} {}", err.message);
+            }
+            (None, None) => {
+                let _ = writeln!(out, "[-] {}", err.message);
+            }
         }
     }
 
-    fn sources<ID: Display, D: Debug>(err: &GErrView<ID, D>, out: &mut String) {
+    fn sources<C: Config, D: Debug>(err: &GErrView<C, D>, out: &mut String) {
         if let Some(sources) = err.sources {
             Self::write_sources(sources, out, &mut Vec::new());
         }
@@ -58,9 +70,19 @@ impl TraceReport {
                 }
 
                 Source::GErr(ge) => {
-                    let msg = match ge.prefix.as_deref() {
-                        Some(prefix) => format!("[{}] {prefix} {}", ge.id, ge.message),
-                        None => format!("[{}] {}", ge.id, ge.message),
+                    let msg = match (ge.id.as_ref(), ge.code.as_ref()) {
+                        (Some(id), Some(code)) => {
+                            format!("[{id}] {code} {}", ge.message)
+                        }
+                        (Some(id), None) => {
+                            format!("[{id}] {}", ge.message)
+                        }
+                        (None, Some(code)) => {
+                            format!("[-] {code} {}", ge.message)
+                        }
+                        (None, None) => {
+                            format!("[-] {}", ge.message)
+                        }
                     };
 
                     let _ = writeln!(out, "{branch}{msg}");

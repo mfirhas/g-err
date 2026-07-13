@@ -56,7 +56,7 @@ fn test_auto_builder() {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
             assert_eq!(gerr.id.to_string(), "NoID");
-            assert_eq!(gerr.prefix.as_ref().unwrap(), "AutoPrefix");
+            assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
                 Some(&("kind", "not found"))
@@ -144,7 +144,7 @@ fn test_box() {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
             assert_eq!(gerr.id.to_string(), "NoID");
-            assert_eq!(gerr.prefix.as_ref().unwrap(), "AutoPrefix");
+            assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
                 Some(&("kind", "not found"))
@@ -218,7 +218,7 @@ fn test_into_result() {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
             assert_eq!(gerr.id.to_string(), "NoID");
-            assert_eq!(gerr.prefix.as_ref().unwrap(), "AutoPrefix");
+            assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
                 Some(&("kind", "not found"))
@@ -297,7 +297,7 @@ fn test_box_into_result() {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
             assert_eq!(gerr.id.to_string(), "NoID");
-            assert_eq!(gerr.prefix.as_ref().unwrap(), "AutoPrefix");
+            assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
                 Some(&("kind", "not found"))

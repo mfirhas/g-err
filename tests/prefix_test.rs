@@ -22,14 +22,14 @@ fn test_auto_prefix() {
 
 #[test]
 fn test_no_prefix_set() {
-    let gerr: GErr<NoID, NoPrefix> = GErr::new("test no prefix").set_prefix("the-prefix");
+    let gerr: GErr<NoID, NoPrefix> = GErr::new("test no prefix").set_code("the-prefix");
 
     assert_eq!(gerr.prefix(), Some("the-prefix"));
 }
 
 #[test]
 fn test_auto_prefix_set() {
-    let gerr: GErr<NoID, AppPrefix> = GErr::new("test auto prefix").set_prefix("new_prefix");
+    let gerr: GErr<NoID, AppPrefix> = GErr::new("test auto prefix").set_code("new_prefix");
 
     assert_eq!(gerr.prefix(), Some("new_prefix"));
 }
@@ -48,7 +48,7 @@ fn test_auto_prefix_prepend_append() {
 
 #[test]
 fn test_auto_prefix_set_prepend_append() {
-    let gerr: GErr<NoID, AppPrefix> = GErr::new("test auto prefix").set_prefix("[FRE]");
+    let gerr: GErr<NoID, AppPrefix> = GErr::new("test auto prefix").set_code("[FRE]");
     assert_eq!(gerr.prefix(), Some("[FRE]"));
 
     let gerr = gerr.prepend_prefix("[MY_APP]");

@@ -15,7 +15,7 @@ fn test_auto_into_gerr_source() {
     assert_eq!(gerr_source.id.to_string(), "AutoID");
     assert_eq!(gerr_source.message, "nganu");
     assert_eq!(gerr_source.tags.unwrap()[0], "tag1");
-    assert_eq!(gerr_source.prefix.unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr_source.code.unwrap(), "AutoPrefix-user");
     assert_eq!(gerr_source.help.unwrap(), "please halp!!");
 }
 
@@ -32,7 +32,7 @@ fn test_auto_into_gerr_view() {
     assert_eq!(gerr_source.message, "nganu");
     assert_eq!(gerr_source.tags.unwrap()[0], "tag1");
     assert_eq!(gerr_source.tags.unwrap()[1], "tag2");
-    assert_eq!(gerr_source.prefix.unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr_source.code.unwrap(), "AutoPrefix-user");
     assert_eq!(gerr_source.help.unwrap(), "please halp!!");
 }
 
@@ -53,7 +53,7 @@ fn test_manual_into_gerr_source() {
     assert_eq!(gerr_source.message, "asd");
     assert_eq!(gerr_source.tags.as_ref().unwrap()[0], "tag1");
     assert_eq!(gerr_source.tags.as_ref().unwrap()[1], "tag2");
-    assert_eq!(gerr_source.prefix.unwrap(), "-user");
+    assert_eq!(gerr_source.code.unwrap(), "-user");
     assert_eq!(gerr_source.help.unwrap(), "please halp!!");
     assert_eq!(gerr_source.sources.as_ref().unwrap().len(), 2);
     match gerr_source.sources.as_ref().unwrap()[0] {
@@ -65,7 +65,7 @@ fn test_manual_into_gerr_source() {
         g_err::Source::GErr(ref gerr) => {
             assert_eq!(gerr.message, "source 2");
             assert_eq!(gerr.id.to_string(), "123");
-            assert_eq!(gerr.prefix.as_ref().unwrap(), "SOURCE-2");
+            assert_eq!(gerr.code.as_ref().unwrap(), "SOURCE-2");
             assert!(gerr.tags.as_ref().unwrap().iter().eq(["qwe", "wex"]));
         }
     }
@@ -88,7 +88,7 @@ fn test_manual_into_gerr_view() {
     assert_eq!(gerr_source.message, "asd");
     assert_eq!(gerr_source.tags.unwrap()[0], "tag1");
     assert_eq!(gerr_source.tags.unwrap()[1], "tag2");
-    assert_eq!(gerr_source.prefix.unwrap(), "-user");
+    assert_eq!(gerr_source.code.unwrap(), "-user");
     assert_eq!(gerr_source.help.unwrap(), "please halp!!");
     assert_eq!(gerr_source.sources.unwrap().len(), 2);
     match gerr_source.sources.unwrap()[0] {
@@ -100,7 +100,7 @@ fn test_manual_into_gerr_view() {
         g_err::Source::GErr(ref gerr) => {
             assert_eq!(gerr.message, "source 2");
             assert_eq!(gerr.id.to_string(), "123");
-            assert_eq!(gerr.prefix.as_ref().unwrap(), "SOURCE-2");
+            assert_eq!(gerr.code.as_ref().unwrap(), "SOURCE-2");
             assert!(gerr.tags.as_ref().unwrap().iter().eq(["qwe", "wex"]));
         }
     }
@@ -118,7 +118,7 @@ fn test_box_into_gerr_source() {
     assert_eq!(gerr_source.id.to_string(), "AutoID");
     assert_eq!(gerr_source.message, "nganu");
     assert_eq!(gerr_source.tags.unwrap()[0], "tag1");
-    assert_eq!(gerr_source.prefix.unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr_source.code.unwrap(), "AutoPrefix-user");
     assert_eq!(gerr_source.help.unwrap(), "please halp!!");
 }
 
@@ -136,6 +136,6 @@ fn test_box_into_gerr_view() {
     assert_eq!(gerr_source.message, "nganu");
     assert_eq!(gerr_source.tags.unwrap()[0], "tag1");
     assert_eq!(gerr_source.tags.unwrap()[1], "tag2");
-    assert_eq!(gerr_source.prefix.unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr_source.code.unwrap(), "AutoPrefix-user");
     assert_eq!(gerr_source.help.unwrap(), "please halp!!");
 }
