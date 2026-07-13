@@ -8,7 +8,7 @@ use crate::{DataSource, IdSource};
 ///
 /// For smaller size error type, but heap-allocated, use this.
 ///
-/// Just like GErr, ID is defaulted to NoID, Prefix is defaulted to NoPrefix, and D is defaulted to NoData.
+/// Just like GErr, C(Config) is defaulted to DefaultConfig and D(Data) is defaulted to NoData.
 pub type GErrBox<C = DefaultConfig, D = NoData> = Box<GErr<C, D>>;
 
 #[cfg(not(feature = "serde"))]

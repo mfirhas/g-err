@@ -14,8 +14,8 @@ use crate::{
 pub struct DisplayJsonData {
     /// Error ID: can be in form of Number or String.
     pub id: serde_json::Value,
-    /// Error prefix.
-    pub prefix: Option<String>,
+    /// Error code.
+    pub code: Option<String>,
     /// Error message.
     pub message: String,
     /// Error tags.
@@ -42,8 +42,8 @@ pub struct DisplayCausesJsonData {
 pub struct JsonData {
     /// Error ID: can be in form of Number or String
     pub id: serde_json::Value,
-    /// Error prefix
-    pub prefix: Option<String>,
+    /// Error code
+    pub code: Option<String>,
     /// Error message
     pub message: String,
     /// Error tags
@@ -77,8 +77,8 @@ pub struct LocationJsonData {
 pub struct SourceJsonData {
     /// Error ID: can be in form of Number or String
     pub id: serde_json::Value,
-    /// Error prefix
-    pub prefix: Option<String>,
+    /// Error code
+    pub code: Option<String>,
     /// Error message
     pub message: String,
     /// Error tags
@@ -102,7 +102,7 @@ where
         JsonData {
             id: serde_json::to_value(err.id)
                 .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
-            prefix: err.code.map(|s| s.into()),
+            code: err.code.map(|s| s.into()),
             message: err.message.into(),
             tags: err.tags.map(|t| t.iter().map(|s| s.to_string()).collect()),
             data: err
@@ -136,7 +136,7 @@ where
         DisplayJsonData {
             id: serde_json::to_value(err.id)
                 .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
-            prefix: err.code.map(|s| s.into()),
+            code: err.code.map(|s| s.into()),
             message: err.message.into(),
             tags: err.tags.map(|t| t.iter().map(|s| s.to_string()).collect()),
             data: err
@@ -160,7 +160,7 @@ where
     fn try_from(value: JsonData) -> Result<Self, Self::Error> {
         let JsonData {
             id,
-            prefix,
+            code,
             message,
             tags,
             data,
@@ -190,8 +190,8 @@ where
             })?);
         }
 
-        if let Some(prefix) = prefix {
-            err = err.set_code(prefix);
+        if let Some(code) = code {
+            err = err.set_code(code);
         }
 
         if let Some(tags) = tags {
@@ -242,7 +242,7 @@ impl From<&Source> for SourceJsonData {
                     }
                 })
                 .unwrap_or_default(),
-                prefix: gerr.code.as_deref().map(|s| s.into()),
+                code: gerr.code.as_deref().map(|s| s.into()),
                 message: gerr.message.to_string(),
                 tags: gerr
                     .tags
@@ -307,7 +307,7 @@ impl SourceJsonData {
     fn into_source(self) -> Source {
         let SourceJsonData {
             id,
-            prefix,
+            code,
             message,
             tags,
             data,
@@ -329,7 +329,7 @@ impl SourceJsonData {
 
             message: message.into(),
 
-            code: prefix.map(Cow::Owned),
+            code: code.map(Cow::Owned),
 
             sources: sources.map(|s| s.into_iter().map(|sj| sj.into_source()).collect()),
 

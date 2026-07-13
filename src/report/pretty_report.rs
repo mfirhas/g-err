@@ -45,8 +45,8 @@ impl PrettyReport {
         } else {
             let _ = writeln!(out, "ID: -");
         }
-        if let Some(prefix) = err.code {
-            let _ = writeln!(out, "Prefix: {prefix}");
+        if let Some(code) = err.code {
+            let _ = writeln!(out, "Code: {code}");
         }
         let _ = writeln!(out, "Message: {}", err.message);
     }
@@ -90,8 +90,8 @@ impl PrettyReport {
 
                     Source::GErr(gerr) => {
                         match gerr.code.as_deref() {
-                            Some(prefix) => {
-                                let _ = writeln!(out, "  {i}: {prefix} {}", gerr.message);
+                            Some(code) => {
+                                let _ = writeln!(out, "  {i}: {code} {}", gerr.message);
                             }
                             None => {
                                 let _ = writeln!(out, "  {i}: {}", gerr.message);
@@ -148,8 +148,8 @@ impl PrettyReport {
 
                 Source::GErr(gerr) => {
                     match gerr.code.as_deref() {
-                        Some(prefix) => {
-                            let _ = writeln!(out, "{pad}- {prefix} {}", gerr.message);
+                        Some(code) => {
+                            let _ = writeln!(out, "{pad}- {code} {}", gerr.message);
                         }
                         None => {
                             let _ = writeln!(out, "{pad}- {}", gerr.message);

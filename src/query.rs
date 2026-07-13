@@ -8,19 +8,19 @@ where
     C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
-    /// Iterate over GErr's prefixes.
+    /// Iterate over GErr's codes.
     #[inline]
-    pub fn iter_by_prefix<'a, 'b>(
+    pub fn iter_by_code<'a, 'b>(
         &'a self,
-        prefix: &'b str,
+        code: &'b str,
     ) -> impl Iterator<Item = GErrNode<'a, C, D>> + 'a
     where
         'b: 'a,
     {
         self.iter().filter(move |item| match item {
-            GErrNode::Root(gerr) => gerr.code().is_some_and(|p| p == prefix),
+            GErrNode::Root(gerr) => gerr.code().is_some_and(|p| p == code),
 
-            GErrNode::LeafGErr(gerr) => gerr.code.as_ref().is_some_and(|p| p == prefix),
+            GErrNode::LeafGErr(gerr) => gerr.code.as_ref().is_some_and(|p| p == code),
 
             _ => false,
         })

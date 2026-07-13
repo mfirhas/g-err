@@ -48,7 +48,7 @@ impl Report for JsonReport {
 #[derive(serde::Serialize)]
 struct JsonReportData<'a> {
     pub id: serde_json::Value,
-    pub prefix: Option<&'a str>,
+    pub code: Option<&'a str>,
     pub message: &'a str,
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub data: Option<serde_json::Value>,
@@ -70,7 +70,7 @@ struct LocationJson<'a> {
 #[derive(serde::Serialize)]
 struct SourceJson<'a> {
     pub id: &'a serde_json::Value,
-    pub prefix: Option<&'a str>,
+    pub code: Option<&'a str>,
     pub message: String,
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub data: Option<&'a serde_json::Value>,
@@ -88,7 +88,7 @@ where
         Self {
             id: serde_json::to_value(value.id)
                 .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
-            prefix: value.code,
+            code: value.code,
             message: value.message,
             tags: value.tags,
             data: serde_json::to_value(value.data).ok(),
@@ -113,7 +113,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
         match source {
             Source::Err(err) => Self {
                 id: &NO_ID_JSON,
-                prefix: None,
+                code: None,
                 message: err.to_string(),
                 tags: None,
                 data: None,
@@ -123,7 +123,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
             },
             Source::GErr(gerr) => Self {
                 id: &gerr.id_json,
-                prefix: gerr.code.as_deref(),
+                code: gerr.code.as_deref(),
                 message: gerr.message.to_string(),
                 tags: gerr.tags.as_deref(),
                 data: gerr.data_json.as_ref(),

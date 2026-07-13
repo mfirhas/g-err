@@ -43,7 +43,7 @@ impl MarkdownReport {
             let _ = writeln!(out, "## ID: -\n");
         }
 
-        let _ = writeln!(out, "## Prefix: {}\n", err.code.unwrap_or("-"));
+        let _ = writeln!(out, "## Code: {}\n", err.code.unwrap_or("-"));
 
         let _ = writeln!(out, "## Message\n");
         let _ = writeln!(out, "> {}\n", err.message);
@@ -91,7 +91,7 @@ impl MarkdownReport {
 
                     crate::gerr::Source::GErr(gerr) => {
                         let msg = match gerr.code.as_deref() {
-                            Some(prefix) => format!("{prefix} {}", gerr.message),
+                            Some(code) => format!("{code} {}", gerr.message),
                             None => gerr.message.to_string(),
                         };
 
@@ -154,8 +154,8 @@ impl MarkdownReport {
 
                 Source::GErr(gerr) => {
                     match gerr.code.as_deref() {
-                        Some(prefix) => {
-                            let _ = writeln!(out, "{prefix} {}", gerr.message);
+                        Some(code) => {
+                            let _ = writeln!(out, "{code} {}", gerr.message);
                         }
                         None => {
                             let _ = writeln!(out, "{}", gerr.message);

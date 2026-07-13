@@ -2,7 +2,7 @@
 ///
 /// Creates GErr easily with formatting support and rich data.
 ///
-/// Without metadatas, the default generic params are `NoID`, `NoPrefix`, and `NoData`, just like `GErrDefault`.
+/// Without metadatas, the default config is [`DefaultConfig`] and default data is [`NoData`].
 ///
 /// Error message and its metadata are separated by `;`.
 ///
@@ -32,13 +32,11 @@
 ///     "failed {}",
 ///     500;
 ///     id = 999u32, // set id
-///     prefix = "HTTP", // set prefix
+///     code = "HTTP", // set code
 ///     tag = "server", // set a tag
 ///     tags = ["api", "v1"], // set tags
 ///     data = "payload", // set error data
-///     prefix = "[USER]", // update prefix
-///     pprefix = "@", // prepend to existing prefix, or become one
-///     aprefix = "[CREATE]", // append to existing prefix, or become one
+///     code = "E-HTTP", // update code
 ///     source = external_error, // set general error as source
 ///     gerr = inner, // set `Into<GErrSource>` error as source
 ///     help = "Try parsing valid signed integer 32", // set help hint
@@ -46,7 +44,7 @@
 ///
 /// assert_eq!(err.message(), "failed 500");
 /// assert_eq!(*err.id(), 999);
-/// assert_eq!(err.prefix(), Some("@[USER][CREATE]"));
+/// assert_eq!(err.code(), Some("E-HTTP"));
 /// assert_eq!(err.data(), Some(&"payload"));
 ///
 /// let tags = err.tags().unwrap();
@@ -98,8 +96,7 @@ macro_rules! gerr {
         $($rest:tt)*
     ) => {{
         let err = $crate::GErr::<
-            $crate::NoID,
-            $crate::NoPrefix,
+            $crate::DefaultConfig,
             $crate::NoData,
         >::new($message);
 
