@@ -346,28 +346,10 @@ impl<C: Config, D> GErr<C, D> {
         self
     }
 
-    /// Override config type and **reset** id to None, manually-set it with `.set_id`.
-    #[must_use]
-    #[inline]
-    pub fn with_config<T: Config>(self) -> GErr<T, D> {
-        GErr {
-            id: None,
-            code: self.code,
-            message: self.message,
-            sources: self.sources,
-            tags: self.tags,
-            data: self.data,
-            help: self.help,
-            location: self.location,
-            #[cfg(feature = "backtrace")]
-            backtrace: self.backtrace,
-        }
-    }
-
     /// Override config type and auto-generate id and code.
     #[must_use]
     #[inline]
-    pub fn with_config_auto<T: Config>(self) -> GErr<T, D> {
+    pub fn with_config<T: Config>(self) -> GErr<T, D> {
         GErr {
             id: T::id(),
             code: T::CODE.map(Cow::Borrowed),

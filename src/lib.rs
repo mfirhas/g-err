@@ -38,7 +38,7 @@ pub mod serde;
 mod macros;
 
 mod types;
-pub use types::{NoData, NoID};
+pub use types::{DefaultConfig, NoData, NoID};
 
 mod result_ext;
 pub use result_ext::{GResultExt, ResultExt};

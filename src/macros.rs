@@ -7,14 +7,10 @@
 /// Error message and its metadata are separated by `;`.
 ///
 /// # Supported metadata:
-/// - `id_auto`: auto-generated id inferred from return type.
-/// - `id_auto=$type`: auto-generated id defined manually.
-/// - `id=$expr`: manually-set id.
-/// - `prefix_auto`: auto-generated prefix inferred from return type.
-/// - `prefix_auto=$type`: auto-generated prefix defined manually.
-/// - `prefix=$expr`: manually-set prefix.
-/// - `pprefix=$expr`: prepend prefix.
-/// - `aprefix=$expr`: append prefix.
+/// - `config`: infer auto-generating config type for id and code from return type, and auto-generate both.
+/// - `config=$type`: set auto-generating config type for id and code, and auto-generate both.
+/// - `id=$expr`: set id manually with id type as set by `config=$type`.
+/// - `code=$expr`: set code string.
 /// - `data_type`: infer error data type from return type.
 /// - `data_type=$type`: define error data type.
 /// - `data=$expr`: set data, along with its type.
@@ -68,8 +64,7 @@ macro_rules! gerr {
     // format!-style
     ($fmt:literal $(, $arg:expr)* $(,)?) => {
         $crate::GErr::<
-            $crate::NoID,
-            $crate::NoPrefix,
+            $crate::DefaultConfig,
             $crate::NoData,
         >::new(format!($fmt $(, $arg)*))
     };
@@ -77,8 +72,7 @@ macro_rules! gerr {
     // arbitrary string expression
     ($message:expr $(,)?) => {
         $crate::GErr::<
-            $crate::NoID,
-            $crate::NoPrefix,
+            $crate::DefaultConfig,
             $crate::NoData,
         >::new($message)
     };
@@ -92,8 +86,7 @@ macro_rules! gerr {
         $($rest:tt)*
     ) => {{
         let err = $crate::GErr::<
-            $crate::NoID,
-            $crate::NoPrefix,
+            $crate::DefaultConfig,
             $crate::NoData,
         >::new(format!($fmt $(, $arg)*));
 
@@ -121,28 +114,28 @@ macro_rules! gerr {
     (@build $err:ident,) => { $err };
 
     // ==================================================
-    // id_auto
+    // config
     // ==================================================
 
     (
         @build $err:ident,
-        id_auto
+        config
         $(, $($rest:tt)*)?
     ) => {{
-        let err = $err.with_id_auto();
+        let err = $err.with_config();
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
     // ==================================================
-    // id_auto = ...
+    // config = ...
     // ==================================================
 
     (
         @build $err:ident,
-        id_auto = $id_auto:ty
+        config = $config:ty
         $(, $($rest:tt)*)?
     ) => {{
-        let err = $err.with_id_auto::<$id_auto>();
+        let err = $err.with_config::<$config>();
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
@@ -155,72 +148,20 @@ macro_rules! gerr {
         id = $id:expr
         $(, $($rest:tt)*)?
     ) => {{
-        let err = $err.with_id($id);
+        let err = $err.set_id($id);
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
     // ==================================================
-    // prefix_auto
+    // code = ...
     // ==================================================
 
     (
         @build $err:ident,
-        prefix_auto
+        code = $code:expr
         $(, $($rest:tt)*)?
     ) => {{
-        let err = $err.with_prefix_auto();
-        $crate::gerr!(@build err $(, $($rest)*)?)
-    }};
-
-    // ==================================================
-    // prefix_auto = ...
-    // ==================================================
-
-    (
-        @build $err:ident,
-        prefix_auto = $prefix_auto:ty
-        $(, $($rest:tt)*)?
-    ) => {{
-        let err = $err.with_prefix_auto::<$prefix_auto>();
-        $crate::gerr!(@build err $(, $($rest)*)?)
-    }};
-
-    // ==================================================
-    // prefix = ...
-    // ==================================================
-
-    (
-        @build $err:ident,
-        prefix = $prefix:expr
-        $(, $($rest:tt)*)?
-    ) => {{
-        let err = $err.set_prefix($prefix);
-        $crate::gerr!(@build err $(, $($rest)*)?)
-    }};
-
-    // ==================================================
-    // pprefix = ...
-    // ==================================================
-
-    (
-        @build $err:ident,
-        pprefix = $pprefix:expr
-        $(, $($rest:tt)*)?
-    ) => {{
-        let err = $err.prepend_prefix($pprefix);
-        $crate::gerr!(@build err $(, $($rest)*)?)
-    }};
-
-    // ==================================================
-    // aprefix = ...
-    // ==================================================
-
-    (
-        @build $err:ident,
-        aprefix = $aprefix:expr
-        $(, $($rest:tt)*)?
-    ) => {{
-        let err = $err.append_prefix($aprefix);
+        let err = $err.set_code($code);
         $crate::gerr!(@build err $(, $($rest)*)?)
     }};
 
