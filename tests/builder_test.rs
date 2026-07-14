@@ -9,8 +9,7 @@ use g_err::*;
 #[test]
 fn test_default_auto_builder() {
     let gerr = GErr::<()>::new("default auto errors").set_code("code");
-    dbg!(&gerr);
-    assert_eq!(gerr.id(), Some(&NoID));
+    assert!(gerr.id().is_none());
     assert_eq!(gerr.code().unwrap(), "code");
 }
 
@@ -35,7 +34,6 @@ fn test_auto_builder() {
         })
         .set_field("user_name", "qwertty".to_string())
         .set_field("invalid_key", 34);
-    dbg!(&gerr);
     assert_eq!(gerr.id().unwrap(), &AutoID);
     assert_eq!(gerr.code().unwrap(), "AutoCode");
     assert_eq!(gerr.sources().unwrap().len(), 3);
@@ -53,8 +51,8 @@ fn test_auto_builder() {
     match source3 {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
-            assert_eq!(gerr.id.as_ref().unwrap().to_string(), "NoID");
-            assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
+            assert!(gerr.id.is_none());
+            assert_eq!(gerr.code.as_ref().unwrap(), "AutoCode");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
                 Some(&("kind", "not found"))
@@ -120,7 +118,6 @@ fn test_box() {
         .set_field("user_name", "qwertty".to_string())
         .set_field("invalid_key", 34)
         .boxed();
-    dbg!(&gerr);
     assert_eq!(gerr.id().unwrap(), &AutoID);
     assert_eq!(gerr.code().unwrap(), "E-001");
     assert_eq!(gerr.sources().unwrap().len(), 3);
@@ -212,7 +209,7 @@ fn test_into_result() {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
             assert!(gerr.id.is_none());
-            assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
+            assert_eq!(gerr.code.as_ref().unwrap(), "AutoCode");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
                 Some(&("kind", "not found"))
@@ -271,7 +268,6 @@ fn test_box_into_result() {
             .boxed()
             .into();
     let gerr = gerr.unwrap_err();
-    dbg!(&gerr);
     assert_eq!(gerr.id().unwrap(), &AutoID);
     assert_eq!(gerr.code().unwrap(), "E-890");
     assert_eq!(gerr.sources().unwrap().len(), 3);
@@ -290,7 +286,7 @@ fn test_box_into_result() {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
             assert!(gerr.id.is_none());
-            assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
+            assert_eq!(gerr.code.as_ref().unwrap(), "AutoCode");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
                 Some(&("kind", "not found"))
