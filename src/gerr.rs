@@ -18,9 +18,20 @@ use std::backtrace::Backtrace;
 
 use alloc::borrow::Cow;
 
+/// Error config for:
+/// - Configure error id type.
+/// - Configure error id auto-generation.
+/// - Configure error code.
+/// - Configure error display.
 pub trait Config {
+    /// Error code.
     const CODE: Option<&'static str> = None;
 
+    /// Error id.
+    ///
+    /// # Must be:
+    /// - Implementing `Display` & `Debug`.
+    /// - Implementing serde's Serialize and Deserialize for `serde` feature.
     type Id;
 
     /// Auto-generate error id.
@@ -30,6 +41,8 @@ pub trait Config {
     }
 
     /// Display error message.
+    ///
+    /// It will be invoked in `Display` implementation.
     #[inline]
     fn display<C: Config, D>(gerr: &GErr<C, D>) -> String
     where
@@ -127,10 +140,14 @@ pub struct GErr<C: Config = DefaultConfig, D = NoData> {
     backtrace: Backtrace,
 }
 
+/// Location where error happen.
 #[derive(Debug, PartialEq, Eq)]
 pub struct ErrorLocation {
+    /// Filename of where error happen.
     pub file: Cow<'static, str>,
+    /// Line number of where error happen.
     pub line: u32,
+    /// Column of where error happen.
     pub column: u32,
 }
 
@@ -229,7 +246,7 @@ impl<C: Config, D> GErr<C, D> {
 }
 
 impl<C: Config, D> GErr<C, D> {
-    /// Update error id where id's type is the same as `ID` type parameter.
+    /// Set error id.
     #[must_use]
     #[inline]
     pub fn set_id(mut self, id: C::Id) -> Self {
@@ -237,7 +254,7 @@ impl<C: Config, D> GErr<C, D> {
         self
     }
 
-    /// Update code.
+    /// set error code.
     #[must_use]
     #[inline]
     pub fn set_code<T>(mut self, code: T) -> Self
@@ -248,7 +265,7 @@ impl<C: Config, D> GErr<C, D> {
         self
     }
 
-    /// Set sources
+    /// Set list of sources.
     #[must_use]
     #[inline]
     pub fn set_sources<I>(mut self, sources: I) -> Self
@@ -259,10 +276,7 @@ impl<C: Config, D> GErr<C, D> {
         self
     }
 
-    /// Add general error into list of sources.
-    ///
-    /// If you're passing GErr, convert it into [`GErrSource`] first using [`GErr::into_gerr_source`] or `Into`
-    /// to parse the error with detailed attributes of GErr, or use [`GErr::add_source_gerr`] without conversion to GErrSource.
+    /// Add general error(non-gerr) into list of sources.
     #[must_use]
     #[inline]
     pub fn add_source<E>(mut self, source: E) -> Self
@@ -315,7 +329,7 @@ impl<C: Config, D> GErr<C, D> {
         self
     }
 
-    /// Update error data.
+    /// Set error data.
     #[must_use]
     #[inline]
     pub fn set_data(mut self, data: D) -> Self {
@@ -323,7 +337,7 @@ impl<C: Config, D> GErr<C, D> {
         self
     }
 
-    /// Update help.
+    /// Set help.
     #[must_use]
     #[inline]
     pub fn set_help<H>(mut self, help: H) -> Self
@@ -335,6 +349,8 @@ impl<C: Config, D> GErr<C, D> {
     }
 
     /// Override config type and auto-generate id and code.
+    ///
+    /// This will overwrite previous id and code with auto-generated ones.
     #[must_use]
     #[inline]
     pub fn with_config<T: Config>(self) -> GErr<T, D> {

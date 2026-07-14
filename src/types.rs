@@ -2,7 +2,7 @@ use core::fmt::{Debug, Display};
 
 use crate::gerr::Config;
 
-/// Type for generic parameter `ID` for GErr without id.
+/// Type representing no id.
 #[derive(Debug, PartialEq, Eq)]
 pub struct NoID;
 

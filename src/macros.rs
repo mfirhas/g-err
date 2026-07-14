@@ -43,7 +43,7 @@
 /// );
 ///
 /// assert_eq!(err.message(), "failed 500");
-/// assert_eq!(*err.id(), 999);
+/// assert_eq!(err.id().unwrap(), &999);
 /// assert_eq!(err.code(), Some("E-HTTP"));
 /// assert_eq!(err.data(), Some(&"payload"));
 ///

@@ -27,21 +27,21 @@ fn test_new_manual_id() {
 // test new with auto-generated id.
 #[test]
 fn test_new_auto() {
-    // auto id, no prefix, no data
+    // auto id, no code, no data
     let gerr = GErr::<ErrAutoID>::new("error");
     assert_eq!(gerr.message(), "error");
     assert_eq!(gerr.id().unwrap(), &AutoID);
     assert!(gerr.code().is_none());
 
-    let gerr = GErr::<ErrAutoCode>::new("auto prefix");
+    let gerr = GErr::<ErrAutoCode>::new("auto code");
     assert!(gerr.id().is_none());
     assert_eq!(gerr.code().unwrap(), "AutoCode");
 
-    // auto id, auto prefix
-    let gerr: GErr<ErrAutoIDCode> = GErr::new("id and prefix are auto");
+    // auto id, auto code
+    let gerr: GErr<ErrAutoIDCode> = GErr::new("id and code are auto");
     assert_eq!(gerr.id().unwrap(), &AutoID);
     assert_eq!(gerr.code().unwrap(), "AutoCode");
-    assert_eq!(gerr.message(), "id and prefix are auto");
+    assert_eq!(gerr.message(), "id and code are auto");
 
     // auto id, auto prefix, with data
     let gerr: GErr<ErrAutoIDCode, Data> = GErr::new("all").set_data(Data {

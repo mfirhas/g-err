@@ -27,7 +27,7 @@ pub trait ResultExt<T>: sealed::Sealed {
         message: impl Into<Cow<'static, str>>,
     ) -> Result<T, C, D>;
 
-    /// Wrap `E` inside GErr as source with auto-generated id.
+    /// Wrap `E` inside GErr as source with auto-generated id and code.
     #[track_caller]
     fn context_auto<C: Config, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, C, D>;
 

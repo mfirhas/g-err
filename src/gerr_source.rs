@@ -10,25 +10,17 @@ use core::{
 
 use crate::gerr::{ErrorLocation, Source};
 
-/// Dyn-compatible trait for error id.
+/// Dyn-compatible trait for source's error id.
 pub trait IdSource: Any + Debug + Display + Send + Sync {}
 
 impl<T> IdSource for T where T: Any + Debug + Display + Send + Sync {}
 
-/// Dyn-compatible trait for error data.
+/// Dyn-compatible trait for source's error data.
 pub trait DataSource: Any + Debug + Send + Sync {}
 
 impl<T> DataSource for T where T: Any + Debug + Send + Sync {}
 
 /// GErrSource - GErr as source of error.
-///
-/// This will be the type of GErr's sources,
-/// be it from general error or from GErr itself.
-///
-/// You can add more detail attributes like GErr to other error types,
-/// by implementing conversion from those errors to GErrSource.
-///
-/// Then, you can add it as detailed GErrSource into method [`crate::GErr::add_source_gerr`].
 pub struct GErrSource {
     /// Error id, must implement Debug and Display.
     pub id: Option<Box<dyn IdSource>>,

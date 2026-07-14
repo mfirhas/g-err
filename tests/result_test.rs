@@ -512,7 +512,7 @@ fn test_result_ext() {
 
     dbg!(&ret);
     assert_eq!(ret.id().unwrap(), &AutoID);
-    assert_eq!(ret.code().unwrap(), "AutoPrefix");
+    assert_eq!(ret.code().unwrap(), "AutoCode");
     let debug = format!("{:#?}", ret);
     assert_eq!(debug, EXPECTED_DEBUG);
 }
