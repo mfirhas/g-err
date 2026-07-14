@@ -24,6 +24,7 @@ pub trait Config {
     type Id;
 
     /// Auto-generate error id.
+    #[inline]
     fn id() -> Option<Self::Id> {
         None
     }
