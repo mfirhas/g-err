@@ -3,7 +3,7 @@ mod setup_test;
 
 use setup_test::*;
 
-use g_err::{GErr, GErrSource, NoPrefix, gerr};
+use g_err::{GErr, GErrSource, gerr};
 
 #[test]
 fn test_gerr_debug() {
@@ -139,14 +139,15 @@ fn test_gerr_debug() {
     backtrace: <disabled>,
 }"#;
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr: GErr<&str, AutoPrefix, Data> = GErr::new_with_id("AJO", "asd")
+    let gerr: GErr<ErrIDStrAutoCode, Data> = GErr::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
         .set_help("please halp!!")
         .add_source(err)
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2"; config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .set_data(Data {
             user_id: 234,
             user_name: "ajo_sidi".into(),
@@ -163,14 +164,15 @@ fn test_gerr_display() {
     const EXPECTED_DISPLAY: &str = "AutoPrefix-user asd";
     const EXPECTED_DISPLAY_WITHOUT_PREFIX: &str = "zxc";
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr: GErr<&str, AutoPrefix, Data> = GErr::new_with_id("AJO", "asd")
+    let gerr: GErr<ErrIDStrAutoCode, Data> = GErr::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
         .set_help("please halp!!")
         .add_source(err)
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2"; config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .set_data(Data {
             user_id: 234,
             user_name: "ajo_sidi".into(),
@@ -180,13 +182,15 @@ fn test_gerr_display() {
     assert_eq!(&display, EXPECTED_DISPLAY);
 
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr: GErr<&str, NoPrefix, Data> = GErr::new_with_id("AJO", "zxc")
+    let gerr: GErr<ErrIDStr, Data> = GErr::new_with_id("AJO", "zxc")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
         .set_help("please halp!!")
         .add_source(err)
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2"; config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .set_data(Data {
             user_id: 234,
             user_name: "ajo_sidi".into(),
@@ -341,14 +345,15 @@ fn test_gerr_source_debug() {
     ),
 }"#;
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr = GErr::<&str, AutoPrefix, Data>::new_with_id("AJO", "asd")
+    let gerr = GErr::<ErrIDStrAutoCode, Data>::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
         .set_help("please halp!!")
         .add_source(err)
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2";config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .set_data(Data {
             user_id: 234,
             user_name: "ajo_sidi".into(),
@@ -366,14 +371,15 @@ fn test_gerr_source_display() {
     const EXPECTED_DISPLAY: &str = "AutoPrefix-user asd";
     const EXPECTED_DISPLAY_WITHOUT_PREFIX: &str = "zxc";
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr: GErrSource = GErr::<&str, AutoPrefix, Data>::new_with_id("AJO", "asd")
+    let gerr: GErrSource = GErr::<ErrIDStrAutoCode, Data>::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
         .set_help("please halp!!")
         .add_source(err)
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2";config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .set_data(Data {
             user_id: 234,
             user_name: "ajo_sidi".into(),
@@ -384,13 +390,15 @@ fn test_gerr_source_display() {
     assert_eq!(&display, EXPECTED_DISPLAY);
 
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr: GErr<&str, NoPrefix, Data> = GErr::new_with_id("AJO", "zxc")
+    let gerr: GErr<ErrIDStr, Data> = GErr::new_with_id("AJO", "zxc")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
         .set_help("please halp!!")
         .add_source(err)
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2"; config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .set_data(Data {
             user_id: 234,
             user_name: "ajo_sidi".into(),
@@ -405,11 +413,11 @@ use std::num::{IntErrorKind, ParseIntError};
 
 #[test]
 fn test_gerr_error_impl() {
-    let gerr: GErr<&str, AutoPrefix, Data> = GErr::new_with_id("AJO", "asd")
+    let gerr: GErr<ErrIDStrAutoCode, Data> = GErr::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
+        .set_code("user")
         .set_help("please halp!!")
         .set_data(Data {
             user_id: 234,
@@ -419,14 +427,16 @@ fn test_gerr_error_impl() {
     assert!(gerr.source().is_none());
 
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr: GErr<&str, AutoPrefix, Data> = GErr::new_with_id("AJO", "asd")
+    let gerr: GErr<ErrIDStrAutoCode, Data> = GErr::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
+        .set_code("-user")
         .set_help("please halp!!")
         .add_source(err)
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2"; config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .set_data(Data {
             user_id: 234,
             user_name: "ajo_sidi".into(),
@@ -437,13 +447,15 @@ fn test_gerr_error_impl() {
     assert_eq!(source.kind(), &IntErrorKind::InvalidDigit);
 
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr: GErr<&str, AutoPrefix, Data> = GErr::new_with_id("AJO", "asd")
+    let gerr: GErr<ErrIDStrAutoCode, Data> = GErr::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
+        .set_code("user")
         .set_help("please halp!!")
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2"; config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .add_source(err)
         .set_data(Data {
             user_id: 234,
@@ -452,18 +464,18 @@ fn test_gerr_error_impl() {
 
     let error_source = gerr.source().unwrap();
     let source = error_source.downcast_ref::<GErrSource>().unwrap();
-    assert_eq!(source.id.to_string(), "123");
-    assert_eq!(source.prefix.as_ref().unwrap(), "SOURCE-2");
+    assert_eq!(source.id.as_ref().unwrap().to_string(), "123");
+    assert_eq!(source.code.as_ref().unwrap(), "SOURCE-2");
     assert!(source.tags.as_ref().unwrap().iter().eq(["qwe", "wex"]));
 }
 
 #[test]
 fn test_gerr_source_error_impl() {
-    let gerr = GErr::<&str, AutoPrefix, Data>::new_with_id("AJO", "asd")
+    let gerr = GErr::<ErrIDStrAutoCode, Data>::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
+        .set_code("user")
         .set_help("please halp!!")
         .set_data(Data {
             user_id: 234,
@@ -474,14 +486,16 @@ fn test_gerr_source_error_impl() {
     assert!(gerr.source().is_none());
 
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr = GErr::<&str, AutoPrefix, Data>::new_with_id("AJO", "asd")
+    let gerr = GErr::<ErrIDStrAutoCode, Data>::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
+        .set_code("user")
         .set_help("please halp!!")
         .add_source(err)
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2"; config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .set_data(Data {
             user_id: 234,
             user_name: "ajo_sidi".into(),
@@ -493,13 +507,15 @@ fn test_gerr_source_error_impl() {
     assert_eq!(source.kind(), &IntErrorKind::InvalidDigit);
 
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr = GErr::<&str, AutoPrefix, Data>::new_with_id("AJO", "asd")
+    let gerr = GErr::<ErrIDStrAutoCode, Data>::new_with_id("AJO", "asd")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
-        .append_prefix("-user")
+        .set_code("USER")
         .set_help("please halp!!")
-        .add_source_gerr(gerr!("source 2"; id = 123, prefix="SOURCE-2", tags=["qwe","wex"]))
+        .add_source_gerr(
+            gerr!("source 2"; config=ErrIDi32, id = 123, code="SOURCE-2", tags=["qwe","wex"]),
+        )
         .add_source(err)
         .set_data(Data {
             user_id: 234,
@@ -509,7 +525,7 @@ fn test_gerr_source_error_impl() {
 
     let error_source = gerr.source().unwrap();
     let source = error_source.downcast_ref::<GErrSource>().unwrap();
-    assert_eq!(source.id.to_string(), "123");
-    assert_eq!(source.prefix.as_ref().unwrap(), "SOURCE-2");
+    assert_eq!(source.id.as_ref().unwrap().to_string(), "123");
+    assert_eq!(source.code.as_ref().unwrap(), "SOURCE-2");
     assert!(source.tags.as_ref().unwrap().iter().eq(["qwe", "wex"]));
 }

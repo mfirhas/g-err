@@ -8,22 +8,20 @@ use g_err::*;
 
 #[test]
 fn test_default_auto_builder() {
-    let gerr = GErr::<NoID>::new("default auto errors").set_prefix("[prefix]");
+    let gerr = GErr::<()>::new("default auto errors").set_code("code");
     dbg!(&gerr);
-    assert_eq!(gerr.id(), &NoID);
-    assert_eq!(gerr.prefix().unwrap(), "[prefix]");
+    assert_eq!(gerr.id(), Some(&NoID));
+    assert_eq!(gerr.code().unwrap(), "code");
 }
 
 #[test]
 fn test_auto_builder() {
     let err = "asd".parse::<i32>().unwrap_err();
     let err2 = "400".parse::<u8>().unwrap_err();
-    let gerr_source = GErr::<NoID, AutoPrefix, (&str, &str)>::new("the cause")
+    let gerr_source = GErr::<ErrAutoCode, (&str, &str)>::new("the cause")
         .set_data(("kind", "not found"))
         .add_source(err2.clone());
-    let gerr: GErr<AutoID, AutoPrefix, Data> = GErr::new("default auto errors")
-        .prepend_prefix("@")
-        .append_prefix("[user]")
+    let gerr: GErr<ErrAutoIDCode, Data> = GErr::new("default auto errors")
         .set_sources([Source::Err(Box::new(err))])
         .add_source(err2)
         .add_source_gerr(gerr_source)
@@ -38,8 +36,8 @@ fn test_auto_builder() {
         .set_field("user_name", "qwertty".to_string())
         .set_field("invalid_key", 34);
     dbg!(&gerr);
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "@AutoPrefix[user]");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "AutoCode");
     assert_eq!(gerr.sources().unwrap().len(), 3);
     let source1 = &gerr.sources().unwrap()[0];
     match source1 {
@@ -55,7 +53,7 @@ fn test_auto_builder() {
     match source3 {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
-            assert_eq!(gerr.id.to_string(), "NoID");
+            assert_eq!(gerr.id.as_ref().unwrap().to_string(), "NoID");
             assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
@@ -88,29 +86,26 @@ fn test_auto_builder() {
 
 #[test]
 fn test_manual_builder() {
-    let gerr = GErr::<u64>::new_with_id(84, "manual id").append_prefix("lkj");
-    assert_eq!(gerr.prefix().unwrap(), "lkj");
-    assert_eq!(gerr.id(), &84);
+    let gerr = GErr::<ErrIDi32>::new_with_id(84, "manual id");
+    assert_eq!(gerr.id().unwrap(), &84);
     assert!(gerr.data().is_none());
 
-    let gerr = GErr::<u64>::new_with_id(84, "manual id")
+    let gerr = GErr::<ErrIDi32>::new_with_id(84, "manual id")
         .set_id(1324)
-        .prepend_prefix("asd")
-        .append_prefix("qwe");
-    assert_eq!(gerr.id(), &1324);
-    assert_eq!(gerr.prefix().unwrap(), "asdqwe");
+        .set_code("asdqwe");
+    assert_eq!(gerr.id().unwrap(), &1324);
+    assert_eq!(gerr.code().unwrap(), "asdqwe");
 }
 
 #[test]
 fn test_box() {
     let err = "asd".parse::<i32>().unwrap_err();
     let err2 = "400".parse::<u8>().unwrap_err();
-    let gerr_source = GErr::<NoID, AutoPrefix, (&str, &str)>::new("the cause")
+    let gerr_source = GErr::<ErrAutoCode, (&str, &str)>::new("the cause")
         .set_data(("kind", "not found"))
         .add_source(err2.clone());
-    let gerr: GErrBox<AutoID, AutoPrefix, Data> = GErr::new("default auto errors")
-        .prepend_prefix("@")
-        .append_prefix("[user]")
+    let gerr: GErrBox<ErrAutoIDCode, Data> = GErr::new("default auto errors")
+        .set_code("E-001")
         .set_sources([Source::Err(Box::new(err))])
         .add_source(err2)
         .add_source_gerr(gerr_source)
@@ -126,8 +121,8 @@ fn test_box() {
         .set_field("invalid_key", 34)
         .boxed();
     dbg!(&gerr);
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "@AutoPrefix[user]");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "E-001");
     assert_eq!(gerr.sources().unwrap().len(), 3);
     let source1 = &gerr.sources().unwrap()[0];
     match source1 {
@@ -143,8 +138,8 @@ fn test_box() {
     match source3 {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
-            assert_eq!(gerr.id.to_string(), "NoID");
-            assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
+            assert!(gerr.id.is_none());
+            assert_eq!(gerr.code.as_ref().unwrap(), "AutoCode");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
                 Some(&("kind", "not found"))
@@ -178,12 +173,11 @@ fn test_box() {
 fn test_into_result() {
     let err = "asd".parse::<i32>().unwrap_err();
     let err2 = "400".parse::<u8>().unwrap_err();
-    let gerr_source = GErr::<NoID, AutoPrefix, (&str, &str)>::new("the cause")
+    let gerr_source = GErr::<ErrAutoCode, (&str, &str)>::new("the cause")
         .set_data(("kind", "not found"))
         .add_source(err2.clone());
-    let gerr: Result<(), AutoID, AutoPrefix, Data> = GErr::new("default auto errors")
-        .prepend_prefix("@")
-        .append_prefix("[user]")
+    let gerr: Result<(), ErrAutoIDCode, Data> = GErr::new("default auto errors")
+        .set_code("E234")
         .set_sources([Source::Err(Box::new(err))])
         .add_source(err2)
         .add_source_gerr(gerr_source)
@@ -200,8 +194,8 @@ fn test_into_result() {
         .result();
     let gerr = gerr.unwrap_err();
     dbg!(&gerr);
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "@AutoPrefix[user]");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "E234");
     assert_eq!(gerr.sources().unwrap().len(), 3);
     let source1 = &gerr.sources().unwrap()[0];
     match source1 {
@@ -217,7 +211,7 @@ fn test_into_result() {
     match source3 {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
-            assert_eq!(gerr.id.to_string(), "NoID");
+            assert!(gerr.id.is_none());
             assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),
@@ -252,16 +246,15 @@ fn test_into_result() {
 fn test_box_into_result() {
     let err = "asd".parse::<i32>().unwrap_err();
     let err2 = "400".parse::<u8>().unwrap_err();
-    let gerr_source: core::result::Result<(), GErr<_, _, _>> =
-        GErr::<NoID, AutoPrefix, (&str, &str)>::new("the cause")
+    let gerr_source: core::result::Result<(), GErr<_, _>> =
+        GErr::<ErrAutoCode, (&str, &str)>::new("the cause")
             .set_data(("kind", "not found"))
             .add_source(err2.clone())
             .into();
     let gerr_source = gerr_source.unwrap_err();
-    let gerr: core::result::Result<i32, GErrBox<AutoID, AutoPrefix, Data>> =
+    let gerr: core::result::Result<i32, GErrBox<ErrAutoIDCode, Data>> =
         GErr::new("default auto errors")
-            .prepend_prefix("@")
-            .append_prefix("[user]")
+            .set_code("E-890")
             .set_sources([Source::Err(Box::new(err))])
             .add_source(err2)
             .add_source_gerr(gerr_source)
@@ -279,8 +272,8 @@ fn test_box_into_result() {
             .into();
     let gerr = gerr.unwrap_err();
     dbg!(&gerr);
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "@AutoPrefix[user]");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "E-890");
     assert_eq!(gerr.sources().unwrap().len(), 3);
     let source1 = &gerr.sources().unwrap()[0];
     match source1 {
@@ -296,7 +289,7 @@ fn test_box_into_result() {
     match source3 {
         Source::Err(_) => panic!("opps"),
         Source::GErr(gerr) => {
-            assert_eq!(gerr.id.to_string(), "NoID");
+            assert!(gerr.id.is_none());
             assert_eq!(gerr.code.as_ref().unwrap(), "AutoPrefix");
             assert_eq!(
                 (gerr.data.as_ref().unwrap().as_ref() as &dyn Any).downcast_ref::<(&str, &str)>(),

@@ -11,11 +11,10 @@ use g_err::{iterator::GErrNode, *};
 fn test_iterator_id() {
     let int_err = "wer".parse::<i32>().unwrap_err();
     let gerr = gerr!("id iterator error: {}", 1;
-        id_auto=AutoID,
-        prefix_auto=AutoPrefix,
+        config=ErrAutoIDCode,
         source=int_err,
-        gerr=gerr!("testing: {}", "abc"; id=123, gerr=gerr!("error"; prefix="anu", id=AutoID)),
-        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; id_auto=AutoID, gerr=gerr!("xcv"; id=42))),
+        gerr=gerr!("testing: {}", "abc"; config=ErrIDi32, id=123, gerr=gerr!("error"; config=ErrAutoID, code="anu")),
+        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; config=ErrAutoID, gerr=gerr!("xcv";config=ErrIDi32, id=42))),
     );
 
     let ids_by_type = gerr.iter_id::<i32>(); // 2nd source(gerr), id=123 and id=42 are defaulted to i32.
@@ -26,7 +25,7 @@ fn test_iterator_id() {
         match i {
             0 => {
                 if let GErrNode::LeafGErr(gerr) = v {
-                    assert_eq!(gerr.id.as_ref().to_string(), "123");
+                    assert_eq!(gerr.id.as_ref().unwrap().to_string(), "123");
                     assert_eq!(gerr.message, "testing: abc");
                     assert_eq!(gerr.sources.as_ref().unwrap().len(), 1);
                 } else {
@@ -35,7 +34,7 @@ fn test_iterator_id() {
             }
             1 => {
                 if let GErrNode::LeafGErr(gerr) = v {
-                    assert_eq!(gerr.id.as_ref().to_string(), "42");
+                    assert_eq!(gerr.id.as_ref().unwrap().to_string(), "42");
                     assert_eq!(gerr.message, "xcv");
                 } else {
                     panic!("shouvebeen gerr!");
@@ -59,7 +58,7 @@ fn test_iterator_id() {
             0 => {
                 if let GErrNode::Root(root) = v {
                     assert_eq!(root.message(), "id iterator error: 1");
-                    assert_eq!(root.id(), &AutoID);
+                    assert_eq!(root.id().unwrap(), &AutoID);
                     assert_eq!(root.code().unwrap(), "AutoPrefix");
                     assert_eq!(root.sources().as_ref().unwrap().len(), 3);
                 } else {
@@ -69,7 +68,7 @@ fn test_iterator_id() {
             1 => {
                 if let GErrNode::LeafGErr(gerr) = v {
                     assert_eq!(gerr.message, "error");
-                    assert_eq!(gerr.id.as_ref().to_string(), "AutoID");
+                    assert_eq!(gerr.id.as_ref().unwrap().to_string(), "AutoID");
                     assert_eq!(gerr.code.as_ref().unwrap(), "anu");
                 } else {
                     panic!("second node shouvebeen gerr");
@@ -78,7 +77,7 @@ fn test_iterator_id() {
             2 => {
                 if let GErrNode::LeafGErr(gerr) = v {
                     assert_eq!(gerr.message, "asd");
-                    assert_eq!(gerr.id.as_ref().to_string(), "AutoID");
+                    assert_eq!(gerr.id.as_ref().unwrap().to_string(), "AutoID");
                     assert_eq!(gerr.sources.as_ref().unwrap().len(), 1);
                 } else {
                     panic!("third node shouvebeen gerr");
@@ -93,17 +92,16 @@ fn test_iterator_id() {
 fn test_iter_prefix() {
     let int_err = "wer".parse::<i32>().unwrap_err();
     let gerr = gerr!("id iterator error: {}", 1;
-        id_auto=AutoID,
-        prefix_auto=AutoPrefix,
+        config=ErrAutoIDCode,
         source=int_err,
-        gerr=gerr!("testing: {}", "abc"; id=123, gerr=gerr!("error"; prefix="anu", id=AutoID)),
-        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; id_auto=AutoID, gerr=gerr!("xcv"; id=42))),
+        gerr=gerr!("testing: {}", "abc"; config=ErrIDi32, id=123, gerr=gerr!("error"; config=ErrAutoID, code="anu")),
+        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; config=ErrAutoID, gerr=gerr!("xcv"; config=ErrIDi32, id=42))),
     );
 
-    let iter_by_prefix = gerr.iter_by_prefix("anu").count();
+    let iter_by_prefix = gerr.iter_by_code("anu").count();
     assert_eq!(iter_by_prefix, 1);
 
-    let iter_by_prefix = gerr.iter_by_prefix("AutoPrefix").count();
+    let iter_by_prefix = gerr.iter_by_code("AutoPrefix").count();
     assert_eq!(iter_by_prefix, 1);
 }
 
@@ -111,11 +109,10 @@ fn test_iter_prefix() {
 fn test_iter_tags() {
     let int_err = "wer".parse::<i32>().unwrap_err();
     let gerr = gerr!("id iterator error: {}", 1;
-        id_auto=AutoID,
-        prefix_auto=AutoPrefix,
+        config=ErrAutoIDCode,
         source=int_err,
-        gerr=gerr!("testing: {}", "abc"; id=123, gerr=gerr!("error"; prefix="anu", id=AutoID)),
-        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; id_auto=AutoID, gerr=gerr!("xcv"; id=42))),
+        gerr=gerr!("testing: {}", "abc"; config=ErrIDi32, id=123, gerr=gerr!("error"; config=ErrAutoID, code="anu")),
+        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; config=ErrAutoID, gerr=gerr!("xcv";config=ErrIDi32, id=42))),
         tags=["tag1", "tag2"],
     );
 
@@ -146,11 +143,10 @@ fn test_iter_tags() {
 fn test_iter_data() {
     let int_err = "wer".parse::<i32>().unwrap_err();
     let gerr = gerr!("id iterator error: {}", 1;
-        id_auto=AutoID,
-        prefix_auto=AutoPrefix,
+        config=ErrAutoIDCode,
         source=int_err,
-        gerr=gerr!("testing: {}", "abc"; id=123, gerr=gerr!("error"; prefix="anu", id=AutoID, data = ("user_name", "ajo"))),
-        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; id_auto=AutoID, gerr=gerr!("xcv"; id=42)), data = ["data1", "data2", "data3"]),
+        gerr=gerr!("testing: {}", "abc"; config=ErrIDi32, id=123, gerr=gerr!("error"; config=ErrAutoID, code="anu", data = ("user_name", "ajo"))),
+        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; config=ErrAutoID, gerr=gerr!("xcv";config=ErrIDi32, id=42)), data = ["data1", "data2", "data3"]),
         tags=["tag1", "tag2"],
         data = Data { user_id:123, user_name: "qwerty_123".to_string() }
     );
@@ -198,7 +194,7 @@ fn test_iter_data() {
     if let GErrNode::LeafGErr(gerr) = data {
         assert_eq!(gerr.message, "error");
         assert_eq!(gerr.code.as_ref().unwrap(), "anu");
-        assert_eq!(gerr.id.as_ref().to_string(), "AutoID");
+        assert_eq!(gerr.id.as_ref().unwrap().to_string(), "AutoID");
         if let Some(data) = (&**gerr.data.as_ref().unwrap() as &dyn core::any::Any)
             .downcast_ref::<(&'static str, &'static str)>()
         {
@@ -220,7 +216,7 @@ fn test_iter_data() {
     if let GErrNode::LeafGErr(gerr) = data {
         assert_eq!(gerr.message, "error");
         assert_eq!(gerr.code.as_ref().unwrap(), "anu");
-        assert_eq!(gerr.id.as_ref().to_string(), "AutoID");
+        assert_eq!(gerr.id.as_ref().unwrap().to_string(), "AutoID");
     } else {
         panic!("shouvebeen root");
     }
@@ -231,11 +227,10 @@ fn test_iter_data() {
 fn test_iter_source() {
     let int_err = "wer".parse::<i32>().unwrap_err();
     let gerr = gerr!("id iterator error: {}", 1;
-        id_auto=AutoID,
-        prefix_auto=AutoPrefix,
+        config=ErrAutoIDCode,
         source=int_err,
-        gerr=gerr!("testing: {}", "abc"; id=123, gerr=gerr!("error"; prefix="anu", id=AutoID, data = ("user_name", "ajo"))),
-        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; id_auto=AutoID, gerr=gerr!("xcv"; id=42)), data = ["data1", "data2", "data3"]),
+        gerr=gerr!("testing: {}", "abc"; config=ErrIDi32, id=123, gerr=gerr!("error";config=ErrAutoID, code="anu", data = ("user_name", "ajo"))),
+        gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; config=ErrAutoID, gerr=gerr!("xcv"; config=ErrIDi32, id=42)), data = ["data1", "data2", "data3"]),
         tags=["tag1", "tag2"],
         data = Data { user_id:123, user_name: "qwerty_123".to_string() }
     );
@@ -255,7 +250,7 @@ fn test_iter_source() {
             0 => {
                 if let GErrNode::LeafGErr(gerr) = v {
                     assert_eq!(gerr.message, "testing: abc");
-                    assert_eq!(gerr.id.as_ref().to_string(), "123");
+                    assert_eq!(gerr.id.as_ref().unwrap().to_string(), "123");
                 } else {
                     panic!("shouvebeen gerr");
                 }
@@ -278,7 +273,7 @@ fn test_iter_source() {
             3 => {
                 if let GErrNode::LeafGErr(gerr) = v {
                     assert_eq!(gerr.message, "asd");
-                    assert_eq!(gerr.id.as_ref().to_string(), "AutoID");
+                    assert_eq!(gerr.id.as_ref().unwrap().to_string(), "AutoID");
                 } else {
                     panic!("shouvebeen gerr");
                 }
@@ -286,7 +281,7 @@ fn test_iter_source() {
             4 => {
                 if let GErrNode::LeafGErr(gerr) = v {
                     assert_eq!(gerr.message, "xcv");
-                    assert_eq!(gerr.id.as_ref().to_string(), "42");
+                    assert_eq!(gerr.id.as_ref().unwrap().to_string(), "42");
                 } else {
                     panic!("shouvebeen gerr");
                 }

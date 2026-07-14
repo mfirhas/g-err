@@ -1,7 +1,5 @@
 #[path = "setup_test.rs"]
 mod setup_test;
-
-#[cfg(feature = "serde")]
 use setup_test::*;
 
 #[cfg(feature = "serde")]
@@ -164,9 +162,8 @@ fn test_json_serde() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -176,21 +173,21 @@ fn test_json_serde() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
-        gerr=gerr!("connection timeout"; id_auto=NoID, data=NoData),
+        gerr=gerr!("connection timeout"; config=ErrAutoID, data=NoData),
     );
 
     const EXPECTED_STR_SER: &str = "\"AutoPrefix pretty error: l2k3mr2l3r\"";
@@ -203,7 +200,7 @@ fn test_json_serde() {
 
     // deserialize json data into GErr
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<AutoID, AutoPrefix, Data> =
+    let err: GErr<ErrAutoIDCode, Data> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
 
     // serialize back deserialized json data, into string
@@ -222,30 +219,29 @@ fn test_json_serde_noid_nodata() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<NoID, AutoPrefix, NoData> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data_type,
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
-        gerr=gerr!("connection timeout"; id_auto=NoID, data=NoData),
+        gerr=gerr!("connection timeout";),
     );
 
     // serialize json data into string
@@ -253,7 +249,7 @@ fn test_json_serde_noid_nodata() {
 
     // deserialize json data into GErr
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<NoID, AutoPrefix, NoData> =
+    let err: GErr<ErrAutoCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
 
     // serialize back deserialized json data, into string
@@ -275,30 +271,29 @@ fn test_json_serde_failed_deser() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<NoID, AutoPrefix, NoData> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data_type,
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
-        gerr=gerr!("connection timeout"; id_auto=NoID, data=NoData),
+        gerr=gerr!("connection timeout"),
     );
 
     // serialize json data into string
@@ -306,7 +301,7 @@ fn test_json_serde_failed_deser() {
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: core::result::Result<GErr<AutoID, AutoPrefix, NoData>, serde_json::Error> =
+    let err: core::result::Result<GErr<ErrAutoIDCode, NoData>, serde_json::Error> =
         g_err::serde::json::deserialize(&mut deserializer);
     assert!(err.is_err());
 
@@ -315,7 +310,7 @@ fn test_json_serde_failed_deser() {
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: core::result::Result<GErr<NoID, AutoPrefix, NoData>, serde_json::Error> =
+    let err: core::result::Result<GErr<ErrAutoCode, NoData>, serde_json::Error> =
         g_err::serde::json::deserialize(&mut deserializer);
     assert!(err.is_err());
 }
@@ -326,56 +321,54 @@ fn test_json_serde_id_types() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<NoID, AutoPrefix, NoData> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data_type,
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
-        gerr=gerr!("connection timeout"; id_auto=NoID, data=NoData),
+        gerr=gerr!("connection timeout"; config=()),
     );
 
     // id = bool
-    let gerr = gerr.with_id(true);
+    let gerr = gerr.with_config::<ErrIDBoolCode>().set_id(true);
     // serialize json data into string
     let json_data_ser = serde_json::to_string_pretty(&gerr.json_data()).unwrap();
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<bool, AutoPrefix, NoData> =
-        g_err::serde::json::deserialize(&mut deserializer).unwrap();
-    assert_eq!(err.id(), &true);
+    let err: GErr<ErrIDBoolCode> = g_err::serde::json::deserialize(&mut deserializer).unwrap();
+    assert_eq!(err.id().unwrap(), &true);
 
     // id = array
-    let gerr = gerr.with_id([123, 234]);
+    let gerr = gerr.with_config::<ErrIDArrCode>().set_id([123, 234]);
     // serialize json data into string
     let json_data_ser = serde_json::to_string_pretty(&gerr.json_data()).unwrap();
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<[i32; 2], AutoPrefix, NoData> =
+    let err: GErr<ErrIDArrCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
-    assert_eq!(err.id(), &[123, 234]);
+    assert_eq!(err.id().unwrap(), &[123, 234]);
 
     // id = object
-    let gerr = gerr.with_id(Data {
+    let gerr = gerr.with_config::<ErrIDDataCode>().set_id(Data {
         user_id: 123,
         user_name: String::from("ajo"),
     });
@@ -384,10 +377,10 @@ fn test_json_serde_id_types() {
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<Data, AutoPrefix, NoData> =
+    let err: GErr<ErrIDDataCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     assert_eq!(
-        err.id(),
+        err.id().unwrap(),
         &Data {
             user_id: 123,
             user_name: "ajo".into()
@@ -401,43 +394,43 @@ fn test_json_serde_sources_id_types() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<NoID, AutoPrefix, NoData> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<_, NoData> = gerr!("pretty error: {req_id}";
+        config=ErrAutoCode,
         tag="tag1",
         tags=["tag2", "tag3"],
         data_type,
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
-        gerr=gerr!("connection timeout"; id_auto=NoID, data=NoData),
+        gerr=gerr!("connection timeout"),
     );
 
     // id = bool
-    let gerr = gerr.add_source_gerr(gerr!("id bool"; id=true));
+    let gerr = gerr.add_source_gerr(gerr!("id bool"; config=ErrIDBool, id=true));
     // serialize json data into string
     let json_data_ser = serde_json::to_string_pretty(&gerr.json_data()).unwrap();
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<NoID, AutoPrefix, NoData> =
+    let err: GErr<ErrAutoCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[4]
-        && let Some(id) = (&*gerr.id as &dyn core::any::Any).downcast_ref::<bool>()
+        && let Some(id) =
+            (&*gerr.id.as_ref().unwrap() as &dyn core::any::Any).downcast_ref::<bool>()
     {
         assert_eq!(id, &true);
     } else {
@@ -467,14 +460,17 @@ fn test_json_serde_sources_id_types() {
             <[i32; 2]>::deserialize(deserializer).map(ArrID)
         }
     }
+    impl Config for ArrID {
+        type Id = Self;
+    }
     // id = array
-    let gerr = gerr.add_source_gerr(gerr!("id array"; id=ArrID([123, 234])));
+    let gerr = gerr.add_source_gerr(gerr!("id array"; config=ArrID, id=ArrID([123, 234])));
     // serialize json data into string
     let json_data_ser = serde_json::to_string_pretty(&gerr.json_data()).unwrap();
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<NoID, AutoPrefix, NoData> =
+    let err: GErr<ErrAutoCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[5]
         && let serde_json::Value::Array(arr) = &gerr.id_json
@@ -493,7 +489,7 @@ fn test_json_serde_sources_id_types() {
     }
 
     // id = object
-    let gerr = gerr.add_source_gerr(gerr!("id data"; id=Data {
+    let gerr = gerr.add_source_gerr(gerr!("id data"; config=ErrIDDataCode, id=Data {
         user_id: 123,
         user_name: String::from("ajo"),
     }));
@@ -502,10 +498,11 @@ fn test_json_serde_sources_id_types() {
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<NoID, AutoPrefix, NoData> =
+    let err: GErr<ErrAutoCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[6]
-        && let Some(id) = (&*gerr.id as &dyn core::any::Any).downcast_ref::<String>()
+        && let Some(id) =
+            (&*gerr.id.as_ref().unwrap() as &dyn core::any::Any).downcast_ref::<String>()
     {
         assert_eq!(id, r#"{"user_id":123,"user_name":"ajo"}"#);
 
@@ -529,30 +526,29 @@ fn test_json_serde_sources_data_types() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<NoID, AutoPrefix, NoData> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data_type,
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
-        gerr=gerr!("connection timeout"; id_auto=NoID, data=NoData),
+        gerr=gerr!("connection timeout"),
     );
 
     // data = bool
@@ -562,7 +558,7 @@ fn test_json_serde_sources_data_types() {
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<NoID, AutoPrefix, NoData> =
+    let err: GErr<ErrAutoCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[4]
         && let serde_json::Value::Bool(b) = gerr.data_json.as_ref().unwrap()
@@ -579,7 +575,7 @@ fn test_json_serde_sources_data_types() {
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<NoID, AutoPrefix, NoData> =
+    let err: GErr<ErrAutoCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[5]
         && let serde_json::Value::Number(num) = gerr.data_json.as_ref().unwrap()
@@ -596,7 +592,7 @@ fn test_json_serde_sources_data_types() {
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<NoID, AutoPrefix, NoData> =
+    let err: GErr<ErrAutoCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[6]
         && let serde_json::Value::String(s) = gerr.data_json.as_ref().unwrap()
@@ -614,7 +610,7 @@ fn test_json_serde_sources_data_types() {
 
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
-    let err: GErr<NoID, AutoPrefix, NoData> =
+    let err: GErr<ErrAutoCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[7]
         && let serde_json::Value::Object(s) = gerr.data_json.as_ref().unwrap()
@@ -637,14 +633,14 @@ fn test_json_serde_sources_data_types() {
 struct Serde {
     thing: String,
     #[serde(with = "g_err::serde::json")]
-    gerr_internal: GErr<AutoID, AutoPrefix, Data>,
+    gerr_internal: GErr<ErrAutoIDCode, Data>,
 }
 
 #[cfg(feature = "serde")]
 #[derive(Debug, ::serde::Serialize)]
 struct Ser {
     #[serde(serialize_with = "g_err::serde::display_json::serialize")]
-    gerr_public: GErr<AutoID, AutoPrefix, Data>,
+    gerr_public: GErr<ErrAutoIDCode, Data>,
 }
 
 #[cfg(feature = "serde")]
@@ -655,9 +651,8 @@ fn test_json_serde_data() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -667,21 +662,21 @@ fn test_json_serde_data() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
-        gerr=gerr!("connection timeout"; id_auto=NoID, data=NoData),
+        gerr=gerr!("connection timeout"),
     );
 
     let ser_de = Serde {
@@ -762,9 +757,8 @@ fn test_json_serialize_data() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -774,21 +768,21 @@ fn test_json_serialize_data() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
-        gerr=gerr!("connection timeout"; id_auto=NoID, data=NoData),
+        gerr=gerr!("connection timeout"; config=()),
     );
 
     let ser = Ser { gerr_public: gerr };

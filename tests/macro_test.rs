@@ -1,5 +1,9 @@
 use g_err::*;
 
+#[path = "setup_test.rs"]
+mod setup_test;
+use setup_test::*;
+
 #[test]
 fn multiple_builder_fields() {
     let inner = gerr!("inner");
@@ -8,8 +12,9 @@ fn multiple_builder_fields() {
     let err = gerr!(
         "failed {}",
         500;
-        id = 999u32,
-        prefix = "HTTP",
+        config=ErrIDi32,
+        id = 999,
+        code = "HTTP",
         tag = "server",
         tags = ["api", "v1"],
         data = "payload",
@@ -19,8 +24,8 @@ fn multiple_builder_fields() {
     );
 
     assert_eq!(err.message(), "failed 500");
-    assert_eq!(*err.id(), 999);
-    assert_eq!(err.prefix(), Some("HTTP"));
+    assert_eq!(*err.id().unwrap(), 999);
+    assert_eq!(err.code(), Some("HTTP"));
     assert_eq!(err.data(), Some(&"payload"));
     assert_eq!(err.help(), Some("Try parsing valid signed integer 32"));
 
@@ -35,10 +40,11 @@ fn multiple_builder_fields() {
 fn trailing_comma() {
     let err = gerr!(
         "hello";
+        config = ErrIDi32,
         id = 123,
     );
 
-    assert_eq!(*err.id(), 123);
+    assert_eq!(*err.id().unwrap(), 123);
 }
 
 #[test]
@@ -50,34 +56,12 @@ fn interpolation_style_usage() {
     assert_eq!(err.message(), "hello alice");
 }
 
-#[cfg_attr(feature = "serde", derive(::serde::Serialize))]
-#[derive(Debug, PartialEq, Eq)]
-struct AutoID;
-
-impl core::fmt::Display for AutoID {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "AutoID")
-    }
-}
-
-impl Id for AutoID {
-    fn id() -> Self {
-        Self
-    }
-}
-
-struct AutoPrefix;
-
-impl Prefix for AutoPrefix {
-    const PREFIX: Option<&'static str> = Some("AutoPrefix");
-}
-
 #[test]
 fn test_macro_default() {
     let gerr = gerr!("sdf: {}", "qwe");
 
     dbg!(&gerr);
-    assert!(gerr.prefix().is_none());
+    assert!(gerr.code().is_none());
     assert!(gerr.data().is_none());
 }
 
@@ -85,24 +69,23 @@ fn test_macro_default() {
 fn test_macro_set_manual_id() {
     let gerr = gerr!(
         "test: {}", 123;
+        config = ErrIDi32,
         id=123,
     );
 
     dbg!(&gerr);
-    assert_eq!(gerr.id(), &123);
+    assert_eq!(gerr.id().unwrap(), &123);
 }
 
 #[test]
 fn test_macro_set_manual_prefix() {
     let gerr = gerr!(
         "test: {}", 123;
-        prefix="anu",
-        pprefix = "[TEST]",
-        aprefix = "-asd",
+        code="anu",
     );
 
     dbg!(&gerr);
-    assert_eq!(gerr.prefix().unwrap(), "[TEST]anu-asd");
+    assert_eq!(gerr.code().unwrap(), "anu");
 }
 
 #[test]
@@ -115,30 +98,29 @@ fn test_macro_set_manual_data() {
 
 #[test]
 fn test_macro_set_manual_all() {
-    let gerr =
-        gerr!("manual all: {}", 4; prefix = "[TEST]", aprefix = "-user", id=123, data=234_u64);
+    let gerr = gerr!("manual all: {}", 4; code = "[TEST]", config=ErrIDi32, id=123, data=234_u64);
 
     dbg!(&gerr);
 
-    assert_eq!(gerr.id(), &123);
-    assert_eq!(gerr.prefix().unwrap(), "[TEST]-user");
+    assert_eq!(gerr.id().unwrap(), &123);
+    assert!(gerr.code().is_none());
     assert_eq!(gerr.data().unwrap(), &234);
 }
 
 #[test]
 fn test_macro_id_auto() {
-    let gerr = gerr!("asdsdf: {}", 234; id_auto=AutoID);
+    let gerr = gerr!("asdsdf: {}", 234; config=ErrAutoID);
     dbg!(&gerr);
 
-    assert_eq!(gerr.id().to_string(), "AutoID");
+    assert_eq!(gerr.id().unwrap().to_string(), "AutoID");
 }
 
 #[test]
 fn test_macro_prefix_auto() {
-    let gerr = gerr!("asdsdf: {}", 234; prefix_auto=AutoPrefix, aprefix="-user");
+    let gerr = gerr!("asdsdf: {}", 234; config=ErrAutoCode);
     dbg!(&gerr);
 
-    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr.code().unwrap(), "AutoCode");
 }
 
 #[test]
@@ -152,56 +134,55 @@ fn test_macro_data_type() {
 
 #[test]
 fn test_macro_auto_all() {
-    let gerr = gerr!("test: {}", 4; prefix_auto=AutoPrefix, id_auto=AutoID, data_type = i128);
+    let gerr = gerr!("test: {}", 4; config=ErrAutoIDCode, data_type = i128);
     dbg!(&gerr);
 
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "AutoPrefix");
 }
 
 #[test]
 fn test_macro_id_auto_return() {
-    let gerr: GErr<AutoID> = gerr!("test: {}", 5; id_auto, prefix="[asd]");
+    let gerr: GErr<ErrAutoID> = gerr!("test: {}", 5; config, code="asd");
 
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "[asd]");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "[asd]");
 }
 
 #[test]
 fn test_macro_prefix_auto_return() {
-    let gerr: GErr<_, AutoPrefix> = gerr!("test: {}", 5; prefix_auto);
+    let gerr: GErr<ErrAutoCode> = gerr!("test: {}", 5; config=ErrAutoCode);
 
     dbg!(&gerr);
     assert_eq!(gerr.code().unwrap(), "AutoPrefix");
 
-    let gerr: GErr<AutoID, AutoPrefix> =
-        gerr!("test: {}", 5; prefix_auto, id_auto, aprefix = "-user");
+    let gerr: GErr<ErrAutoIDCode> = gerr!("test: {}", 5; config, code = "user");
 
     dbg!(&gerr);
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "AutoPrefix-user");
 }
 
 #[test]
 fn test_macro_data_type_return() {
-    let gerr: GErr<_, _, (&str, u32)> = gerr!("sdf"; data_type);
+    let gerr: GErr<_, (&str, u32)> = gerr!("sdf"; data_type);
 
     dbg!(&gerr);
     assert!(gerr.code().is_none());
     assert!(gerr.data().is_none());
 
-    let gerr: GErr<_, _, _> = gerr!("sdf"; data_type = u32);
+    let gerr: GErr<_, _> = gerr!("sdf"; data_type = u32);
 
     dbg!(&gerr);
     assert!(gerr.code().is_none());
     assert!(gerr.data().is_none());
 
-    let gerr: GErr<AutoID, _, i128> = gerr!("sdf"; data_type, id_auto, prefix_auto = AutoPrefix);
+    let gerr: GErr<ErrAutoIDCode, i128> = gerr!("sdf"; data_type, config);
     let gerr = gerr.set_data(1230);
 
     dbg!(&gerr);
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "AutoPrefix");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "AutoPrefix");
     assert_eq!(gerr.data().unwrap(), &1230);
 }
 
@@ -210,23 +191,20 @@ fn test_macro_all() {
     let external_error = "anu".parse::<i32>().unwrap_err();
     let gerr = gerr!(
         "test all";
-        id_auto=AutoID,
-        prefix = "[APP]",
+        config=ErrAutoID,
+        code = "APP",
         data="test",
         tags=["tag1", "tag2"],
 
         source = gerr!("error source"),
-        gerr = gerr!("another cause: {}", 123; tag="sdf", data=234, source=external_error.clone(), gerr=gerr!("dalem"; id_auto=AutoID, prefix_auto=AutoPrefix, data=("username", "babi"))),
+        gerr = gerr!("another cause: {}", 123; tag="sdf", data=234, source=external_error.clone(), gerr=gerr!("dalem"; config=ErrAutoIDCode, data=("username", "babi"))),
         source = external_error,
-
-        pprefix = "[E002]",
-        aprefix = "[User]",
         tag = "nganu",
     );
 
     assert_eq!(gerr.sources().unwrap().len(), 3);
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "[E002][APP][User]");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "APP");
     assert!(gerr.iter_tags().eq(["tag1", "tag2", "nganu"]));
 
     let source1 = &gerr.sources().unwrap()[0];
@@ -257,7 +235,7 @@ fn test_macro_all() {
             match nested_source2 {
                 Source::GErr(inner) => {
                     assert_eq!(inner.to_string(), "AutoPrefix dalem");
-                    assert_eq!(inner.id.to_string(), "AutoID");
+                    assert_eq!(inner.id.as_ref().unwrap().to_string(), "AutoID");
                     assert_eq!(inner.code.as_ref().unwrap(), "AutoPrefix");
 
                     assert!(inner.data.is_some());

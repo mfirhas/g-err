@@ -133,9 +133,8 @@ fn test_pretty_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -145,17 +144,18 @@ fn test_pretty_report() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
     );
@@ -394,9 +394,8 @@ fn test_markdown_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -406,17 +405,18 @@ fn test_markdown_report() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
     );
@@ -453,9 +453,8 @@ fn test_trace_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -465,18 +464,18 @@ fn test_trace_report() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
     );
@@ -491,8 +490,8 @@ fn test_trace_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, _, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
+    let gerr: GErr<ErrAutoID, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -502,18 +501,18 @@ fn test_trace_report() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
     );
