@@ -563,12 +563,12 @@ where
 }
 
 #[cfg(not(feature = "serde"))]
-impl<ID, P, D> From<GErr<ID, P, D>> for GErrSource
+impl<C: Config, D> From<GErr<C, D>> for GErrSource
 where
-    ID: IdSource + 'static,
+    C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
-    fn from(gerr: GErr<ID, P, D>) -> Self {
+    fn from(gerr: GErr<C, D>) -> Self {
         GErrSource {
             id: gerr.id.map(|id| Box::new(id) as Box<dyn IdSource>),
             code: gerr.code,
@@ -583,9 +583,9 @@ where
 }
 
 #[cfg(not(feature = "serde"))]
-impl<ID, P, D> GErr<ID, P, D>
+impl<C: Config, D> GErr<C, D>
 where
-    ID: IdSource + 'static,
+    C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
     /// Converts GErr into [`GErrSource`].

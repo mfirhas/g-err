@@ -2,11 +2,11 @@
 ///
 /// Creates GErr easily with formatting support and rich data.
 ///
-/// Without metadatas, the default config is [`DefaultConfig`] and default data is [`NoData`].
+/// Without metadatas, the default config is [`DefaultConfig`](crate::DefaultConfig) and default data is [`NoData`](`crate::NoData`).
 ///
 /// Error message and its metadata are separated by `;`.
 ///
-/// # Supported metadata:
+/// # Supported metadata
 /// - `config`: infer auto-generating config type for id and code from return type, and auto-generate both.
 /// - `config=$type`: set auto-generating config type for id and code, and auto-generate both.
 /// - `id=$expr`: set id manually with id type as set by `config=$type`.

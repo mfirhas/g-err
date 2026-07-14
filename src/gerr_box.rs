@@ -17,7 +17,7 @@ where
     C::Id: IdSource + 'static,
     D: DataSource + 'static,
 {
-    fn from(gerr: Box<GErr<ID, P, D>>) -> Self {
+    fn from(gerr: Box<GErr<C, D>>) -> Self {
         (*gerr).into()
     }
 }
