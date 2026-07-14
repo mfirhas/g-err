@@ -63,3 +63,7 @@ pub struct DefaultConfig;
 impl Config for DefaultConfig {
     type Id = NoID;
 }
+
+impl Config for () {
+    type Id = NoID;
+}
