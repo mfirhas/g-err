@@ -112,9 +112,9 @@ pub enum Source {
 /// # Note
 /// Set aside size of error ID and Data:
 ///
-/// - `GErr<DefaultConfig, NoData>` is approximately 136 bytes.
+/// - `GErr<DefaultConfig, NoData>` is approximately 160 bytes.
 /// - Enabling the `backtrace` feature increases this to approximately
-///   184 bytes (+48 bytes from `Backtrace`).
+///   208 bytes (+48 bytes from `Backtrace`).
 ///
 /// Clippy's `result_large_err` lint is intentionally allowed for this crate.
 /// Users requiring a smaller error representation may box `GErr` in their
