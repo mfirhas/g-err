@@ -20,7 +20,7 @@ mod gerr_box;
 pub use gerr_box::GErrBox;
 
 mod report;
-pub use report::{MarkdownReport, PrettyReport, TraceReport};
+pub use report::{MarkdownReport, PrettyReport, Report, TraceReport};
 
 #[cfg(feature = "serde")]
 pub mod json {
