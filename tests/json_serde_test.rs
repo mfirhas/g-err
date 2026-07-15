@@ -790,3 +790,62 @@ fn test_json_serialize_data() {
 
     assert_eq!(ser, EXPECTED_DISPLAY_DATA_JSON);
 }
+
+#[cfg(feature = "serde")]
+#[test]
+fn test_json_serde_data_failed_deser() {
+    let user_id = 123;
+    let user_name = "ajo".into();
+    let req_id = "l2k3mr2l3r";
+    let input = "qwe";
+    let input_err = input.parse::<u64>().unwrap_err();
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
+        tag="tag1",
+        tags=["tag2", "tag3"],
+        data= Data {
+            user_id,
+            user_name,
+        },
+        help="send valid request",
+        source=input_err.clone(),
+        gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
+            id=40,
+            code="400",
+            tag="bad_request",
+            tag="invalid_input",
+            help="pass valid input",
+            data=("user_name".to_string(), "ajo".to_string()),
+            source = input_err,
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+        ),
+        gerr=gerr!("timeout checks";
+            config=ErrAutoID,
+            tags=["user_service", "timeout"],
+            gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
+        gerr=gerr!("connection timeout"),
+    );
+
+    struct U64;
+    impl Config for U64 {
+        type Id = u64;
+    }
+
+    #[cfg(feature = "serde")]
+    #[derive(Debug, ::serde::Serialize, ::serde::Deserialize)]
+    struct Serde2 {
+        thing: String,
+        #[serde(with = "g_err::serde::json")]
+        gerr_internal: GErr<U64, Data>,
+    }
+
+    let ser_de = Serde {
+        thing: "test".into(),
+        gerr_internal: gerr,
+    };
+    let ser = serde_json::to_string_pretty(&ser_de).unwrap();
+    let de: core::result::Result<Serde2, _> = serde_json::from_str(&ser);
+
+    assert!(de.is_err());
+}
