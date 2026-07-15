@@ -56,7 +56,7 @@ where
         T: Any,
     {
         self.iter().filter(|item| match item {
-            GErrNode::Root(gerr) => gerr.id().is_some_and(|id| (&*id as &dyn Any).is::<T>()),
+            GErrNode::Root(gerr) => gerr.id().is_some_and(|id| (id as &dyn Any).is::<T>()),
 
             GErrNode::LeafGErr(gerr) => gerr
                 .id
@@ -76,7 +76,7 @@ where
     {
         self.iter().filter(move |item| match item {
             GErrNode::Root(gerr) => gerr.id().is_some_and(|id| {
-                (&*id as &dyn Any)
+                (id as &dyn Any)
                     .downcast_ref::<T>()
                     .is_some_and(|id| id == value)
             }),

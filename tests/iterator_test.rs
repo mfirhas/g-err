@@ -60,7 +60,7 @@ fn test_iterator() {
             0 => {
                 if let GErrNode::Root(root) = e {
                     assert_eq!(root.message(), "default auto errors");
-                    assert_eq!(root.code().unwrap(), "@AutoPrefix[user]");
+                    assert_eq!(root.code().unwrap(), "CODE");
                     assert_eq!(root.iter_tags().count(), 3);
                 } else {
                     panic!("first node should be root");
@@ -91,8 +91,8 @@ fn test_iterator() {
             3 => {
                 if let GErrNode::LeafGErr(gerr_source) = e {
                     assert_eq!(gerr_source.message, "the cause");
-                    assert_eq!(gerr_source.id.as_ref().unwrap().to_string(), "NoID");
-                    assert_eq!(gerr_source.code.as_ref().unwrap(), "AutoPrefix");
+                    assert!(gerr_source.id.is_none());
+                    assert_eq!(gerr_source.code.as_ref().unwrap(), "AutoCode");
                     if let Some(data) = (&**gerr_source.data.as_ref().unwrap()
                         as &dyn core::any::Any)
                         .downcast_ref::<(&'static str, &'static str)>()

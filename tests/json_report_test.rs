@@ -53,7 +53,7 @@ fn test_json_report() {
 #[cfg(feature = "serde")]
 const EXPECTED_DISPLAY_JSON_DATA_DEBUG: &str = r#"{
   "id": "AutoID",
-  "prefix": "AutoPrefix",
+  "code": "AutoCode",
   "message": "pretty error: l2k3mr2l3r",
   "tags": [
     "tag1",
@@ -71,14 +71,14 @@ const EXPECTED_DISPLAY_JSON_DATA_DEBUG: &str = r#"{
       "caused_by": null
     },
     {
-      "message": "[400][NOT_FOUND] input is invalid: qwe",
+      "message": "400 - input is invalid: qwe",
       "caused_by": [
         {
           "message": "invalid digit found in string",
           "caused_by": null
         },
         {
-          "message": "[OUTBOUND] upstream error",
+          "message": "[OUTBOUND] - upstream error",
           "caused_by": [
             {
               "message": "got error from user service",
@@ -143,7 +143,7 @@ fn test_display_json_data() {
 #[cfg(feature = "serde")]
 const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
   "id": "AutoID",
-  "prefix": "AutoPrefix",
+  "code": "AutoCode",
   "message": "pretty error: l2k3mr2l3r",
   "tags": [
     "tag1",
@@ -156,13 +156,13 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
   },
   "location": {
     "file": "tests/json_report_test.rs",
-    "line": 302,
-    "column": 48
+    "line": 300,
+    "column": 43
   },
   "sources": [
     {
       "id": null,
-      "prefix": null,
+      "code": null,
       "message": "invalid digit found in string",
       "tags": null,
       "data": null,
@@ -172,7 +172,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
     },
     {
       "id": 40,
-      "prefix": "[400][NOT_FOUND]",
+      "code": "400",
       "message": "input is invalid: qwe",
       "tags": [
         "bad_request",
@@ -184,13 +184,13 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
       ],
       "location": {
         "file": "tests/json_report_test.rs",
-        "line": 313,
+        "line": 310,
         "column": 14
       },
       "sources": [
         {
           "id": null,
-          "prefix": null,
+          "code": null,
           "message": "invalid digit found in string",
           "tags": null,
           "data": null,
@@ -200,19 +200,19 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
         },
         {
           "id": null,
-          "prefix": "[OUTBOUND]",
+          "code": "[OUTBOUND]",
           "message": "upstream error",
           "tags": null,
           "data": null,
           "location": {
             "file": "tests/json_report_test.rs",
-            "line": 322,
+            "line": 319,
             "column": 18
           },
           "sources": [
             {
               "id": null,
-              "prefix": null,
+              "code": null,
               "message": "got error from user service",
               "tags": null,
               "data": [
@@ -221,8 +221,8 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
               ],
               "location": {
                 "file": "tests/json_report_test.rs",
-                "line": 322,
-                "column": 68
+                "line": 319,
+                "column": 66
               },
               "sources": null,
               "help": "contact user service steward"
@@ -235,7 +235,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
     },
     {
       "id": "AutoID",
-      "prefix": null,
+      "code": null,
       "message": "timeout checks",
       "tags": [
         "user_service",
@@ -244,13 +244,13 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
       "data": null,
       "location": {
         "file": "tests/json_report_test.rs",
-        "line": 324,
+        "line": 321,
         "column": 14
       },
       "sources": [
         {
           "id": null,
-          "prefix": null,
+          "code": null,
           "message": "too many open files",
           "tags": [
             "tmof"
@@ -261,7 +261,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
           ],
           "location": {
             "file": "tests/json_report_test.rs",
-            "line": 327,
+            "line": 324,
             "column": 18
           },
           "sources": null,
@@ -271,14 +271,14 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
       "help": null
     },
     {
-      "id": null,
-      "prefix": null,
+      "id": "AutoID",
+      "code": null,
       "message": "connection timeout",
       "tags": null,
       "data": null,
       "location": {
         "file": "tests/json_report_test.rs",
-        "line": 328,
+        "line": 325,
         "column": 14
       },
       "sources": null,

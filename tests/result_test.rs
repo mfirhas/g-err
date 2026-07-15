@@ -74,44 +74,52 @@ fn handler(email: &str, age: &str) -> core::result::Result<String, GErrBox<ErrAu
 
 #[cfg(not(feature = "serde"))]
 const EXPECTED_DEBUG: &str = r#"GErr {
-    id: AutoID,
-    prefix: Some(
-        "AutoPrefix",
+    id: Some(
+        AutoID,
+    ),
+    code: Some(
+        "AutoCode",
     ),
     message: "handler get email and age error",
     sources: Some(
         [
             GErr(
                 GErrSource {
-                    id: "E-001",
-                    prefix: Some(
-                        "AutoPrefix",
+                    id: Some(
+                        "E-001",
+                    ),
+                    code: Some(
+                        "AutoCode",
                     ),
                     message: "failed getting age or email",
                     sources: Some(
                         [
                             GErr(
                                 GErrSource {
-                                    id: NoID,
-                                    prefix: Some(
-                                        "AutoPrefix",
+                                    id: None,
+                                    code: Some(
+                                        "AutoCode",
                                     ),
                                     message: "failed both get age and email",
                                     sources: Some(
                                         [
                                             GErr(
                                                 GErrSource {
-                                                    id: AutoID,
-                                                    prefix: Some(
-                                                        "AutoPrefix",
+                                                    id: Some(
+                                                        AutoID,
+                                                    ),
+                                                    code: Some(
+                                                        "AutoCode",
                                                     ),
                                                     message: "failed getting age",
                                                     sources: Some(
                                                         [
                                                             GErr(
                                                                 GErrSource {
-                                                                    id: 4235,
-                                                                    prefix: Some(
+                                                                    id: Some(
+                                                                        4235,
+                                                                    ),
+                                                                    code: Some(
                                                                         "[REPO]",
                                                                     ),
                                                                     message: "failed parsing age",
@@ -162,24 +170,28 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                             ),
                                             GErr(
                                                 GErrSource {
-                                                    id: NoID,
-                                                    prefix: Some(
-                                                        "AutoPrefix",
+                                                    id: None,
+                                                    code: Some(
+                                                        "AutoCode",
                                                     ),
                                                     message: "failed getting email: dono.the_dono_gmail.com",
                                                     sources: Some(
                                                         [
                                                             Err(
                                                                 GErr {
-                                                                    id: AutoID,
-                                                                    prefix: None,
+                                                                    id: Some(
+                                                                        AutoID,
+                                                                    ),
+                                                                    code: None,
                                                                     message: "failed parsing email",
                                                                     sources: Some(
                                                                         [
                                                                             Err(
                                                                                 GErr {
-                                                                                    id: AutoID,
-                                                                                    prefix: Some(
+                                                                                    id: Some(
+                                                                                        AutoID,
+                                                                                    ),
+                                                                                    code: Some(
                                                                                         "[REPO]",
                                                                                     ),
                                                                                     message: "invalid email: dono.the_dono_gmail.com",
@@ -233,8 +245,8 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                     location: Some(
                                         ErrorLocation {
                                             file: "tests/result_test.rs",
-                                            line: 54,
-                                            column: 35,
+                                            line: 55,
+                                            column: 13,
                                         },
                                     ),
                                 },
@@ -276,48 +288,56 @@ const EXPECTED_DEBUG: &str = r#"GErr {
 
 #[cfg(feature = "serde")]
 const EXPECTED_DEBUG: &str = r#"GErr {
-    id: AutoID,
-    prefix: Some(
-        "AutoPrefix",
+    id: Some(
+        AutoID,
+    ),
+    code: Some(
+        "AutoCode",
     ),
     message: "handler get email and age error",
     sources: Some(
         [
             GErr(
                 GErrSource {
-                    id: "E-001",
+                    id: Some(
+                        "E-001",
+                    ),
                     id_json: String("E-001"),
-                    prefix: Some(
-                        "AutoPrefix",
+                    code: Some(
+                        "AutoCode",
                     ),
                     message: "failed getting age or email",
                     sources: Some(
                         [
                             GErr(
                                 GErrSource {
-                                    id: NoID,
+                                    id: None,
                                     id_json: Null,
-                                    prefix: Some(
-                                        "AutoPrefix",
+                                    code: Some(
+                                        "AutoCode",
                                     ),
                                     message: "failed both get age and email",
                                     sources: Some(
                                         [
                                             GErr(
                                                 GErrSource {
-                                                    id: AutoID,
+                                                    id: Some(
+                                                        AutoID,
+                                                    ),
                                                     id_json: String("AutoID"),
-                                                    prefix: Some(
-                                                        "AutoPrefix",
+                                                    code: Some(
+                                                        "AutoCode",
                                                     ),
                                                     message: "failed getting age",
                                                     sources: Some(
                                                         [
                                                             GErr(
                                                                 GErrSource {
-                                                                    id: 4235,
+                                                                    id: Some(
+                                                                        4235,
+                                                                    ),
                                                                     id_json: Number(4235),
-                                                                    prefix: Some(
+                                                                    code: Some(
                                                                         "[REPO]",
                                                                     ),
                                                                     message: "failed parsing age",
@@ -380,25 +400,29 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                             ),
                                             GErr(
                                                 GErrSource {
-                                                    id: NoID,
+                                                    id: None,
                                                     id_json: Null,
-                                                    prefix: Some(
-                                                        "AutoPrefix",
+                                                    code: Some(
+                                                        "AutoCode",
                                                     ),
                                                     message: "failed getting email: dono.the_dono_gmail.com",
                                                     sources: Some(
                                                         [
                                                             Err(
                                                                 GErr {
-                                                                    id: AutoID,
-                                                                    prefix: None,
+                                                                    id: Some(
+                                                                        AutoID,
+                                                                    ),
+                                                                    code: None,
                                                                     message: "failed parsing email",
                                                                     sources: Some(
                                                                         [
                                                                             Err(
                                                                                 GErr {
-                                                                                    id: AutoID,
-                                                                                    prefix: Some(
+                                                                                    id: Some(
+                                                                                        AutoID,
+                                                                                    ),
+                                                                                    code: Some(
                                                                                         "[REPO]",
                                                                                     ),
                                                                                     message: "invalid email: dono.the_dono_gmail.com",
@@ -461,8 +485,8 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                     location: Some(
                                         ErrorLocation {
                                             file: "tests/result_test.rs",
-                                            line: 54,
-                                            column: 35,
+                                            line: 55,
+                                            column: 13,
                                         },
                                     ),
                                 },
@@ -514,5 +538,6 @@ fn test_result_ext() {
     assert_eq!(ret.id().unwrap(), &AutoID);
     assert_eq!(ret.code().unwrap(), "AutoCode");
     let debug = format!("{:#?}", ret);
+    println!("==>{}", debug);
     assert_eq!(debug, EXPECTED_DEBUG);
 }

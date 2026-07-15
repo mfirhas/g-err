@@ -91,7 +91,7 @@ fn test_manual_into_gerr_view() {
     assert_eq!(gerr_source.message, "asd");
     assert_eq!(gerr_source.tags.unwrap()[0], "tag1");
     assert_eq!(gerr_source.tags.unwrap()[1], "tag2");
-    assert_eq!(gerr_source.code.unwrap(), "-user");
+    assert!(gerr_source.code.is_none());
     assert_eq!(gerr_source.help.unwrap(), "please halp!!");
     assert_eq!(gerr_source.sources.unwrap().len(), 2);
     match gerr_source.sources.unwrap()[0] {
@@ -120,7 +120,7 @@ fn test_box_into_gerr_source() {
     assert_eq!(gerr_source.id.as_ref().unwrap().to_string(), "AutoID");
     assert_eq!(gerr_source.message, "nganu");
     assert_eq!(gerr_source.tags.unwrap()[0], "tag1");
-    assert_eq!(gerr_source.code.unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr_source.code.unwrap(), "AutoCode");
     assert_eq!(gerr_source.help.unwrap(), "please halp!!");
 }
 

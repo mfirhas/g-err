@@ -8,14 +8,16 @@ use g_err::{GErr, GErrSource, gerr};
 #[test]
 fn test_gerr_debug() {
     #[cfg(not(feature = "serde"))]
-    const EXPECTED_DEBUG: &str = r#"GErr { id: "AJO-123", prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 149, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 142, column: 46 } }"#;
+    const EXPECTED_DEBUG: &str = r#"GErr { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 157, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 150, column: 46 } }"#;
     #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG: &str = r#"GErr { id: "AJO-123", prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, id_json: Number(123), prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 149, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 142, column: 46 }, backtrace: <disabled> }"#;
+    const EXPECTED_DEBUG: &str = r#"GErr { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), id_json: Number(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 157, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 150, column: 46 }, backtrace: <disabled> }"#;
     #[cfg(not(feature = "serde"))]
     const EXPECTED_DEBUG_FORMAT: &str = r#"GErr {
-    id: "AJO-123",
-    prefix: Some(
-        "AutoPrefix-user",
+    id: Some(
+        "AJO-123",
+    ),
+    code: Some(
+        "AutoCode",
     ),
     message: "asd",
     sources: Some(
@@ -27,8 +29,10 @@ fn test_gerr_debug() {
             ),
             GErr(
                 GErrSource {
-                    id: 123,
-                    prefix: Some(
+                    id: Some(
+                        123,
+                    ),
+                    code: Some(
                         "SOURCE-2",
                     ),
                     message: "source 2",
@@ -44,8 +48,8 @@ fn test_gerr_debug() {
                     location: Some(
                         ErrorLocation {
                             file: "tests/error_display_debug_test.rs",
-                            line: 149,
-                            column: 26,
+                            line: 157,
+                            column: 13,
                         },
                     ),
                 },
@@ -69,15 +73,17 @@ fn test_gerr_debug() {
     ),
     location: ErrorLocation {
         file: "tests/error_display_debug_test.rs",
-        line: 142,
+        line: 150,
         column: 46,
     },
 }"#;
     #[cfg(feature = "serde")]
     const EXPECTED_DEBUG_FORMAT: &str = r#"GErr {
-    id: "AJO-123",
-    prefix: Some(
-        "AutoPrefix-user",
+    id: Some(
+        "AJO-123",
+    ),
+    code: Some(
+        "AutoCode",
     ),
     message: "asd",
     sources: Some(
@@ -89,9 +95,11 @@ fn test_gerr_debug() {
             ),
             GErr(
                 GErrSource {
-                    id: 123,
+                    id: Some(
+                        123,
+                    ),
                     id_json: Number(123),
-                    prefix: Some(
+                    code: Some(
                         "SOURCE-2",
                     ),
                     message: "source 2",
@@ -108,8 +116,8 @@ fn test_gerr_debug() {
                     location: Some(
                         ErrorLocation {
                             file: "tests/error_display_debug_test.rs",
-                            line: 149,
-                            column: 26,
+                            line: 157,
+                            column: 13,
                         },
                     ),
                 },
@@ -133,7 +141,7 @@ fn test_gerr_debug() {
     ),
     location: ErrorLocation {
         file: "tests/error_display_debug_test.rs",
-        line: 142,
+        line: 150,
         column: 46,
     },
     backtrace: <disabled>,
@@ -161,8 +169,8 @@ fn test_gerr_debug() {
 
 #[test]
 fn test_gerr_display() {
-    const EXPECTED_DISPLAY: &str = "AutoPrefix-user asd";
-    const EXPECTED_DISPLAY_WITHOUT_PREFIX: &str = "zxc";
+    const EXPECTED_DISPLAY: &str = "[AJO-123][AutoCode] asd";
+    const EXPECTED_DISPLAY_WITHOUT_PREFIX: &str = "[AJO-123][-] zxc";
     let err = "qwe".parse::<i32>().unwrap_err();
     let gerr: GErr<ErrIDStrAutoCode, Data> = GErr::new_with_id("AJO", "asd")
         .add_tag("tag1")
@@ -203,15 +211,17 @@ fn test_gerr_display() {
 #[test]
 fn test_gerr_source_debug() {
     #[cfg(not(feature = "serde"))]
-    const EXPECTED_DEBUG: &str = r#"GErrSource { id: "AJO-123", prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 351, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 344, column: 16 }) }"#;
+    const EXPECTED_DEBUG: &str = r#"GErrSource { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 371, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 364, column: 16 }) }"#;
     #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG: &str = r#"GErrSource { id: "AJO-123", id_json: String("AJO-123"), prefix: Some("AutoPrefix-user"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: 123, id_json: Number(123), prefix: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 351, column: 26 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), data_json: Some(Object {"user_id": Number(234), "user_name": String("ajo_sidi")}), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 344, column: 16 }) }"#;
+    const EXPECTED_DEBUG: &str = r#"GErrSource { id: Some("AJO-123"), id_json: String("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), id_json: Number(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 371, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), data_json: Some(Object {"user_id": Number(234), "user_name": String("ajo_sidi")}), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 364, column: 16 }) }"#;
 
     #[cfg(not(feature = "serde"))]
     const EXPECTED_DEBUG_FORMAT: &str = r#"GErrSource {
-    id: "AJO-123",
-    prefix: Some(
-        "AutoPrefix-user",
+    id: Some(
+        "AJO-123",
+    ),
+    code: Some(
+        "AutoCode",
     ),
     message: "asd",
     sources: Some(
@@ -223,8 +233,10 @@ fn test_gerr_source_debug() {
             ),
             GErr(
                 GErrSource {
-                    id: 123,
-                    prefix: Some(
+                    id: Some(
+                        123,
+                    ),
+                    code: Some(
                         "SOURCE-2",
                     ),
                     message: "source 2",
@@ -240,8 +252,8 @@ fn test_gerr_source_debug() {
                     location: Some(
                         ErrorLocation {
                             file: "tests/error_display_debug_test.rs",
-                            line: 351,
-                            column: 26,
+                            line: 371,
+                            column: 13,
                         },
                     ),
                 },
@@ -266,17 +278,19 @@ fn test_gerr_source_debug() {
     location: Some(
         ErrorLocation {
             file: "tests/error_display_debug_test.rs",
-            line: 344,
+            line: 364,
             column: 16,
         },
     ),
 }"#;
     #[cfg(feature = "serde")]
     const EXPECTED_DEBUG_FORMAT: &str = r#"GErrSource {
-    id: "AJO-123",
+    id: Some(
+        "AJO-123",
+    ),
     id_json: String("AJO-123"),
-    prefix: Some(
-        "AutoPrefix-user",
+    code: Some(
+        "AutoCode",
     ),
     message: "asd",
     sources: Some(
@@ -288,9 +302,11 @@ fn test_gerr_source_debug() {
             ),
             GErr(
                 GErrSource {
-                    id: 123,
+                    id: Some(
+                        123,
+                    ),
                     id_json: Number(123),
-                    prefix: Some(
+                    code: Some(
                         "SOURCE-2",
                     ),
                     message: "source 2",
@@ -307,8 +323,8 @@ fn test_gerr_source_debug() {
                     location: Some(
                         ErrorLocation {
                             file: "tests/error_display_debug_test.rs",
-                            line: 351,
-                            column: 26,
+                            line: 371,
+                            column: 13,
                         },
                     ),
                 },
@@ -339,7 +355,7 @@ fn test_gerr_source_debug() {
     location: Some(
         ErrorLocation {
             file: "tests/error_display_debug_test.rs",
-            line: 344,
+            line: 364,
             column: 16,
         },
     ),
@@ -368,8 +384,8 @@ fn test_gerr_source_debug() {
 
 #[test]
 fn test_gerr_source_display() {
-    const EXPECTED_DISPLAY: &str = "AutoPrefix-user asd";
-    const EXPECTED_DISPLAY_WITHOUT_PREFIX: &str = "zxc";
+    const EXPECTED_DISPLAY: &str = "AutoCode - asd";
+    const EXPECTED_DISPLAY_WITHOUT_PREFIX: &str = "[AJO-123][-] zxc";
     let err = "qwe".parse::<i32>().unwrap_err();
     let gerr: GErrSource = GErr::<ErrIDStrAutoCode, Data>::new_with_id("AJO", "asd")
         .add_tag("tag1")

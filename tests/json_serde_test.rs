@@ -1,14 +1,14 @@
 #[path = "setup_test.rs"]
 mod setup_test;
-use setup_test::*;
-
 #[cfg(feature = "serde")]
 use g_err::*;
+#[cfg(feature = "serde")]
+use setup_test::*;
 
 #[cfg(feature = "serde")]
 const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
   "id": "AutoID",
-  "prefix": "AutoPrefix",
+  "code": "AutoCode",
   "message": "pretty error: l2k3mr2l3r",
   "tags": [
     "tag1",
@@ -21,13 +21,13 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
   },
   "location": {
     "file": "tests/json_serde_test.rs",
-    "line": 167,
-    "column": 48
+    "line": 165,
+    "column": 43
   },
   "sources": [
     {
       "id": null,
-      "prefix": null,
+      "code": null,
       "message": "invalid digit found in string",
       "tags": null,
       "data": null,
@@ -37,7 +37,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
     },
     {
       "id": 40,
-      "prefix": "[400][NOT_FOUND]",
+      "code": "400",
       "message": "input is invalid: qwe",
       "tags": [
         "bad_request",
@@ -49,13 +49,13 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
       ],
       "location": {
         "file": "tests/json_serde_test.rs",
-        "line": 178,
+        "line": 175,
         "column": 14
       },
       "sources": [
         {
           "id": null,
-          "prefix": null,
+          "code": null,
           "message": "invalid digit found in string",
           "tags": null,
           "data": null,
@@ -65,19 +65,19 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
         },
         {
           "id": null,
-          "prefix": "[OUTBOUND]",
+          "code": "[OUTBOUND]",
           "message": "upstream error",
           "tags": null,
           "data": null,
           "location": {
             "file": "tests/json_serde_test.rs",
-            "line": 187,
+            "line": 184,
             "column": 18
           },
           "sources": [
             {
               "id": null,
-              "prefix": null,
+              "code": null,
               "message": "got error from user service",
               "tags": null,
               "data": [
@@ -86,8 +86,8 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
               ],
               "location": {
                 "file": "tests/json_serde_test.rs",
-                "line": 187,
-                "column": 68
+                "line": 184,
+                "column": 66
               },
               "sources": null,
               "help": "contact user service steward"
@@ -100,7 +100,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
     },
     {
       "id": "AutoID",
-      "prefix": null,
+      "code": null,
       "message": "timeout checks",
       "tags": [
         "user_service",
@@ -109,13 +109,13 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
       "data": null,
       "location": {
         "file": "tests/json_serde_test.rs",
-        "line": 189,
+        "line": 186,
         "column": 14
       },
       "sources": [
         {
           "id": null,
-          "prefix": null,
+          "code": null,
           "message": "too many open files",
           "tags": [
             "tmof"
@@ -126,7 +126,7 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
           ],
           "location": {
             "file": "tests/json_serde_test.rs",
-            "line": 192,
+            "line": 189,
             "column": 18
           },
           "sources": null,
@@ -136,14 +136,14 @@ const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
       "help": null
     },
     {
-      "id": null,
-      "prefix": null,
+      "id": "AutoID",
+      "code": null,
       "message": "connection timeout",
       "tags": null,
       "data": null,
       "location": {
         "file": "tests/json_serde_test.rs",
-        "line": 193,
+        "line": 190,
         "column": 14
       },
       "sources": null,
@@ -190,7 +190,7 @@ fn test_json_serde() {
         gerr=gerr!("connection timeout"; config=ErrAutoID, data=NoData),
     );
 
-    const EXPECTED_STR_SER: &str = "\"AutoPrefix pretty error: l2k3mr2l3r\"";
+    const EXPECTED_STR_SER: &str = "\"[AutoID][AutoCode] pretty error: l2k3mr2l3r\"";
     let json_data_ser = serde_json::to_string(&gerr).unwrap();
     assert_eq!(json_data_ser, EXPECTED_STR_SER);
 
@@ -430,7 +430,7 @@ fn test_json_serde_sources_id_types() {
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[4]
         && let Some(id) =
-            (&*gerr.id.as_ref().unwrap() as &dyn core::any::Any).downcast_ref::<bool>()
+            (&**gerr.id.as_ref().unwrap() as &dyn core::any::Any).downcast_ref::<bool>()
     {
         assert_eq!(id, &true);
     } else {
@@ -502,7 +502,7 @@ fn test_json_serde_sources_id_types() {
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[6]
         && let Some(id) =
-            (&*gerr.id.as_ref().unwrap() as &dyn core::any::Any).downcast_ref::<String>()
+            (&**gerr.id.as_ref().unwrap() as &dyn core::any::Any).downcast_ref::<String>()
     {
         assert_eq!(id, r#"{"user_id":123,"user_name":"ajo"}"#);
 
@@ -697,7 +697,7 @@ fn test_json_serde_data() {
 const EXPECTED_DISPLAY_DATA_JSON: &str = r#"{
   "gerr_public": {
     "id": "AutoID",
-    "prefix": "AutoPrefix",
+    "code": "AutoCode",
     "message": "pretty error: l2k3mr2l3r",
     "tags": [
       "tag1",
@@ -715,14 +715,14 @@ const EXPECTED_DISPLAY_DATA_JSON: &str = r#"{
         "caused_by": null
       },
       {
-        "message": "[400][NOT_FOUND] input is invalid: qwe",
+        "message": "400 - input is invalid: qwe",
         "caused_by": [
           {
             "message": "invalid digit found in string",
             "caused_by": null
           },
           {
-            "message": "[OUTBOUND] upstream error",
+            "message": "[OUTBOUND] - upstream error",
             "caused_by": [
               {
                 "message": "got error from user service",

@@ -24,14 +24,20 @@
 ///
 /// # Example
 /// ```rust
-/// use g_err::gerr;
+/// use g_err::{gerr, Config};
+///
+/// struct U32;
+/// impl Config for U32 {
+///     type Id = u32;
+/// }
 ///
 /// let inner = gerr!("parsing integer");
 /// let external_error = "anu".parse::<i32>().unwrap_err();
 /// let err = gerr!(
 ///     "failed {}",
 ///     500;
-///     id = 999u32, // set id
+///     config=U32,
+///     id = 999, // set id
 ///     code = "HTTP", // set code
 ///     tag = "server", // set a tag
 ///     tags = ["api", "v1"], // set tags

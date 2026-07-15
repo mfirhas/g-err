@@ -59,7 +59,7 @@ fn test_iterator_id() {
                 if let GErrNode::Root(root) = v {
                     assert_eq!(root.message(), "id iterator error: 1");
                     assert_eq!(root.id().unwrap(), &AutoID);
-                    assert_eq!(root.code().unwrap(), "AutoPrefix");
+                    assert_eq!(root.code().unwrap(), "AutoCode");
                     assert_eq!(root.sources().as_ref().unwrap().len(), 3);
                 } else {
                     panic!("first node shouvebeen Root");
@@ -101,7 +101,7 @@ fn test_iter_prefix() {
     let iter_by_prefix = gerr.iter_by_code("anu").count();
     assert_eq!(iter_by_prefix, 1);
 
-    let iter_by_prefix = gerr.iter_by_code("AutoPrefix").count();
+    let iter_by_prefix = gerr.iter_by_code("AutoCode").count();
     assert_eq!(iter_by_prefix, 1);
 }
 

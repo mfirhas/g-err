@@ -15,7 +15,7 @@ fn test_no_prefix() {
 fn test_auto_prefix() {
     let gerr: GErr<ErrAutoCode> = GErr::new("test auto prefix");
 
-    assert_eq!(gerr.code(), Some("[APP]"));
+    assert_eq!(gerr.code(), Some("AutoCode"));
 }
 
 #[test]

@@ -138,7 +138,7 @@ fn test_macro_auto_all() {
     dbg!(&gerr);
 
     assert_eq!(gerr.id().unwrap(), &AutoID);
-    assert_eq!(gerr.code().unwrap(), "AutoPrefix");
+    assert_eq!(gerr.code().unwrap(), "AutoCode");
 }
 
 #[test]
@@ -146,7 +146,7 @@ fn test_macro_id_auto_return() {
     let gerr: GErr<ErrAutoID> = gerr!("test: {}", 5; config, code="asd");
 
     assert_eq!(gerr.id().unwrap(), &AutoID);
-    assert_eq!(gerr.code().unwrap(), "[asd]");
+    assert_eq!(gerr.code().unwrap(), "asd");
 }
 
 #[test]
@@ -154,13 +154,13 @@ fn test_macro_prefix_auto_return() {
     let gerr: GErr<ErrAutoCode> = gerr!("test: {}", 5; config=ErrAutoCode);
 
     dbg!(&gerr);
-    assert_eq!(gerr.code().unwrap(), "AutoPrefix");
+    assert_eq!(gerr.code().unwrap(), "AutoCode");
 
     let gerr: GErr<ErrAutoIDCode> = gerr!("test: {}", 5; config, code = "user");
 
     dbg!(&gerr);
     assert_eq!(gerr.id().unwrap(), &AutoID);
-    assert_eq!(gerr.code().unwrap(), "AutoPrefix-user");
+    assert_eq!(gerr.code().unwrap(), "user");
 }
 
 #[test]
@@ -182,7 +182,7 @@ fn test_macro_data_type_return() {
 
     dbg!(&gerr);
     assert_eq!(gerr.id().unwrap(), &AutoID);
-    assert_eq!(gerr.code().unwrap(), "AutoPrefix");
+    assert_eq!(gerr.code().unwrap(), "AutoCode");
     assert_eq!(gerr.data().unwrap(), &1230);
 }
 
@@ -212,7 +212,7 @@ fn test_macro_all() {
     let source3 = &gerr.sources().unwrap()[2];
 
     match source1 {
-        Source::Err(err) => assert_eq!(err.to_string(), "error source"),
+        Source::Err(err) => assert_eq!(err.to_string(), "[-][-] error source"),
         Source::GErr(_) => panic!("shouvebeen Source::Err"),
     }
 
@@ -234,9 +234,9 @@ fn test_macro_all() {
 
             match nested_source2 {
                 Source::GErr(inner) => {
-                    assert_eq!(inner.to_string(), "AutoPrefix dalem");
+                    assert_eq!(inner.to_string(), "AutoCode - dalem");
                     assert_eq!(inner.id.as_ref().unwrap().to_string(), "AutoID");
-                    assert_eq!(inner.code.as_ref().unwrap(), "AutoPrefix");
+                    assert_eq!(inner.code.as_ref().unwrap(), "AutoCode");
 
                     assert!(inner.data.is_some());
 
