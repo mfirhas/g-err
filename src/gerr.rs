@@ -529,7 +529,7 @@ where
 
         debug
             .field("id", &self.id)
-            .field("code", &self.code.as_deref().or(C::CODE))
+            .field("code", &self.code())
             .field("message", &self.message)
             .field("sources", &self.sources)
             .field("tags", &self.tags)

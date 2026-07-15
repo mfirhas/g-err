@@ -6,14 +6,13 @@ use crate::{
     gerr::{ErrorLocation, GErr, Source},
     gerr_source::{DataSource, GErrSource},
     gerr_view::GErrView,
-    types::NoID,
 };
 
 /// JSON data for public display.
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
 pub struct DisplayJsonData {
     /// Error ID: can be in form of Number or String.
-    pub id: serde_json::Value,
+    pub id: Option<serde_json::Value>,
     /// Error code.
     pub code: Option<String>,
     /// Error message.
@@ -41,7 +40,7 @@ pub struct DisplayCausesJsonData {
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
 pub struct JsonData {
     /// Error ID: can be in form of Number or String
-    pub id: serde_json::Value,
+    pub id: Option<serde_json::Value>,
     /// Error code
     pub code: Option<String>,
     /// Error message
@@ -100,8 +99,9 @@ where
 {
     fn from(err: &GErrView<'a, C, D>) -> Self {
         JsonData {
-            id: serde_json::to_value(err.id)
-                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
+            id: err
+                .id
+                .map(|id| ::serde_json::to_value(id).unwrap_or_default()),
             code: err.code.map(|s| s.into()),
             message: err.message.into(),
             tags: err.tags.map(|t| t.iter().map(|s| s.to_string()).collect()),
@@ -134,8 +134,9 @@ where
 {
     fn from(err: &GErrView<'a, C, D>) -> Self {
         DisplayJsonData {
-            id: serde_json::to_value(err.id)
-                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
+            id: err
+                .id
+                .map(|id| ::serde_json::to_value(id).unwrap_or_default()),
             code: err.code.map(|s| s.into()),
             message: err.message.into(),
             tags: err.tags.map(|t| t.iter().map(|s| s.to_string()).collect()),
@@ -150,6 +151,10 @@ where
     }
 }
 
+/// Convert `JsonData` into `GErr<C, D>`.
+///
+/// If id and code are empty from JsonData,
+/// C: Config will auto-generate them.
 impl<C: Config, D> TryFrom<JsonData> for GErr<C, D>
 where
     C::Id: for<'a> ::serde::Deserialize<'a>,
@@ -170,15 +175,19 @@ where
             backtrace: _,
         } = value;
 
-        let de_id: C::Id = serde_json::from_value(id).map_err(|err| {
-            gerr!(
-                "failed converting id to ID = {}",
-                core::any::type_name::<C::Id>()
-            )
-            .add_source(err)
-        })?;
+        let de_id: Option<C::Id> = if let Some(the_id) = id {
+            serde_json::from_value(the_id).map_err(|err| {
+                gerr!(
+                    "failed converting id to ID = {}",
+                    core::any::type_name::<C::Id>()
+                )
+                .add_source(err)
+            })?
+        } else {
+            C::id()
+        };
 
-        let mut err = GErr::<C, D>::new_with_id_untracked(Some(de_id), message, Location::caller());
+        let mut err = GErr::<C, D>::new_with_id_untracked(de_id, message, Location::caller());
 
         if let Some(data) = data {
             err = err.set_data(serde_json::from_value(data).map_err(|err| {
@@ -192,6 +201,8 @@ where
 
         if let Some(code) = code {
             err = err.set_code(code);
+        } else if let Some(const_code) = C::CODE {
+            err = err.set_code(const_code);
         }
 
         if let Some(tags) = tags {

@@ -1,7 +1,7 @@
 #[path = "setup_test.rs"]
 mod setup_test;
 #[cfg(feature = "serde")]
-use g_err::*;
+use g_err::{json::JsonData, *};
 #[cfg(feature = "serde")]
 use setup_test::*;
 
@@ -297,13 +297,14 @@ fn test_json_serde_failed_deser() {
     );
 
     // serialize json data into string
+    let json_gerr = gerr.json_data();
+    assert!(json_gerr.id.is_none());
     let json_data_ser = serde_json::to_string_pretty(&gerr.json_data()).unwrap();
-
     // deserialize json data into GErr with mismatch id and data types
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
     let err: core::result::Result<GErr<ErrAutoIDCode, NoData>, serde_json::Error> =
         g_err::serde::json::deserialize(&mut deserializer);
-    assert!(err.is_err());
+    assert_eq!(err.unwrap().id().unwrap(), &AutoID); // it's null from json, but got auto-generate from type.
 
     let gerr = gerr.with_data(("test", "data"));
     let json_data_ser = serde_json::to_string_pretty(&gerr.json_data()).unwrap();
@@ -848,4 +849,258 @@ fn test_json_serde_data_failed_deser() {
     let de: core::result::Result<Serde2, _> = serde_json::from_str(&ser);
 
     assert!(de.is_err());
+}
+
+#[cfg(feature = "serde")]
+const WRONG_JSON_DATA: &str = r#"{
+  "id": 123,
+  "code": "AutoCode",
+  "message": "pretty error: l2k3mr2l3r",
+  "tags": [
+    "tag1",
+    "tag2",
+    "tag3"
+  ],
+  "data": {
+    "user_id": 123,
+    "user_name": "ajo"
+  },
+  "location": {
+    "file": "tests/json_serde_test.rs",
+    "line": 861,
+    "column": 43
+  },
+  "sources": [
+    {
+      "id": null,
+      "code": null,
+      "message": "invalid digit found in string",
+      "tags": null,
+      "data": null,
+      "location": null,
+      "sources": null,
+      "help": null
+    },
+    {
+      "id": 40,
+      "code": "400",
+      "message": "input is invalid: qwe",
+      "tags": [
+        "bad_request",
+        "invalid_input"
+      ],
+      "data": [
+        "user_name",
+        "ajo"
+      ],
+      "location": {
+        "file": "tests/json_serde_test.rs",
+        "line": 871,
+        "column": 14
+      },
+      "sources": [
+        {
+          "id": null,
+          "code": null,
+          "message": "invalid digit found in string",
+          "tags": null,
+          "data": null,
+          "location": null,
+          "sources": null,
+          "help": null
+        },
+        {
+          "id": null,
+          "code": "[OUTBOUND]",
+          "message": "upstream error",
+          "tags": null,
+          "data": null,
+          "location": {
+            "file": "tests/json_serde_test.rs",
+            "line": 880,
+            "column": 18
+          },
+          "sources": [
+            {
+              "id": null,
+              "code": null,
+              "message": "got error from user service",
+              "tags": null,
+              "data": [
+                "caused by:",
+                "timout"
+              ],
+              "location": {
+                "file": "tests/json_serde_test.rs",
+                "line": 880,
+                "column": 66
+              },
+              "sources": null,
+              "help": "contact user service steward"
+            }
+          ],
+          "help": null
+        }
+      ],
+      "help": "pass valid input"
+    },
+    {
+      "id": "AutoID",
+      "code": null,
+      "message": "timeout checks",
+      "tags": [
+        "user_service",
+        "timeout"
+      ],
+      "data": null,
+      "location": {
+        "file": "tests/json_serde_test.rs",
+        "line": 882,
+        "column": 14
+      },
+      "sources": [
+        {
+          "id": null,
+          "code": null,
+          "message": "too many open files",
+          "tags": [
+            "tmof"
+          ],
+          "data": [
+            "MAX",
+            50000
+          ],
+          "location": {
+            "file": "tests/json_serde_test.rs",
+            "line": 885,
+            "column": 18
+          },
+          "sources": null,
+          "help": null
+        }
+      ],
+      "help": null
+    },
+    {
+      "id": null,
+      "code": null,
+      "message": "connection timeout",
+      "tags": null,
+      "data": null,
+      "location": {
+        "file": "tests/json_serde_test.rs",
+        "line": 886,
+        "column": 14
+      },
+      "sources": null,
+      "help": null
+    }
+  ],
+  "help": 123,
+  "backtrace": "<disabled>"
+}"#;
+
+#[cfg(feature = "serde")]
+#[test]
+fn test_json_serde_data_failed_deser_json_data() {
+    let user_id = 123;
+    let user_name = "ajo".into();
+    let req_id = "l2k3mr2l3r";
+    let input = "qwe";
+    let input_err = input.parse::<u64>().unwrap_err();
+    let gerr: GErr<(), Data> = gerr!("pretty error: {req_id}";
+        config,
+        // id=NoID,
+        tag="tag1",
+        tags=["tag2", "tag3"],
+        data= Data {
+            user_id,
+            user_name,
+        },
+        help="send valid request",
+        source=input_err.clone(),
+        gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
+            id=40,
+            code="400",
+            tag="bad_request",
+            tag="invalid_input",
+            help="pass valid input",
+            data=("user_name".to_string(), "ajo".to_string()),
+            source = input_err,
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+        ),
+        gerr=gerr!("timeout checks";
+            config=ErrAutoID,
+            tags=["user_service", "timeout"],
+            gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
+        gerr=gerr!("connection timeout"),
+    );
+    dbg!(&gerr);
+    let json = ::serde_json::to_string_pretty(&gerr.json_data()).unwrap();
+    let mut deserializer = serde_json::Deserializer::from_str(&json);
+    let err: GErr<(), Data> = g_err::serde::json::deserialize(&mut deserializer).unwrap();
+    assert!(err.id().is_none());
+
+    let json_data: core::result::Result<JsonData, _> = ::serde_json::from_str(&WRONG_JSON_DATA);
+    assert!(json_data.is_err());
+
+    let json = r#"-"#;
+    let mut de = ::serde_json::Deserializer::from_str(json);
+    let json_data: core::result::Result<GErr<ErrAutoID>, _> =
+        g_err::serde::json::deserialize::<_, ErrAutoID, NoData>(&mut de);
+    assert!(json_data.is_err());
+}
+
+#[cfg(feature = "serde")]
+#[test]
+fn test_json_serde_null_code_to_const_code() {
+    let req_id = "l2k3mr2l3r";
+    let input = "qwe";
+    let input_err = input.parse::<u64>().unwrap_err();
+    let gerr: GErr<(), NoData> = gerr!("pretty error: {req_id}";
+        config,
+        tag="tag1",
+        tags=["tag2", "tag3"],
+        data_type,
+        help="send valid request",
+        source=input_err.clone(),
+        gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
+            id=40,
+            code="400",
+            tag="bad_request",
+            tag="invalid_input",
+            help="pass valid input",
+            data=("user_name".to_string(), "ajo".to_string()),
+            source = input_err,
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+        ),
+        gerr=gerr!("timeout checks";
+            config=ErrAutoID,
+            tags=["user_service", "timeout"],
+            gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
+        gerr=gerr!("connection timeout"),
+    );
+
+    // serialize json data into string
+    let json_gerr = gerr.json_data();
+    assert!(json_gerr.id.is_none());
+    assert!(json_gerr.code.is_none());
+    let json_data_ser = serde_json::to_string_pretty(&gerr.json_data()).unwrap();
+    // deserialize json data into GErr with mismatch id and data types
+    let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
+    let err: core::result::Result<GErr<ErrAutoIDCode, NoData>, serde_json::Error> =
+        g_err::serde::json::deserialize(&mut deserializer);
+    assert_eq!(err.as_ref().unwrap().id().unwrap(), &AutoID); // it's null from json, but got auto-generate from type.
+    assert_eq!(err.as_ref().unwrap().code().unwrap(), "AutoCode"); // it's null from json, but got auto-generate from type.
+
+    let gerr = gerr.with_data(("test", "data"));
+    let json_data_ser = serde_json::to_string_pretty(&gerr.json_data()).unwrap();
+
+    // deserialize json data into GErr with mismatch id and data types
+    let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
+    let err: core::result::Result<GErr<ErrAutoCode, NoData>, serde_json::Error> =
+        g_err::serde::json::deserialize(&mut deserializer);
+    assert!(err.is_err());
 }
