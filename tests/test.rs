@@ -41,3 +41,6 @@ mod tags_test;
 
 #[path = "result_test.rs"]
 mod result_test;
+
+#[path = "size_test.rs"]
+mod size_test;
