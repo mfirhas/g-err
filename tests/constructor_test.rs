@@ -1,4 +1,4 @@
-use g_err::GErr;
+use g_err::{GErr, MarkdownReport, NoID, PrettyReport, TraceReport};
 
 #[path = "setup_test.rs"]
 mod setup_test;
@@ -16,6 +16,26 @@ fn test_new_auto_default() {
 
 #[test]
 fn test_new_manual_id() {
+    let gerr: GErr = GErr::new_with_id(NoID, "no id").set_code("E123");
+    assert_eq!(format!("{}", gerr.id().unwrap()), "NoID");
+    assert_eq!(format!("{}", gerr), "[NoID][E123] no id");
+
+    let gerr: GErr = GErr::new("no id")
+        .set_code("E123")
+        .add_source_gerr(GErr::<()>::new("gerr source"))
+        .add_source_gerr(
+            GErr::<()>::new("gerr source")
+                .set_id(NoID)
+                .add_source_gerr(GErr::<()>::new("gerr source").set_id(NoID)),
+        );
+    assert_eq!(format!("{}", gerr), "[-][E123] no id");
+    let _ = gerr.report_as::<MarkdownReport>();
+    let _ = gerr.report_as::<PrettyReport>();
+    let gerr = GErr::<()>::new("asd");
+    let _ = gerr.report_as::<TraceReport>();
+    let gerr = GErr::<()>::new("asd").set_code("E34");
+    let _ = gerr.report_as::<TraceReport>();
+
     let gerr: GErr<ErrIDi32> = GErr::new_with_id(123, "manual id");
 
     assert_eq!(gerr.message(), "manual id");

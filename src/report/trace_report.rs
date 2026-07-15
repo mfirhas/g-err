@@ -29,16 +29,16 @@ impl TraceReport {
     {
         match (err.id, err.code) {
             (Some(id), Some(code)) => {
-                let _ = writeln!(out, "[{id}] {code} {}", err.message);
+                let _ = writeln!(out, "[{id}][{code}] {}", err.message);
             }
             (Some(id), None) => {
-                let _ = writeln!(out, "[{id}] {}", err.message);
+                let _ = writeln!(out, "[{id}][-] {}", err.message);
             }
             (None, Some(code)) => {
-                let _ = writeln!(out, "[-] {code} {}", err.message);
+                let _ = writeln!(out, "[-][{code}] {}", err.message);
             }
             (None, None) => {
-                let _ = writeln!(out, "[-] {}", err.message);
+                let _ = writeln!(out, "[-][-] {}", err.message);
             }
         }
     }
@@ -72,16 +72,16 @@ impl TraceReport {
                 Source::GErr(ge) => {
                     let msg = match (ge.id.as_ref(), ge.code.as_ref()) {
                         (Some(id), Some(code)) => {
-                            format!("[{id}] {code} {}", ge.message)
+                            format!("[{id}][{code}] {}", ge.message)
                         }
                         (Some(id), None) => {
-                            format!("[{id}] {}", ge.message)
+                            format!("[{id}][-] {}", ge.message)
                         }
                         (None, Some(code)) => {
-                            format!("[-] {code} {}", ge.message)
+                            format!("[-][{code}] {}", ge.message)
                         }
                         (None, None) => {
-                            format!("[-] {}", ge.message)
+                            format!("[-][-] {}", ge.message)
                         }
                     };
 

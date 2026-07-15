@@ -426,24 +426,24 @@ fn test_markdown_report() {
     assert_eq!(markdown_report, EXPECTED_MARKDOWN_REPORT);
 }
 
-const EXPECTED_TRACE_REPORT: &str = r#"[AutoID] AutoCode pretty error: l2k3mr2l3r
+const EXPECTED_TRACE_REPORT: &str = r#"[AutoID][AutoCode] pretty error: l2k3mr2l3r
 ├─ invalid digit found in string
-├─ [40] 400 input is invalid: qwe
+├─ [40][400] input is invalid: qwe
 │  ├─ invalid digit found in string
-│  └─ [-] [OUTBOUND] upstream error
-│     └─ [-] got error from user service
-└─ [AutoID] timeout checks
-   └─ [-] too many open files
+│  └─ [-][[OUTBOUND]] upstream error
+│     └─ [-][-] got error from user service
+└─ [AutoID][-] timeout checks
+   └─ [-][-] too many open files
 "#;
 
-const EXPECTED_TRACE_REPORT_NO_PREFIX: &str = r#"[AutoID] pretty error: l2k3mr2l3r
+const EXPECTED_TRACE_REPORT_NO_PREFIX: &str = r#"[AutoID][-] pretty error: l2k3mr2l3r
 ├─ invalid digit found in string
-├─ [40] 400 input is invalid: qwe
+├─ [40][400] input is invalid: qwe
 │  ├─ invalid digit found in string
-│  └─ [-] [OUTBOUND] upstream error
-│     └─ [-] got error from user service
-└─ [AutoID] timeout checks
-   └─ [-] too many open files
+│  └─ [-][[OUTBOUND]] upstream error
+│     └─ [-][-] got error from user service
+└─ [AutoID][-] timeout checks
+   └─ [-][-] too many open files
 "#;
 
 #[test]
