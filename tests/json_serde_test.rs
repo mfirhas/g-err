@@ -1104,3 +1104,9 @@ fn test_json_serde_null_code_to_const_code() {
         g_err::serde::json::deserialize(&mut deserializer);
     assert!(err.is_err());
 }
+
+#[test]
+fn noid_deserialize_number() {
+    let err = serde_json::from_str::<NoID>("123");
+    assert!(err.is_err());
+}
