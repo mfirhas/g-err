@@ -27,10 +27,7 @@ pub use json_data::{DisplayJsonData, JsonData, LocationJsonData, SourceJsonData}
 #[cfg(feature = "serde")]
 pub use json_report::JsonReport;
 
-use crate::{
-    gerr::{GErr, Prefix},
-    gerr_view::GErrView,
-};
+use crate::{Config, gerr::GErr, gerr_view::GErrView};
 
 /// Reporting trait.
 ///
@@ -38,33 +35,32 @@ use crate::{
 pub trait Report {
     /// Reports error from error borrowed form [`crate::GErrView`] into String.
     #[cfg(not(feature = "serde"))]
-    fn report<E, ID, D>(err: &E) -> String
+    fn report<E, C: Config, D>(err: &E) -> String
     where
-        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: Display,
+        for<'a> &'a E: Into<GErrView<'a, C, D>>,
+        C::Id: Display,
         D: Debug;
 
     /// Reports error from error borrowed form [`crate::GErrView`] into String.
     ///
     /// Supports JSON.
     #[cfg(feature = "serde")]
-    fn report<E, ID, D>(err: &E) -> String
+    fn report<E, C: Config, D>(err: &E) -> String
     where
-        for<'a> &'a E: Into<GErrView<'a, ID, D>>,
-        ID: Display + serde::Serialize,
+        for<'a> &'a E: Into<GErrView<'a, C, D>>,
+        C::Id: Display + serde::Serialize,
         D: Debug + serde::Serialize;
 }
 
 #[cfg(not(feature = "serde"))]
-impl<ID, P, D> GErr<ID, P, D>
+impl<C: Config, D> GErr<C, D>
 where
-    ID: Display,
-    P: Prefix,
+    C::Id: Display,
     D: Debug,
 {
     /// Reports error in pretty format.
     pub fn report(&self) -> String {
-        PrettyReport::report::<_, ID, D>(self)
+        PrettyReport::report::<_, C, D>(self)
     }
 
     /// Reports error as specified format.
@@ -72,21 +68,20 @@ where
     where
         R: Report,
     {
-        R::report::<_, ID, D>(self)
+        R::report::<_, C, D>(self)
     }
 }
 
 #[cfg(feature = "serde")]
-impl<ID, P, D> GErr<ID, P, D>
+impl<C: Config, D> GErr<C, D>
 where
-    ID: Display + serde::Serialize,
-    P: Prefix,
+    C::Id: Display + serde::Serialize,
     D: Debug + serde::Serialize,
 {
     /// Reports error in pretty format.
     #[inline]
     pub fn report(&self) -> String {
-        PrettyReport::report::<_, ID, D>(self)
+        PrettyReport::report::<_, C, D>(self)
     }
 
     /// Reports error as specified format.
@@ -95,15 +90,14 @@ where
     where
         R: Report,
     {
-        R::report::<_, ID, D>(self)
+        R::report::<_, C, D>(self)
     }
 }
 
 #[cfg(feature = "serde")]
-impl<ID, P, D> GErr<ID, P, D>
+impl<C: Config, D> GErr<C, D>
 where
-    ID: serde::Serialize,
-    P: Prefix,
+    C::Id: serde::Serialize,
     D: serde::Serialize,
 {
     /// JSON data of GErr.

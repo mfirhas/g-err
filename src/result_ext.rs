@@ -1,8 +1,8 @@
 extern crate alloc;
 
 use crate::GErrSource;
-use crate::gerr::{Id, Prefix};
 use crate::{
+    Config,
     gerr::{GErr, Result},
     sealed,
 };
@@ -21,26 +21,19 @@ impl<T, E> sealed::Sealed for core::result::Result<T, E> {}
 pub trait ResultExt<T>: sealed::Sealed {
     /// Wrap `E` inside GErr as source with manually-set id.
     #[track_caller]
-    fn context<ID, P, D>(
+    fn context<C: Config, D>(
         self,
-        id: ID,
+        id: C::Id,
         message: impl Into<Cow<'static, str>>,
-    ) -> Result<T, ID, P, D>
-    where
-        P: Prefix;
+    ) -> Result<T, C, D>;
 
-    /// Wrap `E` inside GErr as source with auto-generated id.
+    /// Wrap `E` inside GErr as source with auto-generated id and code.
     #[track_caller]
-    fn context_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
-    where
-        ID: Id,
-        P: Prefix;
+    fn context_auto<C: Config, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, C, D>;
 
     /// Wrap `E` inside GErr
     #[track_caller]
-    fn wrap_err<ID, P, D>(self, gerr: GErr<ID, P, D>) -> Result<T, ID, P, D>
-    where
-        P: Prefix;
+    fn wrap_err<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D>;
 }
 
 impl<T, E> ResultExt<T> for core::result::Result<T, E>
@@ -48,33 +41,28 @@ where
     E: Error + Send + Sync + 'static,
 {
     #[track_caller]
-    fn context<ID, P, D>(self, id: ID, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
-    where
-        P: Prefix,
-    {
+    fn context<C: Config, D>(
+        self,
+        id: C::Id,
+        message: impl Into<Cow<'static, str>>,
+    ) -> Result<T, C, D> {
         let location = Location::caller();
         self.map_err(|source| {
-            GErr::<ID, P, D>::with_id_untracked(id, message.into(), location).add_source(source)
+            GErr::<C, D>::new_with_id_untracked(Some(id), message.into(), location)
+                .add_source(source)
         })
     }
 
     #[track_caller]
-    fn context_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
-    where
-        ID: Id,
-        P: Prefix,
-    {
+    fn context_auto<C: Config, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, C, D> {
         let location = Location::caller();
         self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(message.into(), location).add_source(source)
+            GErr::<C, D>::new_untracked(message.into(), location).add_source(source)
         })
     }
 
     #[track_caller]
-    fn wrap_err<ID, P, D>(self, gerr: GErr<ID, P, D>) -> Result<T, ID, P, D>
-    where
-        P: Prefix,
-    {
+    fn wrap_err<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D> {
         self.map_err(|err| gerr.add_source(err))
     }
 }
@@ -85,22 +73,19 @@ where
 pub trait GResultExt<T, E>: sealed::Sealed {
     /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`, and id is manually-set.
     #[track_caller]
-    fn gerr<ID, P, D>(self, id: ID, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
-    where
-        P: Prefix;
+    fn gerr<C: Config, D>(
+        self,
+        id: C::Id,
+        message: impl Into<Cow<'static, str>>,
+    ) -> Result<T, C, D>;
 
     /// Wrap `E` as GErr's source, where E is `Into<GErrSource>`, and id is auto-generated.
     #[track_caller]
-    fn gerr_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
-    where
-        ID: Id,
-        P: Prefix;
+    fn gerr_auto<C: Config, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, C, D>;
 
     /// Wrap `E` inside GErr
     #[track_caller]
-    fn wrap_gerr<ID, P, D>(self, gerr: GErr<ID, P, D>) -> Result<T, ID, P, D>
-    where
-        P: Prefix;
+    fn wrap_gerr<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D>;
 
     /// Box `E`
     fn boxed(self) -> core::result::Result<T, Box<E>>;
@@ -111,35 +96,29 @@ where
     E: Into<GErrSource> + Error + Send + Sync + 'static,
 {
     #[track_caller]
-    fn gerr<ID, P, D>(self, id: ID, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
-    where
-        P: Prefix,
-    {
+    fn gerr<C: Config, D>(
+        self,
+        id: C::Id,
+        message: impl Into<Cow<'static, str>>,
+    ) -> Result<T, C, D> {
         let location = Location::caller();
         self.map_err(|source| {
-            GErr::<ID, P, D>::with_id_untracked(id, message.into(), location)
+            GErr::<C, D>::new_with_id_untracked(Some(id), message.into(), location)
                 .add_source_gerr(source)
         })
     }
 
     #[track_caller]
-    fn gerr_auto<ID, P, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, ID, P, D>
-    where
-        ID: Id,
-        P: Prefix,
-    {
+    fn gerr_auto<C: Config, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, C, D> {
         let location = Location::caller();
         self.map_err(|source| {
-            GErr::<ID, P, D>::new_untracked(message.into(), location).add_source_gerr(source)
+            GErr::<C, D>::new_untracked(message.into(), location).add_source_gerr(source)
         })
     }
 
     /// Wrap `E` inside GErr
     #[track_caller]
-    fn wrap_gerr<ID, P, D>(self, gerr: GErr<ID, P, D>) -> Result<T, ID, P, D>
-    where
-        P: Prefix,
-    {
+    fn wrap_gerr<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D> {
         self.map_err(|err| gerr.add_source_gerr(err))
     }
 

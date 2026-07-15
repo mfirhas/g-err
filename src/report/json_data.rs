@@ -2,20 +2,19 @@ use alloc::borrow::Cow;
 use core::panic::Location;
 
 use crate::{
-    GErrDefault, gerr,
-    gerr::{ErrorLocation, GErr, Prefix, Source},
+    Config, GErrDefault, IdSource, gerr,
+    gerr::{ErrorLocation, GErr, Source},
     gerr_source::{DataSource, GErrSource},
     gerr_view::GErrView,
-    types::NoID,
 };
 
 /// JSON data for public display.
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
 pub struct DisplayJsonData {
     /// Error ID: can be in form of Number or String.
-    pub id: serde_json::Value,
-    /// Error prefix.
-    pub prefix: Option<String>,
+    pub id: Option<serde_json::Value>,
+    /// Error code.
+    pub code: Option<String>,
     /// Error message.
     pub message: String,
     /// Error tags.
@@ -41,9 +40,9 @@ pub struct DisplayCausesJsonData {
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize)]
 pub struct JsonData {
     /// Error ID: can be in form of Number or String
-    pub id: serde_json::Value,
-    /// Error prefix
-    pub prefix: Option<String>,
+    pub id: Option<serde_json::Value>,
+    /// Error code
+    pub code: Option<String>,
     /// Error message
     pub message: String,
     /// Error tags
@@ -76,9 +75,9 @@ pub struct LocationJsonData {
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize, Default)]
 pub struct SourceJsonData {
     /// Error ID: can be in form of Number or String
-    pub id: serde_json::Value,
-    /// Error prefix
-    pub prefix: Option<String>,
+    pub id: Option<serde_json::Value>,
+    /// Error code
+    pub code: Option<String>,
     /// Error message
     pub message: String,
     /// Error tags
@@ -93,16 +92,17 @@ pub struct SourceJsonData {
     pub help: Option<String>,
 }
 
-impl<'a, ID, D> From<&GErrView<'a, ID, D>> for JsonData
+impl<'a, C: Config, D> From<&GErrView<'a, C, D>> for JsonData
 where
-    ID: ::serde::Serialize,
+    C::Id: ::serde::Serialize,
     D: ::serde::Serialize,
 {
-    fn from(err: &GErrView<'a, ID, D>) -> Self {
+    fn from(err: &GErrView<'a, C, D>) -> Self {
         JsonData {
-            id: serde_json::to_value(err.id)
-                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
-            prefix: err.prefix.map(|s| s.into()),
+            id: err
+                .id
+                .map(|id| ::serde_json::to_value(id).unwrap_or_default()),
+            code: err.code.map(|s| s.into()),
             message: err.message.into(),
             tags: err.tags.map(|t| t.iter().map(|s| s.to_string()).collect()),
             data: err
@@ -127,16 +127,17 @@ where
     }
 }
 
-impl<'a, ID, D> From<&GErrView<'a, ID, D>> for DisplayJsonData
+impl<'a, C: Config, D> From<&GErrView<'a, C, D>> for DisplayJsonData
 where
-    ID: ::serde::Serialize,
+    C::Id: ::serde::Serialize,
     D: ::serde::Serialize,
 {
-    fn from(err: &GErrView<'a, ID, D>) -> Self {
+    fn from(err: &GErrView<'a, C, D>) -> Self {
         DisplayJsonData {
-            id: serde_json::to_value(err.id)
-                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
-            prefix: err.prefix.map(|s| s.into()),
+            id: err
+                .id
+                .map(|id| ::serde_json::to_value(id).unwrap_or_default()),
+            code: err.code.map(|s| s.into()),
             message: err.message.into(),
             tags: err.tags.map(|t| t.iter().map(|s| s.to_string()).collect()),
             data: err
@@ -150,10 +151,13 @@ where
     }
 }
 
-impl<ID, P, D> TryFrom<JsonData> for GErr<ID, P, D>
+/// Convert `JsonData` into `GErr<C, D>`.
+///
+/// If id and code are empty from JsonData,
+/// C: Config will auto-generate them.
+impl<C: Config, D> TryFrom<JsonData> for GErr<C, D>
 where
-    ID: for<'a> ::serde::Deserialize<'a>,
-    P: Prefix,
+    C::Id: for<'a> ::serde::Deserialize<'a>,
     D: for<'a> ::serde::Deserialize<'a>,
 {
     type Error = GErrDefault;
@@ -161,7 +165,7 @@ where
     fn try_from(value: JsonData) -> Result<Self, Self::Error> {
         let JsonData {
             id,
-            prefix,
+            code,
             message,
             tags,
             data,
@@ -171,15 +175,19 @@ where
             backtrace: _,
         } = value;
 
-        let de_id: ID = serde_json::from_value(id).map_err(|err| {
-            gerr!(
-                "failed converting id to ID = {}",
-                core::any::type_name::<ID>()
-            )
-            .add_source(err)
-        })?;
+        let de_id: Option<C::Id> = if let Some(the_id) = id {
+            serde_json::from_value(the_id).map_err(|err| {
+                gerr!(
+                    "failed converting id to ID = {}",
+                    core::any::type_name::<C::Id>()
+                )
+                .add_source(err)
+            })?
+        } else {
+            C::id()
+        };
 
-        let mut err = GErr::<ID, P, D>::with_id_untracked(de_id, message, Location::caller());
+        let mut err = GErr::<C, D>::new_with_id_untracked(de_id, message, Location::caller());
 
         if let Some(data) = data {
             err = err.set_data(serde_json::from_value(data).map_err(|err| {
@@ -191,8 +199,10 @@ where
             })?);
         }
 
-        if let Some(prefix) = prefix {
-            err = err.set_prefix(prefix);
+        if let Some(code) = code {
+            err = err.set_code(code);
+        } else if let Some(const_code) = C::CODE {
+            err = err.set_code(const_code);
         }
 
         if let Some(tags) = tags {
@@ -230,20 +240,24 @@ impl From<&Source> for SourceJsonData {
             Source::GErr(gerr) => Self {
                 id: serde_json::from_value({
                     match &gerr.id_json {
-                        ::serde_json::Value::Number(num) => {
+                        Some(::serde_json::Value::Number(num)) => {
                             ::serde_json::Value::from(num.as_i64().unwrap_or_default())
                         }
-                        ::serde_json::Value::String(s) => ::serde_json::Value::from(s.as_str()),
-                        ::serde_json::Value::Bool(b) => ::serde_json::Value::from(*b),
-                        ::serde_json::Value::Array(arr) => {
+                        Some(::serde_json::Value::String(s)) => {
+                            ::serde_json::Value::from(s.as_str())
+                        }
+                        Some(::serde_json::Value::Bool(b)) => ::serde_json::Value::from(*b),
+                        Some(::serde_json::Value::Array(arr)) => {
                             ::serde_json::Value::from(arr.as_slice())
                         }
-                        ::serde_json::Value::Object(obj) => ::serde_json::Value::from(obj.clone()),
+                        Some(::serde_json::Value::Object(obj)) => {
+                            ::serde_json::Value::from(obj.clone())
+                        }
                         _ => ::serde_json::Value::Null,
                     }
                 })
                 .unwrap_or_default(),
-                prefix: gerr.prefix.as_deref().map(|s| s.into()),
+                code: gerr.code.as_deref().map(|s| s.into()),
                 message: gerr.message.to_string(),
                 tags: gerr
                     .tags
@@ -308,7 +322,7 @@ impl SourceJsonData {
     fn into_source(self) -> Source {
         let SourceJsonData {
             id,
-            prefix,
+            code,
             message,
             tags,
             data,
@@ -319,16 +333,20 @@ impl SourceJsonData {
 
         let gerr_source = GErrSource {
             id: match id {
-                serde_json::Value::Bool(b) => Box::new(b),
-                serde_json::Value::Number(ref num) => Box::new(num.as_i64().unwrap_or_default()),
-                _ => Box::new(id.to_string()),
+                Some(serde_json::Value::Bool(b)) => Some(Box::new(b)),
+                Some(serde_json::Value::Number(ref num)) => {
+                    Some(Box::new(num.as_i64().unwrap_or_default()))
+                }
+                _ => id
+                    .as_ref()
+                    .map(|id| Box::new(id.to_string()) as Box<dyn IdSource>),
             },
 
             id_json: id,
 
             message: message.into(),
 
-            prefix: prefix.map(Cow::Owned),
+            code: code.map(Cow::Owned),
 
             sources: sources.map(|s| s.into_iter().map(|sj| sj.into_source()).collect()),
 

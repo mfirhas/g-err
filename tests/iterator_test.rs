@@ -10,17 +10,16 @@ use g_err::{iterator::GErrNode, *};
 fn test_iterator() {
     let err = "asd".parse::<i32>().unwrap_err();
     let err2 = "400".parse::<u8>().unwrap_err();
-    let gerr_source: core::result::Result<(), GErr<_, _, _>> =
-        GErr::<NoID, AutoPrefix, (&str, &str)>::new("the cause")
+    let gerr_source: core::result::Result<(), GErr<_, _>> =
+        GErr::<ErrAutoCode, (&str, &str)>::new("the cause")
             .set_data(("kind", "not found"))
             .add_source(err2.clone())
-            .add_source_gerr(gerr!("undefined error!"; prefix = "[UNDEFINED]"))
+            .add_source_gerr(gerr!("undefined error!"; code = "[UNDEFINED]"))
             .into();
     let gerr_source = gerr_source.unwrap_err();
-    let gerr: core::result::Result<i32, GErrBox<AutoID, AutoPrefix, Data>> =
+    let gerr: core::result::Result<i32, GErrBox<ErrAutoIDCode, Data>> =
         GErr::new("default auto errors")
-            .prepend_prefix("@")
-            .append_prefix("[user]")
+            .set_code("CODE")
             .set_sources([Source::Err(Box::new(err))])
             .add_source(err2)
             .add_source_gerr(gerr_source)
@@ -37,8 +36,8 @@ fn test_iterator() {
             .boxed()
             .into();
     let gerr = gerr.unwrap_err();
-    assert_eq!(gerr.id(), &AutoID);
-    assert_eq!(gerr.prefix().unwrap(), "@AutoPrefix[user]");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "CODE");
     assert_eq!(gerr.sources().unwrap().len(), 3);
 
     for e in &*gerr {
@@ -61,7 +60,7 @@ fn test_iterator() {
             0 => {
                 if let GErrNode::Root(root) = e {
                     assert_eq!(root.message(), "default auto errors");
-                    assert_eq!(root.prefix().unwrap(), "@AutoPrefix[user]");
+                    assert_eq!(root.code().unwrap(), "CODE");
                     assert_eq!(root.iter_tags().count(), 3);
                 } else {
                     panic!("first node should be root");
@@ -92,8 +91,8 @@ fn test_iterator() {
             3 => {
                 if let GErrNode::LeafGErr(gerr_source) = e {
                     assert_eq!(gerr_source.message, "the cause");
-                    assert_eq!(gerr_source.id.as_ref().to_string(), "NoID");
-                    assert_eq!(gerr_source.prefix.as_ref().unwrap(), "AutoPrefix");
+                    assert!(gerr_source.id.is_none());
+                    assert_eq!(gerr_source.code.as_ref().unwrap(), "AutoCode");
                     if let Some(data) = (&**gerr_source.data.as_ref().unwrap()
                         as &dyn core::any::Any)
                         .downcast_ref::<(&'static str, &'static str)>()
@@ -114,7 +113,7 @@ fn test_iterator() {
                     }
                     if let Source::GErr(ref err) = gerr_source.sources.as_ref().unwrap()[1] {
                         assert_eq!(err.message, "undefined error!");
-                        assert_eq!(err.prefix.as_ref().unwrap(), "[UNDEFINED]");
+                        assert_eq!(err.code.as_ref().unwrap(), "[UNDEFINED]");
                     } else {
                         panic!("fourth node's second source should be exist");
                     }
@@ -136,7 +135,7 @@ fn test_iterator() {
             5 => {
                 if let GErrNode::LeafGErr(ge) = e {
                     assert_eq!(ge.message, "undefined error!");
-                    assert_eq!(ge.prefix.as_ref().unwrap(), "[UNDEFINED]");
+                    assert_eq!(ge.code.as_ref().unwrap(), "[UNDEFINED]");
                 } else {
                     panic!("fourth node's second source should be exist");
                 }

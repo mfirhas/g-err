@@ -8,7 +8,7 @@ use g_err::*;
 const EXPECTED_REPORT: &str = r#"Error Report
 ============
 ID: AutoID
-Prefix: AutoPrefix
+Code: AutoCode
 Message: pretty error: l2k3mr2l3r
 Data:
    Data {
@@ -20,12 +20,12 @@ Tags:
   - tag1
   - tag2
   - tag3
-Location: tests/report_test.rs:136:48
+Location: tests/report_test.rs:136:43
 Caused by:
   1: invalid digit found in string
-  2: [400] input is invalid: qwe
+  2: 400 input is invalid: qwe
      id: 40
-     at: tests/report_test.rs:147:14
+     at: tests/report_test.rs:146:14
      tags: bad_request, invalid_input
      help: pass valid input
      data:
@@ -36,12 +36,12 @@ Caused by:
      caused by:
       - invalid digit found in string
       - [OUTBOUND] upstream error
-        id: NoID
+        id: -
         at: tests/report_test.rs:155:18
         caused by:
          - got error from user service
-           id: NoID
-           at: tests/report_test.rs:155:68
+           id: -
+           at: tests/report_test.rs:155:66
            help: contact user service steward
            data:
              (
@@ -54,7 +54,7 @@ Caused by:
      tags: user_service, timeout
      caused by:
       - too many open files
-        id: NoID
+        id: -
         at: tests/report_test.rs:160:18
         tags: tmof
         data:
@@ -68,7 +68,7 @@ Caused by:
 const EXPECTED_REPORT: &str = r#"Error Report
 ============
 ID: AutoID
-Prefix: AutoPrefix
+Code: AutoCode
 Message: pretty error: l2k3mr2l3r
 Data:
    Data {
@@ -80,12 +80,12 @@ Tags:
   - tag1
   - tag2
   - tag3
-Location: tests/report_test.rs:136:48
+Location: tests/report_test.rs:136:43
 Caused by:
   1: invalid digit found in string
-  2: [400] input is invalid: qwe
+  2: 400 input is invalid: qwe
      id: 40
-     at: tests/report_test.rs:147:14
+     at: tests/report_test.rs:146:14
      tags: bad_request, invalid_input
      help: pass valid input
      data:
@@ -96,12 +96,12 @@ Caused by:
      caused by:
       - invalid digit found in string
       - [OUTBOUND] upstream error
-        id: NoID
+        id: -
         at: tests/report_test.rs:155:18
         caused by:
          - got error from user service
-           id: NoID
-           at: tests/report_test.rs:155:68
+           id: -
+           at: tests/report_test.rs:155:66
            help: contact user service steward
            data:
              (
@@ -114,7 +114,7 @@ Caused by:
      tags: user_service, timeout
      caused by:
       - too many open files
-        id: NoID
+        id: -
         at: tests/report_test.rs:160:18
         tags: tmof
         data:
@@ -133,9 +133,8 @@ fn test_pretty_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -145,17 +144,18 @@ fn test_pretty_report() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
     );
@@ -172,7 +172,7 @@ const EXPECTED_MARKDOWN_REPORT: &str = r#"# Error Report
 
 ## ID: AutoID
 
-## Prefix: AutoPrefix
+## Code: AutoCode
 
 ## Message
 
@@ -199,17 +199,17 @@ Data {
 
 ## Location
 
-tests/report_test.rs:397:48
+tests/report_test.rs:397:43
 
 ## Causes
 
 ### 1. invalid digit found in string
 
-### 2. [400] input is invalid: qwe
+### 2. 400 input is invalid: qwe
 
 - **ID:** `40`
 
-- **Location:** `tests/report_test.rs:408:14`
+- **Location:** `tests/report_test.rs:407:14`
 
 - **Tags:** *bad_request, invalid_input*
 
@@ -229,13 +229,13 @@ tests/report_test.rs:397:48
 
     2. [OUTBOUND] upstream error
 
-        - **ID:** `NoID`
+        - **ID:** `-`
         - **Location:** `tests/report_test.rs:416:18`
         - **Causes:**
             1. got error from user service
 
-                - **ID:** `NoID`
-                - **Location:** `tests/report_test.rs:416:68`
+                - **ID:** `-`
+                - **Location:** `tests/report_test.rs:416:66`
                 - **Help:** *contact user service steward*
 
                 - **Data:**
@@ -260,7 +260,7 @@ tests/report_test.rs:397:48
 
     1. too many open files
 
-        - **ID:** `NoID`
+        - **ID:** `-`
         - **Location:** `tests/report_test.rs:421:18`
         - **Tags:** *tmof*
 
@@ -279,7 +279,7 @@ const EXPECTED_MARKDOWN_REPORT: &str = r#"# Error Report
 
 ## ID: AutoID
 
-## Prefix: AutoPrefix
+## Code: AutoCode
 
 ## Message
 
@@ -306,17 +306,17 @@ Data {
 
 ## Location
 
-tests/report_test.rs:397:48
+tests/report_test.rs:397:43
 
 ## Causes
 
 ### 1. invalid digit found in string
 
-### 2. [400] input is invalid: qwe
+### 2. 400 input is invalid: qwe
 
 - **ID:** `40`
 
-- **Location:** `tests/report_test.rs:408:14`
+- **Location:** `tests/report_test.rs:407:14`
 
 - **Tags:** *bad_request, invalid_input*
 
@@ -336,13 +336,13 @@ tests/report_test.rs:397:48
 
     2. [OUTBOUND] upstream error
 
-        - **ID:** `NoID`
+        - **ID:** `-`
         - **Location:** `tests/report_test.rs:416:18`
         - **Causes:**
             1. got error from user service
 
-                - **ID:** `NoID`
-                - **Location:** `tests/report_test.rs:416:68`
+                - **ID:** `-`
+                - **Location:** `tests/report_test.rs:416:66`
                 - **Help:** *contact user service steward*
 
                 - **Data:**
@@ -367,7 +367,7 @@ tests/report_test.rs:397:48
 
     1. too many open files
 
-        - **ID:** `NoID`
+        - **ID:** `-`
         - **Location:** `tests/report_test.rs:421:18`
         - **Tags:** *tmof*
 
@@ -394,9 +394,8 @@ fn test_markdown_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -406,17 +405,18 @@ fn test_markdown_report() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
     );
@@ -426,24 +426,24 @@ fn test_markdown_report() {
     assert_eq!(markdown_report, EXPECTED_MARKDOWN_REPORT);
 }
 
-const EXPECTED_TRACE_REPORT: &str = r#"[AutoID] AutoPrefix pretty error: l2k3mr2l3r
+const EXPECTED_TRACE_REPORT: &str = r#"[AutoID][AutoCode] pretty error: l2k3mr2l3r
 ├─ invalid digit found in string
-├─ [40] [400][NOT_FOUND] input is invalid: qwe
+├─ [40][400] input is invalid: qwe
 │  ├─ invalid digit found in string
-│  └─ [NoID] [OUTBOUND] upstream error
-│     └─ [NoID] got error from user service
-└─ [AutoID] timeout checks
-   └─ [NoID] too many open files
+│  └─ [-][[OUTBOUND]] upstream error
+│     └─ [-][-] got error from user service
+└─ [AutoID][-] timeout checks
+   └─ [-][-] too many open files
 "#;
 
-const EXPECTED_TRACE_REPORT_NO_PREFIX: &str = r#"[AutoID] pretty error: l2k3mr2l3r
+const EXPECTED_TRACE_REPORT_NO_PREFIX: &str = r#"[AutoID][-] pretty error: l2k3mr2l3r
 ├─ invalid digit found in string
-├─ [40] [400][NOT_FOUND] input is invalid: qwe
+├─ [40][400] input is invalid: qwe
 │  ├─ invalid digit found in string
-│  └─ [NoID] [OUTBOUND] upstream error
-│     └─ [NoID] got error from user service
-└─ [AutoID] timeout checks
-   └─ [NoID] too many open files
+│  └─ [-][[OUTBOUND]] upstream error
+│     └─ [-][-] got error from user service
+└─ [AutoID][-] timeout checks
+   └─ [-][-] too many open files
 "#;
 
 #[test]
@@ -453,9 +453,8 @@ fn test_trace_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, AutoPrefix, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
-        prefix_auto,
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -465,18 +464,18 @@ fn test_trace_report() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
     );
@@ -491,8 +490,8 @@ fn test_trace_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<AutoID, _, Data> = gerr!("pretty error: {req_id}";
-        id_auto,
+    let gerr: GErr<ErrAutoID, Data> = gerr!("pretty error: {req_id}";
+        config,
         tag="tag1",
         tags=["tag2", "tag3"],
         data= Data {
@@ -502,18 +501,18 @@ fn test_trace_report() {
         help="send valid request",
         source=input_err.clone(),
         gerr=gerr!("input is invalid: {}", input;
+            config=ErrIDi32,
             id=40,
-            prefix="[400]",
+            code="400",
             tag="bad_request",
             tag="invalid_input",
             help="pass valid input",
-            aprefix = "[NOT_FOUND]",
             data=("user_name".to_string(), "ajo".to_string()),
             source = input_err,
-            gerr=gerr!("upstream error"; prefix="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
+            gerr=gerr!("upstream error"; code="[OUTBOUND]", gerr=gerr!("got error from user service"; data=("caused by:".to_string(), "timout".to_string()), help="contact user service steward")),
         ),
         gerr=gerr!("timeout checks";
-            id_auto=AutoID,
+            config=ErrAutoID,
             tags=["user_service", "timeout"],
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
     );

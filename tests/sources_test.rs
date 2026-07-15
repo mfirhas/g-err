@@ -1,5 +1,9 @@
 use g_err::*;
 
+#[path = "setup_test.rs"]
+mod setup_test;
+use setup_test::*;
+
 #[test]
 fn test_general_error() {
     let err = "abc".parse::<u32>().unwrap_err();
@@ -79,13 +83,13 @@ fn test_nested_sources() {
         "this error";
         gerr = gerr!(
             "cause";
-            prefix = "[OUTBOUND]",
+            code = "[OUTBOUND]",
             gerr = gerr!("cause's case"; tags = ["tag1", "tag2"])
         ),
         source = int_err.clone(),
-        gerr = gerr!("the root cause"; id = 100),
-        source = gerr!("the root cause"; id = 120),
-        gerr = gerr!("the root cause"; id = 121).into_gerr_source(),
+        gerr = gerr!("the root cause";config=ErrIDi32, id = 100),
+        source = gerr!("the root cause";config=ErrIDi32, id = 120),
+        gerr = gerr!("the root cause";config=ErrIDi32, id = 121).into_gerr_source(),
     );
 
     let gerr: GErr = GErr::new("error").add_source_gerr(err).add_source(int_err);
@@ -120,7 +124,7 @@ fn test_nested_sources() {
         Source::Err(_) => panic!("expected GErr"),
     };
 
-    assert_eq!(outbound.prefix.as_deref(), Some("[OUTBOUND]"));
+    assert_eq!(outbound.code.as_deref(), Some("[OUTBOUND]"));
     assert_eq!(outbound.sources.as_ref().unwrap().len(), 1);
 
     let cause = match &outbound.sources.as_ref().unwrap()[0] {
@@ -146,7 +150,7 @@ fn test_nested_sources() {
         Source::Err(_) => panic!("expected GErr"),
     };
 
-    assert_eq!(id100.id.to_string(), "100");
+    assert_eq!(id100.id.as_ref().unwrap().to_string(), "100");
 
     // --------------------------------------------------
     // [3] source = gerr!(...)
@@ -154,7 +158,7 @@ fn test_nested_sources() {
     // --------------------------------------------------
     match &nested[3] {
         Source::Err(err) => {
-            assert!(err.is::<GErr<i32>>());
+            assert!(err.is::<GErr<ErrIDi32>>());
         }
         Source::GErr(_) => panic!("expected general error"),
     }
@@ -167,6 +171,6 @@ fn test_nested_sources() {
         Source::Err(_) => panic!("expected GErr"),
     };
 
-    assert_eq!(id121.id.to_string(), "121");
+    assert_eq!(id121.id.as_ref().unwrap().to_string(), "121");
     assert_eq!(id121.location.as_ref().unwrap().file, file!());
 }

@@ -10,40 +10,32 @@ use core::{
 
 use crate::gerr::{ErrorLocation, Source};
 
-/// Dyn-compatible trait for error id.
+/// Dyn-compatible trait for source's error id.
 pub trait IdSource: Any + Debug + Display + Send + Sync {}
 
 impl<T> IdSource for T where T: Any + Debug + Display + Send + Sync {}
 
-/// Dyn-compatible trait for error data.
+/// Dyn-compatible trait for source's error data.
 pub trait DataSource: Any + Debug + Send + Sync {}
 
 impl<T> DataSource for T where T: Any + Debug + Send + Sync {}
 
 /// GErrSource - GErr as source of error.
-///
-/// This will be the type of GErr's sources,
-/// be it from general error or from GErr itself.
-///
-/// You can add more detail attributes like GErr to other error types,
-/// by implementing conversion from those errors to GErrSource.
-///
-/// Then, you can add it as detailed GErrSource into method [`crate::GErr::add_source_gerr`].
 pub struct GErrSource {
     /// Error id, must implement Debug and Display.
-    pub id: Box<dyn IdSource>,
+    pub id: Option<Box<dyn IdSource>>,
 
     /// Error id as json value, support for numeric and string only.
     ///
     /// Passing other than numeric and string, will be ignored at serde.
     #[cfg(feature = "serde")]
-    pub id_json: serde_json::Value,
+    pub id_json: Option<serde_json::Value>,
+
+    /// Error code.
+    pub code: Option<Cow<'static, str>>,
 
     /// Error message.
     pub message: Cow<'static, str>,
-
-    /// Error prefix.
-    pub prefix: Option<Cow<'static, str>>,
 
     /// Error sources.
     pub sources: Option<Vec<Source>>,
@@ -75,7 +67,7 @@ impl Debug for GErrSource {
         debug.field("id_json", &self.id_json);
 
         debug
-            .field("prefix", &self.prefix)
+            .field("code", &self.code)
             .field("message", &self.message)
             .field("sources", &self.sources)
             .field("tags", &self.tags)
@@ -94,8 +86,8 @@ impl Debug for GErrSource {
 
 impl Display for GErrSource {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        if let Some(prefix) = self.prefix.as_deref() {
-            write!(f, "{prefix} {}", self.message)
+        if let Some(code) = self.code.as_deref() {
+            write!(f, "{code} - {}", self.message)
         } else {
             write!(f, "{}", self.message)
         }

@@ -6,14 +6,14 @@
 //! For JSON serde use `g_err::serde::json` for internal,
 //! and `g_err::serde::display_json` for public.
 //!
-use crate::gerr::{GErr, Prefix};
+use crate::gerr::{Config, GErr};
 use core::error::Error;
 use serde::Serialize;
 
 /// Serialize into string.
-impl<ID, P: Prefix, D> serde::Serialize for GErr<ID, P, D>
+impl<C: Config, D> serde::Serialize for GErr<C, D>
 where
-    ID: serde::Serialize,
+    C::Id: serde::Serialize,
     D: serde::Serialize,
     Self: Error + 'static,
 {
@@ -36,23 +36,21 @@ pub mod json {
     use super::*;
 
     /// Serialize GErr into JSON through [`JsonData`]
-    pub fn serialize<S, ID, P, D>(err: &GErr<ID, P, D>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S, C: Config, D>(err: &GErr<C, D>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
-        ID: core::fmt::Display + serde::Serialize,
-        P: Prefix,
+        C::Id: core::fmt::Display + serde::Serialize,
         D: core::fmt::Debug + serde::Serialize,
-        GErr<ID, P, D>: Error + 'static,
+        GErr<C, D>: Error + 'static,
     {
         err.json_data().serialize(serializer)
     }
 
     /// deserialize GErr from JSON through [`JsonData`]
-    pub fn deserialize<'de, De, ID, P, D>(deserializer: De) -> Result<GErr<ID, P, D>, De::Error>
+    pub fn deserialize<'de, De, C: Config, D>(deserializer: De) -> Result<GErr<C, D>, De::Error>
     where
         De: serde::Deserializer<'de>,
-        ID: for<'a> serde::Deserialize<'a>,
-        P: Prefix,
+        C::Id: for<'a> serde::Deserialize<'a>,
         D: for<'a> serde::Deserialize<'a>,
     {
         <JsonData as serde::Deserialize>::deserialize(deserializer)?
@@ -61,7 +59,7 @@ pub mod json {
     }
 }
 
-/// Serialize into/from json for public.
+/// Serialize into json for public.
 ///
 /// Attribute:
 ///
@@ -70,13 +68,12 @@ pub mod display_json {
     use super::*;
 
     /// Serialize GErr into JSON through [`crate::json::DisplayJsonData`]
-    pub fn serialize<S, ID, P, D>(err: &GErr<ID, P, D>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S, C: Config, D>(err: &GErr<C, D>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
-        ID: core::fmt::Display + serde::Serialize,
-        P: Prefix,
+        C::Id: core::fmt::Display + serde::Serialize,
         D: core::fmt::Debug + serde::Serialize,
-        GErr<ID, P, D>: Error + 'static,
+        GErr<C, D>: Error + 'static,
     {
         err.display_json_data().serialize(serializer)
     }

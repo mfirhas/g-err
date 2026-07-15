@@ -8,7 +8,7 @@
 extern crate alloc;
 
 mod gerr;
-pub use gerr::{GErr, GErrDefault, Id, Prefix, Result, SetField, Source};
+pub use gerr::{Config, GErr, GErrDefault, Result, SetField, Source};
 
 mod gerr_source;
 pub use gerr_source::{DataSource, GErrSource, IdSource};
@@ -38,7 +38,7 @@ pub mod serde;
 mod macros;
 
 mod types;
-pub use types::{NoData, NoID, NoPrefix};
+pub use types::{DefaultConfig, NoData, NoID};
 
 mod result_ext;
 pub use result_ext::{GResultExt, ResultExt};

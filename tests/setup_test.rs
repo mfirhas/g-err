@@ -2,19 +2,106 @@
 // #[path = "setup_test.rs"]
 // mod setup_test;
 // use setup_test::*;
+use g_err::{Config, NoID, SetField};
 
-use g_err::{Id, Prefix, SetField};
+#[allow(dead_code)]
+pub struct ErrAutoID;
+
+impl Config for ErrAutoID {
+    type Id = AutoID;
+
+    #[inline]
+    fn id() -> Option<Self::Id> {
+        Some(AutoID)
+    }
+}
+
+#[allow(dead_code)]
+pub struct ErrAutoCode;
+
+impl Config for ErrAutoCode {
+    const CODE: Option<&'static str> = Some("AutoCode");
+    type Id = NoID;
+}
+
+#[allow(dead_code)]
+pub struct ErrAutoIDCode;
+
+impl Config for ErrAutoIDCode {
+    const CODE: Option<&'static str> = Some("AutoCode");
+
+    type Id = AutoID;
+
+    #[inline]
+    fn id() -> Option<Self::Id> {
+        Some(AutoID)
+    }
+}
+
+#[allow(dead_code)]
+pub struct ErrIDi32;
+
+impl Config for ErrIDi32 {
+    type Id = i32;
+}
+
+#[allow(dead_code)]
+pub struct ErrIDi32AutoCode;
+
+impl Config for ErrIDi32AutoCode {
+    type Id = i32;
+    const CODE: Option<&'static str> = Some("AutoCode");
+}
+
+#[allow(dead_code)]
+pub struct ErrIDStr;
+
+impl Config for ErrIDStr {
+    type Id = &'static str;
+}
+
+#[allow(dead_code)]
+pub struct ErrIDStrAutoCode;
+
+impl Config for ErrIDStrAutoCode {
+    const CODE: Option<&'static str> = Some("AutoCode");
+    type Id = &'static str;
+}
+
+#[allow(dead_code)]
+pub struct ErrIDBool;
+
+impl Config for ErrIDBool {
+    type Id = bool;
+}
+
+#[allow(dead_code)]
+pub struct ErrIDBoolCode;
+
+impl Config for ErrIDBoolCode {
+    const CODE: Option<&'static str> = Some("AutoCode");
+    type Id = bool;
+}
+
+#[allow(dead_code)]
+pub struct ErrIDArrCode;
+
+impl Config for ErrIDArrCode {
+    const CODE: Option<&'static str> = Some("AutoCode");
+    type Id = [i32; 2];
+}
+
+#[allow(dead_code)]
+pub struct ErrIDDataCode;
+
+impl Config for ErrIDDataCode {
+    const CODE: Option<&'static str> = Some("AutoCode");
+    type Id = Data;
+}
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq)]
 pub struct AutoID;
-
-impl Id for AutoID {
-    #[inline]
-    fn id() -> Self {
-        Self
-    }
-}
 
 impl core::fmt::Display for AutoID {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -61,13 +148,6 @@ impl<'de> ::serde::Deserialize<'de> for AutoID {
 
         deserializer.deserialize_str(AutoIDVisitor)
     }
-}
-
-#[allow(dead_code)]
-pub struct AutoPrefix;
-
-impl Prefix for AutoPrefix {
-    const PREFIX: Option<&'static str> = Some("AutoPrefix");
 }
 
 #[allow(dead_code)]
