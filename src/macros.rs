@@ -22,6 +22,9 @@
 ///
 /// You can override the metadatas, and latest ones will be used.
 ///
+/// ## NOTE
+/// The order of `config` param matters because it calls `.with_config` method which will regenerate id and code.
+///
 /// # Example
 /// ```rust
 /// use g_err::{gerr, Config};
