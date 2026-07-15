@@ -603,7 +603,9 @@ where
 {
     fn from(gerr: GErr<C, D>) -> Self {
         GErrSource {
-            id_json: serde_json::to_value(gerr.id()).unwrap_or_default(),
+            id_json: gerr
+                .id()
+                .map(|id| serde_json::to_value(id).unwrap_or_default()),
             id: gerr.id.map(|id| Box::new(id) as Box<dyn IdSource>),
             code: gerr.code,
             message: gerr.message,

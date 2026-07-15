@@ -474,7 +474,7 @@ fn test_json_serde_sources_id_types() {
     let err: GErr<ErrAutoCode, NoData> =
         g_err::serde::json::deserialize(&mut deserializer).unwrap();
     if let Source::GErr(ref gerr) = err.sources().unwrap()[5]
-        && let serde_json::Value::Array(arr) = &gerr.id_json
+        && let Some(serde_json::Value::Array(arr)) = &gerr.id_json
     {
         assert_eq!(arr.len(), 2);
         if let serde_json::Value::Number(num) = &arr[0]
@@ -507,7 +507,7 @@ fn test_json_serde_sources_id_types() {
     {
         assert_eq!(id, r#"{"user_id":123,"user_name":"ajo"}"#);
 
-        if let serde_json::Value::Object(obj) = &gerr.id_json
+        if let Some(serde_json::Value::Object(obj)) = &gerr.id_json
             && let serde_json::Value::Number(num) = obj.get("user_id".into()).unwrap()
             && let serde_json::Value::String(s) = obj.get("user_name".into()).unwrap()
         {

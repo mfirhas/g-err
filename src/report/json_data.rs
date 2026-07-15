@@ -2,7 +2,7 @@ use alloc::borrow::Cow;
 use core::panic::Location;
 
 use crate::{
-    Config, GErrDefault, gerr,
+    Config, GErrDefault, IdSource, gerr,
     gerr::{ErrorLocation, GErr, Source},
     gerr_source::{DataSource, GErrSource},
     gerr_view::GErrView,
@@ -75,7 +75,7 @@ pub struct LocationJsonData {
 #[derive(Debug, Clone, ::serde::Serialize, ::serde::Deserialize, Default)]
 pub struct SourceJsonData {
     /// Error ID: can be in form of Number or String
-    pub id: serde_json::Value,
+    pub id: Option<serde_json::Value>,
     /// Error code
     pub code: Option<String>,
     /// Error message
@@ -240,15 +240,19 @@ impl From<&Source> for SourceJsonData {
             Source::GErr(gerr) => Self {
                 id: serde_json::from_value({
                     match &gerr.id_json {
-                        ::serde_json::Value::Number(num) => {
+                        Some(::serde_json::Value::Number(num)) => {
                             ::serde_json::Value::from(num.as_i64().unwrap_or_default())
                         }
-                        ::serde_json::Value::String(s) => ::serde_json::Value::from(s.as_str()),
-                        ::serde_json::Value::Bool(b) => ::serde_json::Value::from(*b),
-                        ::serde_json::Value::Array(arr) => {
+                        Some(::serde_json::Value::String(s)) => {
+                            ::serde_json::Value::from(s.as_str())
+                        }
+                        Some(::serde_json::Value::Bool(b)) => ::serde_json::Value::from(*b),
+                        Some(::serde_json::Value::Array(arr)) => {
                             ::serde_json::Value::from(arr.as_slice())
                         }
-                        ::serde_json::Value::Object(obj) => ::serde_json::Value::from(obj.clone()),
+                        Some(::serde_json::Value::Object(obj)) => {
+                            ::serde_json::Value::from(obj.clone())
+                        }
                         _ => ::serde_json::Value::Null,
                     }
                 })
@@ -329,11 +333,13 @@ impl SourceJsonData {
 
         let gerr_source = GErrSource {
             id: match id {
-                serde_json::Value::Bool(b) => Some(Box::new(b)),
-                serde_json::Value::Number(ref num) => {
+                Some(serde_json::Value::Bool(b)) => Some(Box::new(b)),
+                Some(serde_json::Value::Number(ref num)) => {
                     Some(Box::new(num.as_i64().unwrap_or_default()))
                 }
-                _ => Some(Box::new(id.to_string())),
+                _ => id
+                    .as_ref()
+                    .map(|id| Box::new(id.to_string()) as Box<dyn IdSource>),
             },
 
             id_json: id,

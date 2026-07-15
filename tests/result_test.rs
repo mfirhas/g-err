@@ -1,5 +1,4 @@
 use g_err::*;
-
 #[path = "setup_test.rs"]
 mod setup_test;
 use setup_test::*;
@@ -143,7 +142,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                     location: Some(
                                                                         ErrorLocation {
                                                                             file: "tests/result_test.rs",
-                                                                            line: 10,
+                                                                            line: 9,
                                                                             column: 10,
                                                                         },
                                                                     ),
@@ -162,7 +161,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                     location: Some(
                                                         ErrorLocation {
                                                             file: "tests/result_test.rs",
-                                                            line: 21,
+                                                            line: 20,
                                                             column: 10,
                                                         },
                                                     ),
@@ -201,7 +200,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                                     help: None,
                                                                                     location: ErrorLocation {
                                                                                         file: "tests/result_test.rs",
-                                                                                        line: 28,
+                                                                                        line: 27,
                                                                                         column: 16,
                                                                                     },
                                                                                 },
@@ -213,7 +212,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                     help: None,
                                                                     location: ErrorLocation {
                                                                         file: "tests/result_test.rs",
-                                                                        line: 30,
+                                                                        line: 29,
                                                                         column: 14,
                                                                     },
                                                                 },
@@ -231,7 +230,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                     location: Some(
                                                         ErrorLocation {
                                                             file: "tests/result_test.rs",
-                                                            line: 36,
+                                                            line: 35,
                                                             column: 33,
                                                         },
                                                     ),
@@ -245,7 +244,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                     location: Some(
                                         ErrorLocation {
                                             file: "tests/result_test.rs",
-                                            line: 55,
+                                            line: 54,
                                             column: 13,
                                         },
                                     ),
@@ -259,7 +258,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                     location: Some(
                         ErrorLocation {
                             file: "tests/result_test.rs",
-                            line: 61,
+                            line: 60,
                             column: 9,
                         },
                     ),
@@ -281,7 +280,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
     ),
     location: ErrorLocation {
         file: "tests/result_test.rs",
-        line: 66,
+        line: 65,
         column: 46,
     },
 }"#;
@@ -302,7 +301,9 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                     id: Some(
                         "E-001",
                     ),
-                    id_json: String("E-001"),
+                    id_json: Some(
+                        String("E-001"),
+                    ),
                     code: Some(
                         "AutoCode",
                     ),
@@ -312,7 +313,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                             GErr(
                                 GErrSource {
                                     id: None,
-                                    id_json: Null,
+                                    id_json: None,
                                     code: Some(
                                         "AutoCode",
                                     ),
@@ -324,7 +325,9 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                     id: Some(
                                                         AutoID,
                                                     ),
-                                                    id_json: String("AutoID"),
+                                                    id_json: Some(
+                                                        String("AutoID"),
+                                                    ),
                                                     code: Some(
                                                         "AutoCode",
                                                     ),
@@ -336,7 +339,9 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                     id: Some(
                                                                         4235,
                                                                     ),
-                                                                    id_json: Number(4235),
+                                                                    id_json: Some(
+                                                                        Number(4235),
+                                                                    ),
                                                                     code: Some(
                                                                         "[REPO]",
                                                                     ),
@@ -367,7 +372,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                     location: Some(
                                                                         ErrorLocation {
                                                                             file: "tests/result_test.rs",
-                                                                            line: 10,
+                                                                            line: 9,
                                                                             column: 10,
                                                                         },
                                                                     ),
@@ -392,7 +397,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                     location: Some(
                                                         ErrorLocation {
                                                             file: "tests/result_test.rs",
-                                                            line: 21,
+                                                            line: 20,
                                                             column: 10,
                                                         },
                                                     ),
@@ -401,7 +406,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                             GErr(
                                                 GErrSource {
                                                     id: None,
-                                                    id_json: Null,
+                                                    id_json: None,
                                                     code: Some(
                                                         "AutoCode",
                                                     ),
@@ -432,7 +437,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                                     help: None,
                                                                                     location: ErrorLocation {
                                                                                         file: "tests/result_test.rs",
-                                                                                        line: 28,
+                                                                                        line: 27,
                                                                                         column: 16,
                                                                                     },
                                                                                     backtrace: <disabled>,
@@ -445,7 +450,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                                     help: None,
                                                                     location: ErrorLocation {
                                                                         file: "tests/result_test.rs",
-                                                                        line: 30,
+                                                                        line: 29,
                                                                         column: 14,
                                                                     },
                                                                     backtrace: <disabled>,
@@ -470,7 +475,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                                     location: Some(
                                                         ErrorLocation {
                                                             file: "tests/result_test.rs",
-                                                            line: 36,
+                                                            line: 35,
                                                             column: 33,
                                                         },
                                                     ),
@@ -485,7 +490,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                                     location: Some(
                                         ErrorLocation {
                                             file: "tests/result_test.rs",
-                                            line: 55,
+                                            line: 54,
                                             column: 13,
                                         },
                                     ),
@@ -500,7 +505,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
                     location: Some(
                         ErrorLocation {
                             file: "tests/result_test.rs",
-                            line: 61,
+                            line: 60,
                             column: 9,
                         },
                     ),
@@ -522,7 +527,7 @@ const EXPECTED_DEBUG: &str = r#"GErr {
     ),
     location: ErrorLocation {
         file: "tests/result_test.rs",
-        line: 66,
+        line: 65,
         column: 46,
     },
     backtrace: <disabled>,

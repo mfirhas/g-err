@@ -29,7 +29,7 @@ pub struct GErrSource {
     ///
     /// Passing other than numeric and string, will be ignored at serde.
     #[cfg(feature = "serde")]
-    pub id_json: serde_json::Value,
+    pub id_json: Option<serde_json::Value>,
 
     /// Error code.
     pub code: Option<Cow<'static, str>>,

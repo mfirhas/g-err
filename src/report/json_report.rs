@@ -1,6 +1,5 @@
 use crate::gerr::Source;
 use crate::report::json_data::{DisplayJsonData, JsonData};
-use crate::types::NoID;
 use crate::{Config, gerr_view::GErrView, report::Report};
 use alloc::borrow::Cow;
 use core::fmt::{Debug, Display};
@@ -47,7 +46,7 @@ impl Report for JsonReport {
 
 #[derive(serde::Serialize)]
 struct JsonReportData<'a> {
-    pub id: serde_json::Value,
+    pub id: Option<serde_json::Value>,
     pub code: Option<&'a str>,
     pub message: &'a str,
     pub tags: Option<&'a [Cow<'static, str>]>,
@@ -69,7 +68,7 @@ struct LocationJson<'a> {
 
 #[derive(serde::Serialize)]
 struct SourceJson<'a> {
-    pub id: &'a serde_json::Value,
+    pub id: Option<&'a serde_json::Value>,
     pub code: Option<&'a str>,
     pub message: String,
     pub tags: Option<&'a [Cow<'static, str>]>,
@@ -86,8 +85,9 @@ where
 {
     fn from(value: &'a GErrView<C, D>) -> Self {
         Self {
-            id: serde_json::to_value(value.id)
-                .unwrap_or(serde_json::to_value(NoID).unwrap_or_default()),
+            id: value
+                .id
+                .map(|id| ::serde_json::to_value(id).unwrap_or_default()),
             code: value.code,
             message: value.message,
             tags: value.tags,
@@ -112,7 +112,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
     fn from(source: &'a Source) -> Self {
         match source {
             Source::Err(err) => Self {
-                id: &NO_ID_JSON,
+                id: Some(&NO_ID_JSON),
                 code: None,
                 message: err.to_string(),
                 tags: None,
@@ -122,7 +122,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
                 help: None,
             },
             Source::GErr(gerr) => Self {
-                id: &gerr.id_json,
+                id: gerr.id_json.as_ref(),
                 code: gerr.code.as_deref(),
                 message: gerr.message.to_string(),
                 tags: gerr.tags.as_deref(),

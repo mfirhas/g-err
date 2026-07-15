@@ -1,16 +1,14 @@
 #[path = "setup_test.rs"]
 mod setup_test;
-
-use setup_test::*;
-
 use g_err::{GErr, GErrSource, gerr};
+use setup_test::*;
 
 #[test]
 fn test_gerr_debug() {
     #[cfg(not(feature = "serde"))]
     const EXPECTED_DEBUG: &str = r#"GErr { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 157, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 150, column: 46 } }"#;
     #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG: &str = r#"GErr { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), id_json: Number(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 157, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 150, column: 46 }, backtrace: <disabled> }"#;
+    const EXPECTED_DEBUG: &str = r#"GErr { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), id_json: Some(Number(123)), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 157, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 150, column: 46 }, backtrace: <disabled> }"#;
     #[cfg(not(feature = "serde"))]
     const EXPECTED_DEBUG_FORMAT: &str = r#"GErr {
     id: Some(
@@ -98,7 +96,9 @@ fn test_gerr_debug() {
                     id: Some(
                         123,
                     ),
-                    id_json: Number(123),
+                    id_json: Some(
+                        Number(123),
+                    ),
                     code: Some(
                         "SOURCE-2",
                     ),
@@ -185,10 +185,8 @@ fn test_gerr_display() {
             user_id: 234,
             user_name: "ajo_sidi".into(),
         });
-
     let display = format!("{}", gerr);
     assert_eq!(&display, EXPECTED_DISPLAY);
-
     let err = "qwe".parse::<i32>().unwrap_err();
     let gerr: GErr<ErrIDStr, Data> = GErr::new_with_id("AJO", "zxc")
         .add_tag("tag1")
@@ -203,7 +201,6 @@ fn test_gerr_display() {
             user_id: 234,
             user_name: "ajo_sidi".into(),
         });
-
     let display = format!("{}", gerr);
     assert_eq!(&display, EXPECTED_DISPLAY_WITHOUT_PREFIX);
 }
@@ -213,8 +210,7 @@ fn test_gerr_source_debug() {
     #[cfg(not(feature = "serde"))]
     const EXPECTED_DEBUG: &str = r#"GErrSource { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 371, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 364, column: 16 }) }"#;
     #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG: &str = r#"GErrSource { id: Some("AJO-123"), id_json: String("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), id_json: Number(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 371, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), data_json: Some(Object {"user_id": Number(234), "user_name": String("ajo_sidi")}), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 364, column: 16 }) }"#;
-
+    const EXPECTED_DEBUG: &str = r#"GErrSource { id: Some("AJO-123"), id_json: Some(String("AJO-123")), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), id_json: Some(Number(123)), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 371, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), data_json: Some(Object {"user_id": Number(234), "user_name": String("ajo_sidi")}), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 364, column: 16 }) }"#;
     #[cfg(not(feature = "serde"))]
     const EXPECTED_DEBUG_FORMAT: &str = r#"GErrSource {
     id: Some(
@@ -288,7 +284,9 @@ fn test_gerr_source_debug() {
     id: Some(
         "AJO-123",
     ),
-    id_json: String("AJO-123"),
+    id_json: Some(
+        String("AJO-123"),
+    ),
     code: Some(
         "AutoCode",
     ),
@@ -305,7 +303,9 @@ fn test_gerr_source_debug() {
                     id: Some(
                         123,
                     ),
-                    id_json: Number(123),
+                    id_json: Some(
+                        Number(123),
+                    ),
                     code: Some(
                         "SOURCE-2",
                     ),
