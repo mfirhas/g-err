@@ -43,6 +43,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Cache run data
+        if: steps.schedule.outputs.run == 'true'
         id: cron-audit-cache
         uses: actions/cache@v4
         with:
@@ -63,7 +64,7 @@ jobs:
 
       - name: Install cargo-audit
         if: steps.schedule.outputs.run == 'true'
-        run: cargo install --locked cargo-audit
+        run: which cargo-audit || cargo install --locked cargo-audit
 
       - name: Run cargo audit
         if: steps.schedule.outputs.run == 'true'
