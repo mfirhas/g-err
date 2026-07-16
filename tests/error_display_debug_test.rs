@@ -3,149 +3,12 @@ mod setup_test;
 use g_err::{GErr, GErrSource, gerr};
 use setup_test::*;
 
+#[path = "error_display_debug_test_data.rs"]
+mod error_display_debug_test_data;
+
 #[test]
 fn test_gerr_debug() {
-    #[cfg(not(feature = "serde"))]
-    const EXPECTED_DEBUG: &str = r#"GErr { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 157, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 150, column: 46 } }"#;
-    #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG: &str = r#"GErr { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), id_json: Some(Number(123)), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 157, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: ErrorLocation { file: "tests/error_display_debug_test.rs", line: 150, column: 46 }, backtrace: <disabled> }"#;
-    #[cfg(not(feature = "serde"))]
-    const EXPECTED_DEBUG_FORMAT: &str = r#"GErr {
-    id: Some(
-        "AJO-123",
-    ),
-    code: Some(
-        "AutoCode",
-    ),
-    message: "asd",
-    sources: Some(
-        [
-            Err(
-                ParseIntError {
-                    kind: InvalidDigit,
-                },
-            ),
-            GErr(
-                GErrSource {
-                    id: Some(
-                        123,
-                    ),
-                    code: Some(
-                        "SOURCE-2",
-                    ),
-                    message: "source 2",
-                    sources: None,
-                    tags: Some(
-                        [
-                            "qwe",
-                            "wex",
-                        ],
-                    ),
-                    data: None,
-                    help: None,
-                    location: Some(
-                        ErrorLocation {
-                            file: "tests/error_display_debug_test.rs",
-                            line: 157,
-                            column: 13,
-                        },
-                    ),
-                },
-            ),
-        ],
-    ),
-    tags: Some(
-        [
-            "tag1",
-            "tag2",
-        ],
-    ),
-    data: Some(
-        Data {
-            user_id: 234,
-            user_name: "ajo_sidi",
-        },
-    ),
-    help: Some(
-        "please halp!!",
-    ),
-    location: ErrorLocation {
-        file: "tests/error_display_debug_test.rs",
-        line: 150,
-        column: 46,
-    },
-}"#;
-    #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG_FORMAT: &str = r#"GErr {
-    id: Some(
-        "AJO-123",
-    ),
-    code: Some(
-        "AutoCode",
-    ),
-    message: "asd",
-    sources: Some(
-        [
-            Err(
-                ParseIntError {
-                    kind: InvalidDigit,
-                },
-            ),
-            GErr(
-                GErrSource {
-                    id: Some(
-                        123,
-                    ),
-                    id_json: Some(
-                        Number(123),
-                    ),
-                    code: Some(
-                        "SOURCE-2",
-                    ),
-                    message: "source 2",
-                    sources: None,
-                    tags: Some(
-                        [
-                            "qwe",
-                            "wex",
-                        ],
-                    ),
-                    data: None,
-                    data_json: None,
-                    help: None,
-                    location: Some(
-                        ErrorLocation {
-                            file: "tests/error_display_debug_test.rs",
-                            line: 157,
-                            column: 13,
-                        },
-                    ),
-                },
-            ),
-        ],
-    ),
-    tags: Some(
-        [
-            "tag1",
-            "tag2",
-        ],
-    ),
-    data: Some(
-        Data {
-            user_id: 234,
-            user_name: "ajo_sidi",
-        },
-    ),
-    help: Some(
-        "please halp!!",
-    ),
-    location: ErrorLocation {
-        file: "tests/error_display_debug_test.rs",
-        line: 150,
-        column: 46,
-    },
-    backtrace: <disabled>,
-}"#;
+    use error_display_debug_test_data::test_gerr_debug_data;
     let err = "qwe".parse::<i32>().unwrap_err();
     let gerr: GErr<ErrIDStrAutoCode, Data> = GErr::new_with_id("AJO", "asd")
         .add_tag("tag1")
@@ -162,9 +25,9 @@ fn test_gerr_debug() {
         });
 
     let debug = format!("{:?}", gerr);
-    assert_eq!(&debug, EXPECTED_DEBUG);
+    assert_eq!(&debug, test_gerr_debug_data::EXPECTED_DEBUG);
     let debug_fmt = format!("{:#?}", gerr);
-    assert_eq!(&debug_fmt, EXPECTED_DEBUG_FORMAT);
+    assert_eq!(&debug_fmt, test_gerr_debug_data::EXPECTED_DEBUG_FORMAT);
 }
 
 #[test]
@@ -207,159 +70,7 @@ fn test_gerr_display() {
 
 #[test]
 fn test_gerr_source_debug() {
-    #[cfg(not(feature = "serde"))]
-    const EXPECTED_DEBUG: &str = r#"GErrSource { id: Some("AJO-123"), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 371, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 364, column: 16 }) }"#;
-    #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG: &str = r#"GErrSource { id: Some("AJO-123"), id_json: Some(String("AJO-123")), code: Some("AutoCode"), message: "asd", sources: Some([Err(ParseIntError { kind: InvalidDigit }), GErr(GErrSource { id: Some(123), id_json: Some(Number(123)), code: Some("SOURCE-2"), message: "source 2", sources: None, tags: Some(["qwe", "wex"]), data: None, data_json: None, help: None, location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 371, column: 13 }) })]), tags: Some(["tag1", "tag2"]), data: Some(Data { user_id: 234, user_name: "ajo_sidi" }), data_json: Some(Object {"user_id": Number(234), "user_name": String("ajo_sidi")}), help: Some("please halp!!"), location: Some(ErrorLocation { file: "tests/error_display_debug_test.rs", line: 364, column: 16 }) }"#;
-    #[cfg(not(feature = "serde"))]
-    const EXPECTED_DEBUG_FORMAT: &str = r#"GErrSource {
-    id: Some(
-        "AJO-123",
-    ),
-    code: Some(
-        "AutoCode",
-    ),
-    message: "asd",
-    sources: Some(
-        [
-            Err(
-                ParseIntError {
-                    kind: InvalidDigit,
-                },
-            ),
-            GErr(
-                GErrSource {
-                    id: Some(
-                        123,
-                    ),
-                    code: Some(
-                        "SOURCE-2",
-                    ),
-                    message: "source 2",
-                    sources: None,
-                    tags: Some(
-                        [
-                            "qwe",
-                            "wex",
-                        ],
-                    ),
-                    data: None,
-                    help: None,
-                    location: Some(
-                        ErrorLocation {
-                            file: "tests/error_display_debug_test.rs",
-                            line: 371,
-                            column: 13,
-                        },
-                    ),
-                },
-            ),
-        ],
-    ),
-    tags: Some(
-        [
-            "tag1",
-            "tag2",
-        ],
-    ),
-    data: Some(
-        Data {
-            user_id: 234,
-            user_name: "ajo_sidi",
-        },
-    ),
-    help: Some(
-        "please halp!!",
-    ),
-    location: Some(
-        ErrorLocation {
-            file: "tests/error_display_debug_test.rs",
-            line: 364,
-            column: 16,
-        },
-    ),
-}"#;
-    #[cfg(feature = "serde")]
-    const EXPECTED_DEBUG_FORMAT: &str = r#"GErrSource {
-    id: Some(
-        "AJO-123",
-    ),
-    id_json: Some(
-        String("AJO-123"),
-    ),
-    code: Some(
-        "AutoCode",
-    ),
-    message: "asd",
-    sources: Some(
-        [
-            Err(
-                ParseIntError {
-                    kind: InvalidDigit,
-                },
-            ),
-            GErr(
-                GErrSource {
-                    id: Some(
-                        123,
-                    ),
-                    id_json: Some(
-                        Number(123),
-                    ),
-                    code: Some(
-                        "SOURCE-2",
-                    ),
-                    message: "source 2",
-                    sources: None,
-                    tags: Some(
-                        [
-                            "qwe",
-                            "wex",
-                        ],
-                    ),
-                    data: None,
-                    data_json: None,
-                    help: None,
-                    location: Some(
-                        ErrorLocation {
-                            file: "tests/error_display_debug_test.rs",
-                            line: 371,
-                            column: 13,
-                        },
-                    ),
-                },
-            ),
-        ],
-    ),
-    tags: Some(
-        [
-            "tag1",
-            "tag2",
-        ],
-    ),
-    data: Some(
-        Data {
-            user_id: 234,
-            user_name: "ajo_sidi",
-        },
-    ),
-    data_json: Some(
-        Object {
-            "user_id": Number(234),
-            "user_name": String("ajo_sidi"),
-        },
-    ),
-    help: Some(
-        "please halp!!",
-    ),
-    location: Some(
-        ErrorLocation {
-            file: "tests/error_display_debug_test.rs",
-            line: 364,
-            column: 16,
-        },
-    ),
-}"#;
+    use error_display_debug_test_data::test_gerr_source_debug_data;
     let err = "qwe".parse::<i32>().unwrap_err();
     let gerr = GErr::<ErrIDStrAutoCode, Data>::new_with_id("AJO", "asd")
         .add_tag("tag1")
@@ -377,9 +88,12 @@ fn test_gerr_source_debug() {
         .into_gerr_source();
 
     let debug = format!("{:?}", gerr);
-    assert_eq!(&debug, EXPECTED_DEBUG);
+    assert_eq!(&debug, test_gerr_source_debug_data::EXPECTED_DEBUG);
     let debug_fmt = format!("{:#?}", gerr);
-    assert_eq!(&debug_fmt, EXPECTED_DEBUG_FORMAT);
+    assert_eq!(
+        &debug_fmt,
+        test_gerr_source_debug_data::EXPECTED_DEBUG_FORMAT
+    );
 }
 
 #[test]
