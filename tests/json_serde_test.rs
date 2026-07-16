@@ -5,158 +5,13 @@ use g_err::{json::JsonData, *};
 #[cfg(feature = "serde")]
 use setup_test::*;
 
-#[cfg(feature = "serde")]
-const EXPECTED_JSON_DATA_DEBUG: &str = r#"{
-  "id": "AutoID",
-  "code": "AutoCode",
-  "message": "pretty error: l2k3mr2l3r",
-  "tags": [
-    "tag1",
-    "tag2",
-    "tag3"
-  ],
-  "data": {
-    "user_id": 123,
-    "user_name": "ajo"
-  },
-  "location": {
-    "file": "tests/json_serde_test.rs",
-    "line": 165,
-    "column": 43
-  },
-  "sources": [
-    {
-      "id": null,
-      "code": null,
-      "message": "invalid digit found in string",
-      "tags": null,
-      "data": null,
-      "location": null,
-      "sources": null,
-      "help": null
-    },
-    {
-      "id": 40,
-      "code": "400",
-      "message": "input is invalid: qwe",
-      "tags": [
-        "bad_request",
-        "invalid_input"
-      ],
-      "data": [
-        "user_name",
-        "ajo"
-      ],
-      "location": {
-        "file": "tests/json_serde_test.rs",
-        "line": 175,
-        "column": 14
-      },
-      "sources": [
-        {
-          "id": null,
-          "code": null,
-          "message": "invalid digit found in string",
-          "tags": null,
-          "data": null,
-          "location": null,
-          "sources": null,
-          "help": null
-        },
-        {
-          "id": null,
-          "code": "[OUTBOUND]",
-          "message": "upstream error",
-          "tags": null,
-          "data": null,
-          "location": {
-            "file": "tests/json_serde_test.rs",
-            "line": 184,
-            "column": 18
-          },
-          "sources": [
-            {
-              "id": null,
-              "code": null,
-              "message": "got error from user service",
-              "tags": null,
-              "data": [
-                "caused by:",
-                "timout"
-              ],
-              "location": {
-                "file": "tests/json_serde_test.rs",
-                "line": 184,
-                "column": 66
-              },
-              "sources": null,
-              "help": "contact user service steward"
-            }
-          ],
-          "help": null
-        }
-      ],
-      "help": "pass valid input"
-    },
-    {
-      "id": "AutoID",
-      "code": null,
-      "message": "timeout checks",
-      "tags": [
-        "user_service",
-        "timeout"
-      ],
-      "data": null,
-      "location": {
-        "file": "tests/json_serde_test.rs",
-        "line": 186,
-        "column": 14
-      },
-      "sources": [
-        {
-          "id": null,
-          "code": null,
-          "message": "too many open files",
-          "tags": [
-            "tmof"
-          ],
-          "data": [
-            "MAX",
-            50000
-          ],
-          "location": {
-            "file": "tests/json_serde_test.rs",
-            "line": 189,
-            "column": 18
-          },
-          "sources": null,
-          "help": null
-        }
-      ],
-      "help": null
-    },
-    {
-      "id": "AutoID",
-      "code": null,
-      "message": "connection timeout",
-      "tags": null,
-      "data": null,
-      "location": {
-        "file": "tests/json_serde_test.rs",
-        "line": 190,
-        "column": 14
-      },
-      "sources": null,
-      "help": null
-    }
-  ],
-  "help": "send valid request",
-  "backtrace": "<disabled>"
-}"#;
+#[path = "json_serde_test_data.rs"]
+mod json_serde_test_data;
 
 #[cfg(feature = "serde")]
 #[test]
 fn test_json_serde() {
+    use json_serde_test_data::test_json_serde_data_data;
     let user_id = 123;
     let user_name = "ajo".into();
     let req_id = "l2k3mr2l3r";
@@ -196,7 +51,10 @@ fn test_json_serde() {
 
     // serialize json data into string
     let json_data_ser = serde_json::to_string_pretty(&gerr.json_data()).unwrap();
-    assert_eq!(json_data_ser, EXPECTED_JSON_DATA_DEBUG);
+    assert_eq!(
+        json_data_ser,
+        test_json_serde_data_data::EXPECTED_JSON_DATA_DEBUG
+    );
 
     // deserialize json data into GErr
     let mut deserializer = serde_json::Deserializer::from_str(&json_data_ser);
@@ -695,64 +553,9 @@ fn test_json_serde_data() {
 }
 
 #[cfg(feature = "serde")]
-const EXPECTED_DISPLAY_DATA_JSON: &str = r#"{
-  "gerr_public": {
-    "id": "AutoID",
-    "code": "AutoCode",
-    "message": "pretty error: l2k3mr2l3r",
-    "tags": [
-      "tag1",
-      "tag2",
-      "tag3"
-    ],
-    "data": {
-      "user_id": 123,
-      "user_name": "ajo"
-    },
-    "help": "send valid request",
-    "causes": [
-      {
-        "message": "invalid digit found in string",
-        "caused_by": null
-      },
-      {
-        "message": "400 - input is invalid: qwe",
-        "caused_by": [
-          {
-            "message": "invalid digit found in string",
-            "caused_by": null
-          },
-          {
-            "message": "[OUTBOUND] - upstream error",
-            "caused_by": [
-              {
-                "message": "got error from user service",
-                "caused_by": null
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "message": "timeout checks",
-        "caused_by": [
-          {
-            "message": "too many open files",
-            "caused_by": null
-          }
-        ]
-      },
-      {
-        "message": "connection timeout",
-        "caused_by": null
-      }
-    ]
-  }
-}"#;
-
-#[cfg(feature = "serde")]
 #[test]
 fn test_json_serialize_data() {
+    use json_serde_test_data::test_json_serialize_data_data;
     let user_id = 123;
     let user_name = "ajo".into();
     let req_id = "l2k3mr2l3r";
@@ -789,7 +592,10 @@ fn test_json_serialize_data() {
     let ser = Ser { gerr_public: gerr };
     let ser = serde_json::to_string_pretty(&ser).unwrap();
 
-    assert_eq!(ser, EXPECTED_DISPLAY_DATA_JSON);
+    assert_eq!(
+        ser,
+        test_json_serialize_data_data::EXPECTED_DISPLAY_DATA_JSON
+    );
 }
 
 #[cfg(feature = "serde")]
@@ -852,157 +658,9 @@ fn test_json_serde_data_failed_deser() {
 }
 
 #[cfg(feature = "serde")]
-const WRONG_JSON_DATA: &str = r#"{
-  "id": 123,
-  "code": "AutoCode",
-  "message": "pretty error: l2k3mr2l3r",
-  "tags": [
-    "tag1",
-    "tag2",
-    "tag3"
-  ],
-  "data": {
-    "user_id": 123,
-    "user_name": "ajo"
-  },
-  "location": {
-    "file": "tests/json_serde_test.rs",
-    "line": 861,
-    "column": 43
-  },
-  "sources": [
-    {
-      "id": null,
-      "code": null,
-      "message": "invalid digit found in string",
-      "tags": null,
-      "data": null,
-      "location": null,
-      "sources": null,
-      "help": null
-    },
-    {
-      "id": 40,
-      "code": "400",
-      "message": "input is invalid: qwe",
-      "tags": [
-        "bad_request",
-        "invalid_input"
-      ],
-      "data": [
-        "user_name",
-        "ajo"
-      ],
-      "location": {
-        "file": "tests/json_serde_test.rs",
-        "line": 871,
-        "column": 14
-      },
-      "sources": [
-        {
-          "id": null,
-          "code": null,
-          "message": "invalid digit found in string",
-          "tags": null,
-          "data": null,
-          "location": null,
-          "sources": null,
-          "help": null
-        },
-        {
-          "id": null,
-          "code": "[OUTBOUND]",
-          "message": "upstream error",
-          "tags": null,
-          "data": null,
-          "location": {
-            "file": "tests/json_serde_test.rs",
-            "line": 880,
-            "column": 18
-          },
-          "sources": [
-            {
-              "id": null,
-              "code": null,
-              "message": "got error from user service",
-              "tags": null,
-              "data": [
-                "caused by:",
-                "timout"
-              ],
-              "location": {
-                "file": "tests/json_serde_test.rs",
-                "line": 880,
-                "column": 66
-              },
-              "sources": null,
-              "help": "contact user service steward"
-            }
-          ],
-          "help": null
-        }
-      ],
-      "help": "pass valid input"
-    },
-    {
-      "id": "AutoID",
-      "code": null,
-      "message": "timeout checks",
-      "tags": [
-        "user_service",
-        "timeout"
-      ],
-      "data": null,
-      "location": {
-        "file": "tests/json_serde_test.rs",
-        "line": 882,
-        "column": 14
-      },
-      "sources": [
-        {
-          "id": null,
-          "code": null,
-          "message": "too many open files",
-          "tags": [
-            "tmof"
-          ],
-          "data": [
-            "MAX",
-            50000
-          ],
-          "location": {
-            "file": "tests/json_serde_test.rs",
-            "line": 885,
-            "column": 18
-          },
-          "sources": null,
-          "help": null
-        }
-      ],
-      "help": null
-    },
-    {
-      "id": null,
-      "code": null,
-      "message": "connection timeout",
-      "tags": null,
-      "data": null,
-      "location": {
-        "file": "tests/json_serde_test.rs",
-        "line": 886,
-        "column": 14
-      },
-      "sources": null,
-      "help": null
-    }
-  ],
-  "help": 123,
-  "backtrace": "<disabled>"
-}"#;
-
-#[cfg(feature = "serde")]
 #[test]
 fn test_json_serde_data_failed_deser_json_data() {
+    use json_serde_test_data::test_json_serde_data_failed_deser_json_data_data;
     let user_id = 123;
     let user_name = "ajo".into();
     let req_id = "l2k3mr2l3r";
@@ -1036,13 +694,14 @@ fn test_json_serde_data_failed_deser_json_data() {
             gerr=gerr!("too many open files"; tag="tmof", data=("MAX", 50000))),
         gerr=gerr!("connection timeout"),
     );
-    dbg!(&gerr);
+
     let json = ::serde_json::to_string_pretty(&gerr.json_data()).unwrap();
     let mut deserializer = serde_json::Deserializer::from_str(&json);
     let err: GErr<(), Data> = g_err::serde::json::deserialize(&mut deserializer).unwrap();
     assert!(err.id().is_none());
 
-    let json_data: core::result::Result<JsonData, _> = ::serde_json::from_str(&WRONG_JSON_DATA);
+    let json_data: core::result::Result<JsonData, _> =
+        ::serde_json::from_str(&test_json_serde_data_failed_deser_json_data_data::WRONG_JSON_DATA);
     assert!(json_data.is_err());
 
     let json = r#"-"#;
