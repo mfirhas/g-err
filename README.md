@@ -30,7 +30,7 @@ This gives an error type which is good for libraries and applications.
 - Error reporting: you can report error in many form(pretty format, markdown, trace, or json), or you can create your own report format by implementing [`Report`] trait.
 - Result extension: work and chain the errors with Result type.
 - JSON serde: for cross-boundaries communication, error can be serde'd in form of JSON.
-- `no_std`.
+- `no_std` (`alloc` is included in `no_std` setting).
 
 ## Why?
 When you deal with error, usually we ended up with question what kind of error which we'll be using. It can be as simple as `&'static str'`, but can't be formatted. Using `String` helps, but what if you need literal string?.
