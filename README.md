@@ -70,6 +70,12 @@ There are 2 traits for extending Result: [`ResultExt`] for non-gerr errors and [
 If a function return general/non-gerr errors, e.g. ParseIntError, use former one. If the error is GErr, or any error convertible to [`GErrSource`], use the latter.
 It's good for chaining up with results for multiple layers.
 
+## Serde
+There are 3 kinds of serde supported:
+- Default serialization only to string.
+- Serialization only with JSON format using `#[serde(serialize_with = "g_err::serde::display_json::serialize")]`
+- Both serialization and deserialization with JSON format using `#[serde(with = "g_err::serde::json")]`
+
 ## Example
 ```rust
 #[cfg(feature = "serde")]
