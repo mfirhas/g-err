@@ -98,7 +98,7 @@ jobs:
               message="vulnerabilities found"
             fi
           elif [ "$warnings" -gt 0 ]; then
-            result="⚠️ WARNINGS"
+            result="⚠️ WARNING"
             message="warnings found"
           else
             result="✅ PASS"
