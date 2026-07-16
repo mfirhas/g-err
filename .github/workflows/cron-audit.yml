@@ -42,6 +42,19 @@ jobs:
         if: steps.schedule.outputs.run == 'true'
         uses: actions/checkout@v6
 
+      - name: Cache run data
+        id: cron-audit-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+            target
+          key: ${{ runner.os }}-cron-audit-cache-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cron-audit-cache-
+
       - name: Install stable Rust
         if: steps.schedule.outputs.run == 'true'
         uses: dtolnay/rust-toolchain@stable
