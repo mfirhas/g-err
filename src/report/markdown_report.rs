@@ -1,6 +1,6 @@
 extern crate alloc;
 use alloc::format;
-use alloc::string::{String, ToString};
+use alloc::string::String;
 
 use crate::{Config, Source, gerr_view::GErrView};
 
@@ -94,17 +94,18 @@ impl MarkdownReport {
                     }
 
                     crate::gerr::Source::GErr(gerr) => {
-                        let msg = match gerr.code.as_deref() {
-                            Some(code) => format!("{code} {}", gerr.message),
-                            None => gerr.message.to_string(),
-                        };
-
-                        let _ = writeln!(out, "### {}. {}\n", i, msg);
+                        let _ = writeln!(out, "### {}. {}\n", i, gerr.message);
 
                         if let Some(id) = gerr.id.as_ref() {
                             let _ = writeln!(out, "- **ID:** `{}`\n", id);
                         } else {
                             let _ = writeln!(out, "- **ID:** `-`\n");
+                        }
+
+                        if let Some(code) = gerr.code.as_deref() {
+                            let _ = writeln!(out, "- **Code:** `{}`\n", code);
+                        } else {
+                            let _ = writeln!(out, "- **Code:** `-`\n");
                         }
 
                         if let Some(ref loc) = gerr.location {
@@ -157,20 +158,18 @@ impl MarkdownReport {
                 }
 
                 Source::GErr(gerr) => {
-                    match gerr.code.as_deref() {
-                        Some(code) => {
-                            let _ = writeln!(out, "{code} {}", gerr.message);
-                        }
-                        None => {
-                            let _ = writeln!(out, "{}", gerr.message);
-                        }
-                    }
+                    let _ = writeln!(out, "{}", gerr.message);
 
-                    let _ = writeln!(out);
                     if let Some(id) = gerr.id.as_ref() {
                         let _ = writeln!(out, "{item_indent}- **ID:** `{}`", id);
                     } else {
                         let _ = writeln!(out, "{item_indent}- **ID:** `-`");
+                    }
+
+                    if let Some(code) = gerr.code.as_deref() {
+                        let _ = writeln!(out, "{item_indent}- **Code:** `{}`", code);
+                    } else {
+                        let _ = writeln!(out, "{item_indent}- **Code:** `-`");
                     }
 
                     if let Some(ref loc) = gerr.location {
@@ -192,7 +191,6 @@ impl MarkdownReport {
                     }
 
                     if let Some(data) = &gerr.data {
-                        let _ = writeln!(out);
                         let _ = writeln!(out, "{item_indent}- **Data:**");
                         let _ = writeln!(out);
                         let _ = writeln!(out, "{item_indent}```text");

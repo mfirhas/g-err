@@ -171,9 +171,11 @@ tests/report_test.rs:59:43
 
 ### 1. invalid digit found in string
 
-### 2. 400 input is invalid: qwe
+### 2. input is invalid: qwe
 
 - **ID:** `40`
+
+- **Code:** `400`
 
 - **Location:** `tests/report_test.rs:69:14`
 
@@ -193,17 +195,16 @@ tests/report_test.rs:59:43
 
     1. invalid digit found in string
 
-    2. [OUTBOUND] upstream error
-
+    2. upstream error
         - **ID:** `-`
+        - **Code:** `[OUTBOUND]`
         - **Location:** `tests/report_test.rs:78:18`
         - **Causes:**
             1. got error from user service
-
                 - **ID:** `-`
+                - **Code:** `-`
                 - **Location:** `tests/report_test.rs:78:66`
                 - **Help:** *contact user service steward*
-
                 - **Data:**
 
                 ```text
@@ -218,6 +219,8 @@ tests/report_test.rs:59:43
 
 - **ID:** `AutoID`
 
+- **Code:** `-`
+
 - **Location:** `tests/report_test.rs:80:14`
 
 - **Tags:** *user_service, timeout*
@@ -225,11 +228,10 @@ tests/report_test.rs:59:43
 - **Causes:**
 
     1. too many open files
-
         - **ID:** `-`
+        - **Code:** `-`
         - **Location:** `tests/report_test.rs:83:18`
         - **Tags:** *tmof*
-
         - **Data:**
 
         ```text
@@ -278,9 +280,11 @@ tests/report_test.rs:59:43
 
 ### 1. invalid digit found in string
 
-### 2. 400 input is invalid: qwe
+### 2. input is invalid: qwe
 
 - **ID:** `40`
+
+- **Code:** `400`
 
 - **Location:** `tests/report_test.rs:69:14`
 
@@ -300,17 +304,16 @@ tests/report_test.rs:59:43
 
     1. invalid digit found in string
 
-    2. [OUTBOUND] upstream error
-
+    2. upstream error
         - **ID:** `-`
+        - **Code:** `[OUTBOUND]`
         - **Location:** `tests/report_test.rs:78:18`
         - **Causes:**
             1. got error from user service
-
                 - **ID:** `-`
+                - **Code:** `-`
                 - **Location:** `tests/report_test.rs:78:66`
                 - **Help:** *contact user service steward*
-
                 - **Data:**
 
                 ```text
@@ -325,6 +328,8 @@ tests/report_test.rs:59:43
 
 - **ID:** `AutoID`
 
+- **Code:** `-`
+
 - **Location:** `tests/report_test.rs:80:14`
 
 - **Tags:** *user_service, timeout*
@@ -332,11 +337,10 @@ tests/report_test.rs:59:43
 - **Causes:**
 
     1. too many open files
-
         - **ID:** `-`
+        - **Code:** `-`
         - **Location:** `tests/report_test.rs:83:18`
         - **Tags:** *tmof*
-
         - **Data:**
 
         ```text
