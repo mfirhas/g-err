@@ -93,19 +93,18 @@ impl PrettyReport {
                     }
 
                     Source::GErr(gerr) => {
-                        match gerr.code.as_deref() {
-                            Some(code) => {
-                                let _ = writeln!(out, "  {i}: {code} {}", gerr.message);
-                            }
-                            None => {
-                                let _ = writeln!(out, "  {i}: {}", gerr.message);
-                            }
-                        }
+                        let _ = writeln!(out, "  {i}: {}", gerr.message);
 
                         if let Some(id) = gerr.id.as_ref() {
                             let _ = writeln!(out, "     id: {}", id);
                         } else {
                             let _ = writeln!(out, "     id: -");
+                        }
+
+                        if let Some(code) = gerr.code.as_deref() {
+                            let _ = writeln!(out, "     code: {}", code);
+                        } else {
+                            let _ = writeln!(out, "     code: -");
                         }
 
                         if let Some(ref loc) = gerr.location {
@@ -151,19 +150,18 @@ impl PrettyReport {
                 }
 
                 Source::GErr(gerr) => {
-                    match gerr.code.as_deref() {
-                        Some(code) => {
-                            let _ = writeln!(out, "{pad}- {code} {}", gerr.message);
-                        }
-                        None => {
-                            let _ = writeln!(out, "{pad}- {}", gerr.message);
-                        }
-                    }
+                    let _ = writeln!(out, "{pad}- {}", gerr.message);
 
                     if let Some(id) = gerr.id.as_ref() {
                         let _ = writeln!(out, "{pad}  id: {}", id);
                     } else {
                         let _ = writeln!(out, "{pad}  id: -");
+                    }
+
+                    if let Some(code) = gerr.code.as_deref() {
+                        let _ = writeln!(out, "{pad}  code: {}", code);
+                    } else {
+                        let _ = writeln!(out, "{pad}  code: -");
                     }
 
                     if let Some(ref loc) = gerr.location {
