@@ -18,6 +18,7 @@ exclude = [
   ".github/**",
   ".gitignore",
   "Makefile",
+  "AUDIT.md",
   "AGENTS.md",
 ]
 
