@@ -111,7 +111,7 @@ jobs:
           - Last Checked (UTC): $(date -u +"%Y-%m-%d %H:%M:%S UTC")
           - Tool: cargo-audit
           - Command status: exit code $STATUS
-          - Audit status: $RESULT: $MESSAGE
+          - Audit status: $RESULT — $MESSAGE
 
           ## Result
 
