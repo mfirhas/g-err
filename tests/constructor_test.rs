@@ -63,7 +63,7 @@ fn test_new_auto() {
     assert_eq!(gerr.code().unwrap(), "AutoCode");
     assert_eq!(gerr.message(), "id and code are auto");
 
-    // auto id, auto prefix, with data
+    // auto id, auto code, with data
     let gerr: GErr<ErrAutoIDCode, Data> = GErr::new("all").set_data(Data {
         user_id: 234,
         user_name: "xxx".into(),

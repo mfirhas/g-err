@@ -78,7 +78,7 @@ fn test_macro_set_manual_id() {
 }
 
 #[test]
-fn test_macro_set_manual_prefix() {
+fn test_macro_set_manual_code() {
     let gerr = gerr!(
         "test: {}", 123;
         code="anu",
@@ -116,7 +116,7 @@ fn test_macro_id_auto() {
 }
 
 #[test]
-fn test_macro_prefix_auto() {
+fn test_macro_code_auto() {
     let gerr = gerr!("asdsdf: {}", 234; config=ErrAutoCode);
     dbg!(&gerr);
 
@@ -150,7 +150,7 @@ fn test_macro_id_auto_return() {
 }
 
 #[test]
-fn test_macro_prefix_auto_return() {
+fn test_macro_code_auto_return() {
     let gerr: GErr<ErrAutoCode> = gerr!("test: {}", 5; config=ErrAutoCode);
 
     dbg!(&gerr);

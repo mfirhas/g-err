@@ -436,7 +436,7 @@ const EXPECTED_TRACE_REPORT: &str = r#"[AutoID][AutoCode] pretty error: l2k3mr2l
    └─ [-][-] too many open files
 "#;
 
-const EXPECTED_TRACE_REPORT_NO_PREFIX: &str = r#"[AutoID][-] pretty error: l2k3mr2l3r
+const EXPECTED_TRACE_REPORT_NO_CODE: &str = r#"[AutoID][-] pretty error: l2k3mr2l3r
 ├─ invalid digit found in string
 ├─ [40][400] input is invalid: qwe
 │  ├─ invalid digit found in string
@@ -518,5 +518,5 @@ fn test_trace_report() {
     );
 
     let trace_report = gerr.report_as::<TraceReport>();
-    assert_eq!(trace_report, EXPECTED_TRACE_REPORT_NO_PREFIX);
+    assert_eq!(trace_report, EXPECTED_TRACE_REPORT_NO_CODE);
 }

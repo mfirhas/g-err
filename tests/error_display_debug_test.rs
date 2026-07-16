@@ -170,7 +170,7 @@ fn test_gerr_debug() {
 #[test]
 fn test_gerr_display() {
     const EXPECTED_DISPLAY: &str = "[AJO-123][AutoCode] asd";
-    const EXPECTED_DISPLAY_WITHOUT_PREFIX: &str = "[AJO-123][-] zxc";
+    const EXPECTED_DISPLAY_WITHOUT_CODE: &str = "[AJO-123][-] zxc";
     let err = "qwe".parse::<i32>().unwrap_err();
     let gerr: GErr<ErrIDStrAutoCode, Data> = GErr::new_with_id("AJO", "asd")
         .add_tag("tag1")
@@ -202,7 +202,7 @@ fn test_gerr_display() {
             user_name: "ajo_sidi".into(),
         });
     let display = format!("{}", gerr);
-    assert_eq!(&display, EXPECTED_DISPLAY_WITHOUT_PREFIX);
+    assert_eq!(&display, EXPECTED_DISPLAY_WITHOUT_CODE);
 }
 
 #[test]
@@ -385,7 +385,7 @@ fn test_gerr_source_debug() {
 #[test]
 fn test_gerr_source_display() {
     const EXPECTED_DISPLAY: &str = "AutoCode - asd";
-    const EXPECTED_DISPLAY_WITHOUT_PREFIX: &str = "[AJO-123][-] zxc";
+    const EXPECTED_DISPLAY_WITHOUT_CODE: &str = "[AJO-123][-] zxc";
     let err = "qwe".parse::<i32>().unwrap_err();
     let gerr: GErrSource = GErr::<ErrIDStrAutoCode, Data>::new_with_id("AJO", "asd")
         .add_tag("tag1")
@@ -421,7 +421,7 @@ fn test_gerr_source_display() {
         });
 
     let display = format!("{}", gerr);
-    assert_eq!(&display, EXPECTED_DISPLAY_WITHOUT_PREFIX);
+    assert_eq!(&display, EXPECTED_DISPLAY_WITHOUT_CODE);
 }
 
 use core::error::Error;

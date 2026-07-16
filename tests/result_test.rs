@@ -32,7 +32,7 @@ fn parse_email(email: &str) -> Result<String, ErrAutoID, NoData> {
 }
 
 fn get_email(email: &str) -> Result<String, ErrAutoCode, Data> {
-    parse_email(email).wrap_err(gerr!("failed getting email: {}", email; config=ErrAutoCode, data=Data { user_id: 123, user_name: "ajo".into() }))
+    parse_email(email).wrap_err(gerr!("failed getting email: {}", email; config, data=Data { user_id: 123, user_name: "ajo".into() }))
 }
 
 fn use_case(

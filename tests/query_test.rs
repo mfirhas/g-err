@@ -89,7 +89,7 @@ fn test_iterator_id() {
 }
 
 #[test]
-fn test_iter_prefix() {
+fn test_iter_code() {
     let int_err = "wer".parse::<i32>().unwrap_err();
     let gerr = gerr!("id iterator error: {}", 1;
         config=ErrAutoIDCode,
@@ -98,11 +98,11 @@ fn test_iter_prefix() {
         gerr=gerr!("source err: {}", 69; tag="69", gerr=gerr!("asd"; config=ErrAutoID, gerr=gerr!("xcv"; config=ErrIDi32, id=42))),
     );
 
-    let iter_by_prefix = gerr.iter_by_code("anu").count();
-    assert_eq!(iter_by_prefix, 1);
+    let iter_by_code = gerr.iter_by_code("anu").count();
+    assert_eq!(iter_by_code, 1);
 
-    let iter_by_prefix = gerr.iter_by_code("AutoCode").count();
-    assert_eq!(iter_by_prefix, 1);
+    let iter_by_code = gerr.iter_by_code("AutoCode").count();
+    assert_eq!(iter_by_code, 1);
 }
 
 #[test]
