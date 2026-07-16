@@ -64,15 +64,37 @@ jobs:
           tmp=$(mktemp)
           jq . audit.json > "$tmp" && mv "$tmp" audit.json
 
-          if [ "$status" -eq 0 ]; then
-            result="PASS"
+          vulnerabilities=$(jq -r '.vulnerabilities.found' audit.json)
+
+          warnings=$(
+            jq '
+              .warnings
+              | to_entries
+              | map(.value | length)
+              | add // 0
+            ' audit.json
+          )
+
+          if [ "$vulnerabilities" = "true" ]; then
+            if [ "$warnings" -gt 0 ]; then
+              result="❌ FAIL"
+              message="vulnerabilities and warnings found"
+            else
+              result="❌ FAIL"
+              message="vulnerabilities found"
+            fi
+          elif [ "$warnings" -gt 0 ]; then
+            result="⚠️ WARNINGS"
+            message="warnings found"
           else
-            result="FAIL"
+            result="✅ PASS"
+            message="no vulnerabilities or warnings found"
           fi
 
           {
             echo "STATUS=$status"
             echo "RESULT=$result"
+            echo "MESSAGE=$message"
           } >> "$GITHUB_ENV"
 
       - name: Generate AUDIT.md
@@ -88,7 +110,8 @@ jobs:
 
           - Last Checked (UTC): $(date -u +"%Y-%m-%d %H:%M:%S UTC")
           - Tool: cargo-audit
-          - Status: $RESULT (exit code $STATUS)
+          - Command status: exit code $STATUS
+          - Audit status: $RESULT: $MESSAGE
 
           ## Result
 
@@ -111,6 +134,6 @@ jobs:
             exit 0
           fi
 
-          git commit -m "cron-audit: $RESULT (exit code $STATUS)"
+          git commit -m "cron-audit: $RESULT — $MESSAGE"
           git push
           rm -f audit.json
