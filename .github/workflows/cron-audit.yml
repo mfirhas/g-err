@@ -1,10 +1,17 @@
 name: cron-audit
 
+env:
+  RUST_VERSION: 1.95.0
+
 on:
   workflow_dispatch:
   schedule:
     # Every Monday at 00:00 UTC
     - cron: "0 0 * * 1"
+
+concurrency:
+  group: ${{ github.repository }}-cron-audit
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -38,6 +45,8 @@ jobs:
       - name: Install stable Rust
         if: steps.schedule.outputs.run == 'true'
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
 
       - name: Install cargo-audit
         if: steps.schedule.outputs.run == 'true'
