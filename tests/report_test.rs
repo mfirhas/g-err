@@ -4,130 +4,12 @@ use setup_test::*;
 
 use g_err::*;
 
-#[cfg(not(feature = "backtrace"))]
-const EXPECTED_REPORT: &str = r#"Error Report
-============
-ID: AutoID
-Code: AutoCode
-Message: pretty error: l2k3mr2l3r
-Data:
-   Data {
-       user_id: 123,
-       user_name: "ajo",
-   }
-Help: send valid request
-Tags:
-  - tag1
-  - tag2
-  - tag3
-Location: tests/report_test.rs:136:43
-Caused by:
-  1: invalid digit found in string
-  2: 400 input is invalid: qwe
-     id: 40
-     at: tests/report_test.rs:146:14
-     tags: bad_request, invalid_input
-     help: pass valid input
-     data:
-       (
-           "user_name",
-           "ajo",
-       )
-     caused by:
-      - invalid digit found in string
-      - [OUTBOUND] upstream error
-        id: -
-        at: tests/report_test.rs:155:18
-        caused by:
-         - got error from user service
-           id: -
-           at: tests/report_test.rs:155:66
-           help: contact user service steward
-           data:
-             (
-                 "caused by:",
-                 "timout",
-             )
-  3: timeout checks
-     id: AutoID
-     at: tests/report_test.rs:157:14
-     tags: user_service, timeout
-     caused by:
-      - too many open files
-        id: -
-        at: tests/report_test.rs:160:18
-        tags: tmof
-        data:
-          (
-              "MAX",
-              50000,
-          )
-"#;
-
-#[cfg(feature = "backtrace")]
-const EXPECTED_REPORT: &str = r#"Error Report
-============
-ID: AutoID
-Code: AutoCode
-Message: pretty error: l2k3mr2l3r
-Data:
-   Data {
-       user_id: 123,
-       user_name: "ajo",
-   }
-Help: send valid request
-Tags:
-  - tag1
-  - tag2
-  - tag3
-Location: tests/report_test.rs:136:43
-Caused by:
-  1: invalid digit found in string
-  2: 400 input is invalid: qwe
-     id: 40
-     at: tests/report_test.rs:146:14
-     tags: bad_request, invalid_input
-     help: pass valid input
-     data:
-       (
-           "user_name",
-           "ajo",
-       )
-     caused by:
-      - invalid digit found in string
-      - [OUTBOUND] upstream error
-        id: -
-        at: tests/report_test.rs:155:18
-        caused by:
-         - got error from user service
-           id: -
-           at: tests/report_test.rs:155:66
-           help: contact user service steward
-           data:
-             (
-                 "caused by:",
-                 "timout",
-             )
-  3: timeout checks
-     id: AutoID
-     at: tests/report_test.rs:157:14
-     tags: user_service, timeout
-     caused by:
-      - too many open files
-        id: -
-        at: tests/report_test.rs:160:18
-        tags: tmof
-        data:
-          (
-              "MAX",
-              50000,
-          )
-Backtrace:
-<disabled>
-"#;
+#[path = "report_test_data.rs"]
+mod report_test_data;
 
 #[test]
 fn test_pretty_report() {
+    use report_test_data::test_pretty_report_data;
     let user_id = 123;
     let user_name = "ajo".into();
     let req_id = "l2k3mr2l3r";
@@ -161,234 +43,14 @@ fn test_pretty_report() {
     );
 
     let pretty_report = gerr.report();
-    // println!("{}", pretty_report);
-    assert_eq!(pretty_report, EXPECTED_REPORT);
+    assert_eq!(pretty_report, test_pretty_report_data::EXPECTED_REPORT);
     let pretty_report = gerr.report_as::<PrettyReport>();
-    assert_eq!(pretty_report, EXPECTED_REPORT);
+    assert_eq!(pretty_report, test_pretty_report_data::EXPECTED_REPORT);
 }
-
-#[cfg(not(feature = "backtrace"))]
-const EXPECTED_MARKDOWN_REPORT: &str = r#"# Error Report
-
-## ID: AutoID
-
-## Code: AutoCode
-
-## Message
-
-> pretty error: l2k3mr2l3r
-
-## Data
-
-```
-Data {
-    user_id: 123,
-    user_name: "ajo",
-}
-```
-
-## Help
-
-> send valid request
-
-## Tags
-
-- tag1
-- tag2
-- tag3
-
-## Location
-
-tests/report_test.rs:397:43
-
-## Causes
-
-### 1. invalid digit found in string
-
-### 2. 400 input is invalid: qwe
-
-- **ID:** `40`
-
-- **Location:** `tests/report_test.rs:407:14`
-
-- **Tags:** *bad_request, invalid_input*
-
-- **Help:** *pass valid input*
-
-- **Data:**
-
-```
-(
-    "user_name",
-    "ajo",
-)
-```
-- **Causes:**
-
-    1. invalid digit found in string
-
-    2. [OUTBOUND] upstream error
-
-        - **ID:** `-`
-        - **Location:** `tests/report_test.rs:416:18`
-        - **Causes:**
-            1. got error from user service
-
-                - **ID:** `-`
-                - **Location:** `tests/report_test.rs:416:66`
-                - **Help:** *contact user service steward*
-
-                - **Data:**
-
-                ```text
-                (
-                    "caused by:",
-                    "timout",
-                )
-                ```
-
-
-### 3. timeout checks
-
-- **ID:** `AutoID`
-
-- **Location:** `tests/report_test.rs:418:14`
-
-- **Tags:** *user_service, timeout*
-
-- **Causes:**
-
-    1. too many open files
-
-        - **ID:** `-`
-        - **Location:** `tests/report_test.rs:421:18`
-        - **Tags:** *tmof*
-
-        - **Data:**
-
-        ```text
-        (
-            "MAX",
-            50000,
-        )
-        ```
-
-"#;
-#[cfg(feature = "backtrace")]
-const EXPECTED_MARKDOWN_REPORT: &str = r#"# Error Report
-
-## ID: AutoID
-
-## Code: AutoCode
-
-## Message
-
-> pretty error: l2k3mr2l3r
-
-## Data
-
-```
-Data {
-    user_id: 123,
-    user_name: "ajo",
-}
-```
-
-## Help
-
-> send valid request
-
-## Tags
-
-- tag1
-- tag2
-- tag3
-
-## Location
-
-tests/report_test.rs:397:43
-
-## Causes
-
-### 1. invalid digit found in string
-
-### 2. 400 input is invalid: qwe
-
-- **ID:** `40`
-
-- **Location:** `tests/report_test.rs:407:14`
-
-- **Tags:** *bad_request, invalid_input*
-
-- **Help:** *pass valid input*
-
-- **Data:**
-
-```
-(
-    "user_name",
-    "ajo",
-)
-```
-- **Causes:**
-
-    1. invalid digit found in string
-
-    2. [OUTBOUND] upstream error
-
-        - **ID:** `-`
-        - **Location:** `tests/report_test.rs:416:18`
-        - **Causes:**
-            1. got error from user service
-
-                - **ID:** `-`
-                - **Location:** `tests/report_test.rs:416:66`
-                - **Help:** *contact user service steward*
-
-                - **Data:**
-
-                ```text
-                (
-                    "caused by:",
-                    "timout",
-                )
-                ```
-
-
-### 3. timeout checks
-
-- **ID:** `AutoID`
-
-- **Location:** `tests/report_test.rs:418:14`
-
-- **Tags:** *user_service, timeout*
-
-- **Causes:**
-
-    1. too many open files
-
-        - **ID:** `-`
-        - **Location:** `tests/report_test.rs:421:18`
-        - **Tags:** *tmof*
-
-        - **Data:**
-
-        ```text
-        (
-            "MAX",
-            50000,
-        )
-        ```
-
-## Backtrace
-
-```
-<disabled>
-```
-"#;
 
 #[test]
 fn test_markdown_report() {
+    use report_test_data::test_markdown_report_data;
     let user_id = 123;
     let user_name = "ajo".into();
     let req_id = "l2k3mr2l3r";
@@ -422,32 +84,15 @@ fn test_markdown_report() {
     );
 
     let markdown_report = gerr.report_as::<MarkdownReport>();
-    println!("{}", markdown_report);
-    assert_eq!(markdown_report, EXPECTED_MARKDOWN_REPORT);
+    assert_eq!(
+        markdown_report,
+        test_markdown_report_data::EXPECTED_MARKDOWN_REPORT
+    );
 }
-
-const EXPECTED_TRACE_REPORT: &str = r#"[AutoID][AutoCode] pretty error: l2k3mr2l3r
-├─ invalid digit found in string
-├─ [40][400] input is invalid: qwe
-│  ├─ invalid digit found in string
-│  └─ [-][[OUTBOUND]] upstream error
-│     └─ [-][-] got error from user service
-└─ [AutoID][-] timeout checks
-   └─ [-][-] too many open files
-"#;
-
-const EXPECTED_TRACE_REPORT_NO_CODE: &str = r#"[AutoID][-] pretty error: l2k3mr2l3r
-├─ invalid digit found in string
-├─ [40][400] input is invalid: qwe
-│  ├─ invalid digit found in string
-│  └─ [-][[OUTBOUND]] upstream error
-│     └─ [-][-] got error from user service
-└─ [AutoID][-] timeout checks
-   └─ [-][-] too many open files
-"#;
 
 #[test]
 fn test_trace_report() {
+    use report_test_data::test_trace_report_data;
     let user_id = 123;
     let user_name = "ajo".into();
     let req_id = "l2k3mr2l3r";
@@ -481,7 +126,7 @@ fn test_trace_report() {
     );
 
     let trace_report = gerr.report_as::<TraceReport>();
-    assert_eq!(trace_report, EXPECTED_TRACE_REPORT);
+    assert_eq!(trace_report, test_trace_report_data::EXPECTED_TRACE_REPORT);
 
     // ----------------------------------------------------------
 
@@ -518,5 +163,8 @@ fn test_trace_report() {
     );
 
     let trace_report = gerr.report_as::<TraceReport>();
-    assert_eq!(trace_report, EXPECTED_TRACE_REPORT_NO_CODE);
+    assert_eq!(
+        trace_report,
+        test_trace_report_data::EXPECTED_TRACE_REPORT_NO_CODE
+    );
 }
