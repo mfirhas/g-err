@@ -1,6 +1,8 @@
 extern crate alloc;
 
 use alloc::borrow::Cow;
+use alloc::boxed::Box;
+use alloc::vec::Vec;
 
 use core::{
     any::Any,

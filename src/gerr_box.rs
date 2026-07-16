@@ -1,5 +1,7 @@
 extern crate alloc;
 
+use alloc::boxed::Box;
+
 use crate::types::DefaultConfig;
 use crate::{Config, GErr, GErrSource, GErrView, NoData};
 use crate::{DataSource, IdSource};

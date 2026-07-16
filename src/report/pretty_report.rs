@@ -1,3 +1,7 @@
+extern crate alloc;
+use alloc::format;
+use alloc::string::String;
+
 use super::Report;
 use crate::Config;
 use crate::gerr::Source;

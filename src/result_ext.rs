@@ -1,4 +1,5 @@
 extern crate alloc;
+use alloc::boxed::Box;
 
 use crate::GErrSource;
 use crate::{

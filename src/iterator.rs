@@ -5,6 +5,7 @@
 //! Produce iterator using [`GErr::iter`] method producing [`GErrTree`].
 //!
 //! [`GErrTree`] is traversed by DFS method.
+use alloc::vec;
 use alloc::vec::Vec;
 use core::error::Error;
 use core::fmt::{Debug, Display};

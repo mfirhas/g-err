@@ -1,3 +1,8 @@
+extern crate alloc;
+use alloc::format;
+use alloc::string::String;
+use alloc::vec::Vec;
+
 use super::Report;
 use crate::gerr::{Config, Source};
 use crate::gerr_view::GErrView;

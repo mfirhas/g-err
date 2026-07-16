@@ -1,3 +1,7 @@
+extern crate alloc;
+use alloc::format;
+use alloc::string::{String, ToString};
+
 use crate::{Config, Source, gerr_view::GErrView};
 
 use super::Report;
