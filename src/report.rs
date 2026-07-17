@@ -3,9 +3,6 @@ extern crate alloc;
 use alloc::string::String;
 use core::fmt::{Debug, Display};
 
-#[cfg(feature = "std")]
-extern crate std;
-
 mod pretty_report;
 pub use pretty_report::PrettyReport;
 
