@@ -6,6 +6,7 @@
 
 OUT_DIR := target/coverage
 OUT_FILE := $(OUT_DIR)/lcov.info
+MIN_COVERAGE ?= 95
 
 check:
 	@RUSTFLAGS="-D warnings" cargo check
@@ -55,6 +56,21 @@ branch:
 			"_test\.rs$$|\
 			tests/|\
 			examples/"
+
+coverage-check:
+	@coverage=$$( \
+		lcov --summary target/coverage/lcov.info 2>&1 | \
+		awk '/lines\.*:/ {gsub("%","",$$2); print $$2}' \
+	); \
+	echo "Coverage: $$coverage%"; \
+	awk -v actual="$$coverage" -v min="$(MIN_COVERAGE)" ' \
+	BEGIN { \
+		if (actual < min) { \
+			printf "Coverage %.2f%% is below minimum %.2f%%\n", actual, min; \
+			exit 1; \
+		} \
+		printf "Coverage %.2f%% meets minimum %.2f%%\n", actual, min; \
+	}'
 
 all:
 	@echo "Running all checks..."
