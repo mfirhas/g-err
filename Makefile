@@ -7,6 +7,15 @@
 OUT_DIR := target/coverage
 OUT_FILE := $(OUT_DIR)/lcov.info
 
+check:
+	@RUSTFLAGS="-D warnings" cargo check
+	@cargo clippy -- -D warnings
+	@RUSTDOCFLAGS="-D warnings" cargo doc
+	# all features enabled
+	@RUSTFLAGS="-D warnings" cargo check --all-features
+	@cargo clippy --all-features -- -D warnings
+	@RUSTDOCFLAGS="-D warnings" cargo doc --all-features
+
 test:
 	@echo "Running tests..."
 	@cargo test
