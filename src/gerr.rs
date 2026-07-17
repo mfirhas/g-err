@@ -23,11 +23,7 @@ use std::backtrace::Backtrace;
 
 use alloc::borrow::Cow;
 
-/// Error config for:
-/// - Configure error id type.
-/// - Configure error id auto-generation.
-/// - Configure error code.
-/// - Configure error display.
+/// Error config.
 pub trait Config {
     /// Error code.
     const CODE: Option<&'static str> = None;

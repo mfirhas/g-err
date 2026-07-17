@@ -14,7 +14,7 @@ use alloc::borrow::Cow;
 
 impl<T, E> sealed::Sealed for core::result::Result<T, E> {}
 
-/// Extension for Result wrapping `E` as GErr's source.
+/// Extension for Result wrapping `E` as any error.
 ///
 /// This is for general error, including GErr itself.
 ///
