@@ -115,10 +115,17 @@ jobs:
           override: true
 
       - name: Install cargo-llvm-cov
+        if: steps.cache.outputs.cache-hit != 'true'
         run: which cargo-llvm-cov || cargo install cargo-llvm-cov --locked
 
       - name: Generate lcov
         run: make lcov
+
+      - name: Debug LCOV
+        run: |
+          ls -lh target/coverage
+          head -20 target/coverage/lcov.info
+          lcov --summary target/coverage/lcov.info
 
       - name: Check coverage
         run: make coverage-check
