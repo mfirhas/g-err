@@ -51,6 +51,8 @@ impl PrettyReport {
         }
         if let Some(code) = err.code {
             let _ = writeln!(out, "Code: {code}");
+        } else {
+            let _ = writeln!(out, "Code: -");
         }
         let _ = writeln!(out, "Message: {}", err.message);
     }
