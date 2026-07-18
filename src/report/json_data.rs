@@ -179,9 +179,9 @@ where
             let id_val: C::Id = serde_json::from_value(the_id).map_err(|err| {
                 gerr!(
                     "failed converting id to ID = {}",
-                    core::any::type_name::<C::Id>()
+                    core::any::type_name::<C::Id>();
+                    source = err,
                 )
-                .add_source(err)
             })?;
             Some(id_val)
         } else {
@@ -194,9 +194,9 @@ where
             err = err.set_data(serde_json::from_value(data).map_err(|err| {
                 gerr!(
                     "failed converting data into D = {}",
-                    core::any::type_name::<D>()
+                    core::any::type_name::<D>();
+                    source = err,
                 )
-                .add_source(err)
             })?);
         }
 
