@@ -70,7 +70,7 @@ struct LocationJson<'a> {
 struct SourceJson<'a> {
     pub id: Option<&'a serde_json::Value>,
     pub code: Option<&'a str>,
-    pub message: String,
+    pub message: Cow<'a, str>,
     pub tags: Option<&'a [Cow<'static, str>]>,
     pub data: Option<&'a serde_json::Value>,
     pub location: Option<LocationJson<'a>>,
@@ -114,7 +114,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
             Source::Err(err) => Self {
                 id: Some(&NO_ID_JSON),
                 code: None,
-                message: err.to_string(),
+                message: Cow::Owned(err.to_string()),
                 tags: None,
                 data: None,
                 location: None,
@@ -124,7 +124,7 @@ impl<'a> From<&'a Source> for SourceJson<'a> {
             Source::GErr(gerr) => Self {
                 id: gerr.id_json.as_ref(),
                 code: gerr.code.as_deref(),
-                message: gerr.message.to_string(),
+                message: Cow::Borrowed(&gerr.message),
                 tags: gerr.tags.as_deref(),
                 data: gerr.data_json.as_ref(),
                 location: gerr.location.as_ref().map(|loc| LocationJson {
