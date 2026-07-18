@@ -106,13 +106,11 @@ where
     }
 }
 
-pub static NO_ID_JSON: serde_json::Value = serde_json::Value::Null;
-
 impl<'a> From<&'a Source> for SourceJson<'a> {
     fn from(source: &'a Source) -> Self {
         match source {
             Source::Err(err) => Self {
-                id: Some(&NO_ID_JSON),
+                id: None,
                 code: None,
                 message: Cow::Owned(err.to_string()),
                 tags: None,
