@@ -176,13 +176,14 @@ where
         } = value;
 
         let de_id: Option<C::Id> = if let Some(the_id) = id {
-            serde_json::from_value(the_id).map_err(|err| {
+            let id_val: C::Id = serde_json::from_value(the_id).map_err(|err| {
                 gerr!(
                     "failed converting id to ID = {}",
                     core::any::type_name::<C::Id>()
                 )
                 .add_source(err)
-            })?
+            })?;
+            Some(id_val)
         } else {
             C::id()
         };
