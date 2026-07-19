@@ -25,9 +25,6 @@ use alloc::borrow::Cow;
 
 /// Error config.
 pub trait Config {
-    /// Error code.
-    const CODE: Option<&'static str> = None;
-
     /// Error id.
     ///
     /// # Must be:
@@ -40,6 +37,9 @@ pub trait Config {
     fn id() -> Option<Self::Id> {
         None
     }
+
+    /// Error code.
+    const CODE: Option<&'static str> = None;
 
     /// Display error message.
     ///
