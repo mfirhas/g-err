@@ -88,11 +88,7 @@ impl Debug for GErrSource {
 
 impl Display for GErrSource {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        if let Some(code) = self.code.as_deref() {
-            write!(f, "{code} - {}", self.message)
-        } else {
-            write!(f, "{}", self.message)
-        }
+        write!(f, "{}", self.message)
     }
 }
 

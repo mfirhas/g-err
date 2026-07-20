@@ -234,7 +234,7 @@ fn test_macro_all() {
 
             match nested_source2 {
                 Source::GErr(inner) => {
-                    assert_eq!(inner.to_string(), "AutoCode - dalem");
+                    assert_eq!(inner.to_string(), "dalem");
                     assert_eq!(inner.id.as_ref().unwrap().to_string(), "AutoID");
                     assert_eq!(inner.code.as_ref().unwrap(), "AutoCode");
 

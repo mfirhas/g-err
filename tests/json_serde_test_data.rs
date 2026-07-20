@@ -172,14 +172,14 @@ pub mod test_json_serialize_data_data {
         "caused_by": null
       },
       {
-        "message": "400 - input is invalid: qwe",
+        "message": "input is invalid: qwe",
         "caused_by": [
           {
             "message": "invalid digit found in string",
             "caused_by": null
           },
           {
-            "message": "[OUTBOUND] - upstream error",
+            "message": "upstream error",
             "caused_by": [
               {
                 "message": "got error from user service",

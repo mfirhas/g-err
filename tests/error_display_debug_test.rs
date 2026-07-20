@@ -98,8 +98,8 @@ fn test_gerr_source_debug() {
 
 #[test]
 fn test_gerr_source_display() {
-    const EXPECTED_DISPLAY: &str = "AutoCode - asd";
-    const EXPECTED_DISPLAY_WITHOUT_CODE: &str = "[AJO-123][-] zxc";
+    const EXPECTED_DISPLAY: &str = "asd";
+    const EXPECTED_DISPLAY_WITHOUT_CODE: &str = "zxc";
     let err = "qwe".parse::<i32>().unwrap_err();
     let gerr: GErrSource = GErr::<ErrIDStrAutoCode, Data>::new_with_id("AJO", "asd")
         .add_tag("tag1")
@@ -120,7 +120,7 @@ fn test_gerr_source_display() {
     assert_eq!(&display, EXPECTED_DISPLAY);
 
     let err = "qwe".parse::<i32>().unwrap_err();
-    let gerr: GErr<ErrIDStr, Data> = GErr::new_with_id("AJO", "zxc")
+    let gerr: GErrSource = GErr::<ErrIDStr, Data>::new_with_id("AJO", "zxc")
         .add_tag("tag1")
         .add_tag("tag2")
         .set_id("AJO-123")
@@ -132,7 +132,8 @@ fn test_gerr_source_display() {
         .set_data(Data {
             user_id: 234,
             user_name: "ajo_sidi".into(),
-        });
+        })
+        .into_gerr_source();
 
     let display = format!("{}", gerr);
     assert_eq!(&display, EXPECTED_DISPLAY_WITHOUT_CODE);
