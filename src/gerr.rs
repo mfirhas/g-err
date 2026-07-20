@@ -33,6 +33,8 @@ pub trait Config {
     type Id;
 
     /// Auto-generate error id.
+    ///
+    /// Defaults to `None`.
     #[inline]
     fn id() -> Option<Self::Id> {
         None
@@ -41,9 +43,14 @@ pub trait Config {
     /// Error code.
     const CODE: Option<&'static str> = None;
 
+    /// Error tags.
+    const TAGS: Option<&'static [&'static str]> = None;
+
     /// Display error message.
     ///
     /// It will be invoked in `Display` implementation.
+    ///
+    /// Defaults to `[<id>][<code>] <message>`.
     #[inline]
     fn display<C: Config, D>(gerr: &GErr<C, D>) -> String
     where
@@ -92,11 +99,7 @@ pub enum Source {
 /// It contains stack-trace if `backtrace` feature is enabled.
 ///
 /// It provides 2 type parameters `C` and `D`:
-/// - `C` is for error config. It bounds with [`Config`] trait containing error id and code.
-///   - `Id` type: defining error id type.
-///   - `id()` function: defining auto-generation function for id.
-///   - `CODE` code constant: automatically set error code at construction.
-///   - `display` function: for [`Display`] trait.
+/// - `C` is for error config. It bounds with [`Config`] trait containing error type configuration.
 /// - `D` is for error data.
 ///
 /// GErr contains error as having these attributes:
@@ -213,7 +216,11 @@ impl<C: Config, D> GErr<C, D> {
 
             sources: None,
 
-            tags: None,
+            tags: C::TAGS.map(|tags| {
+                tags.iter()
+                    .map(|tag| Cow::Borrowed(*tag))
+                    .collect::<Vec<_>>()
+            }),
 
             data: None,
 
@@ -349,9 +356,7 @@ impl<C: Config, D> GErr<C, D> {
         self
     }
 
-    /// Override config type and auto-generate id and code.
-    ///
-    /// This will overwrite previous id and code with auto-generated ones.
+    /// Overwrite config type along with associated values.
     #[must_use]
     #[inline]
     pub fn with_config<T: Config>(self) -> GErr<T, D> {
@@ -360,7 +365,11 @@ impl<C: Config, D> GErr<C, D> {
             code: T::CODE.map(Cow::Borrowed),
             message: self.message,
             sources: self.sources,
-            tags: self.tags,
+            tags: T::TAGS.map(|tags| {
+                tags.iter()
+                    .map(|tag| Cow::Borrowed(*tag))
+                    .collect::<Vec<_>>()
+            }),
             data: self.data,
             help: self.help,
             location: self.location,

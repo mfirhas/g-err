@@ -100,6 +100,27 @@ impl Config for ErrIDDataCode {
 }
 
 #[allow(dead_code)]
+pub struct ErrIDCodeTags;
+
+impl Config for ErrIDCodeTags {
+    type Id = AutoID;
+    fn id() -> Option<Self::Id> {
+        Some(AutoID)
+    }
+
+    const CODE: Option<&'static str> = Some("AutoCode");
+    const TAGS: Option<&'static [&'static str]> = Some(&["tag1", "tag2", "tag3"]);
+}
+
+#[allow(dead_code)]
+pub struct ErrTags;
+
+impl Config for ErrTags {
+    type Id = NoID;
+    const TAGS: Option<&'static [&'static str]> = Some(&["http"]);
+}
+
+#[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq)]
 pub struct AutoID;
 

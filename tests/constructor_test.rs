@@ -115,3 +115,25 @@ fn test_from_non_gerr_id() {
     assert_eq!(gerr.code().unwrap(), "AutoCode");
     assert_eq!(gerr.message(), "invalid digit found in string");
 }
+
+#[test]
+fn test_with_tags() {
+    let gerr: GErr<ErrIDCodeTags> = GErr::new("with tags");
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "AutoCode");
+    assert!(gerr.iter_tags().eq(["tag1", "tag2", "tag3"]));
+
+    let gerr = gerr.add_tag("tag4");
+    assert!(gerr.iter_tags().eq(["tag1", "tag2", "tag3", "tag4"]));
+
+    let gerr = gerr.add_tags(["tag5", "tag6"]);
+    assert!(
+        gerr.iter_tags()
+            .eq(["tag1", "tag2", "tag3", "tag4", "tag5", "tag6"])
+    );
+
+    let gerr = gerr.with_config::<ErrTags>();
+    assert!(gerr.id().is_none());
+    assert!(gerr.code().is_none());
+    assert!(gerr.iter_tags().eq(["http"]));
+}
