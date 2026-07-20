@@ -1,3 +1,4 @@
+use alloc::borrow::Cow;
 use core::any::Any;
 use core::error::Error;
 
@@ -24,6 +25,12 @@ where
 
             _ => false,
         })
+    }
+
+    /// Iterate over tags.
+    #[inline]
+    pub fn iter_tags(&self) -> impl Iterator<Item = &str> {
+        self.tags().into_iter().flatten().map(Cow::as_ref)
     }
 
     /// Iterate over GErr's tags.

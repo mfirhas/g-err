@@ -454,12 +454,6 @@ impl<C: Config, D> GErr<C, D> {
         self.tags.as_deref()
     }
 
-    /// Iterate over tags.
-    #[inline]
-    pub fn iter_tags(&self) -> impl Iterator<Item = &str> {
-        self.tags.iter().flatten().map(Cow::as_ref)
-    }
-
     /// Error data.
     #[inline]
     pub fn data(&self) -> Option<&D> {
