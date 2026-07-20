@@ -244,13 +244,6 @@ impl<C: Config, D> GErr<C, D> {
     {
         Self::new_with_id_untracked(Some(id), err.to_string(), Location::caller()).add_source(err)
     }
-
-    #[allow(dead_code)]
-    #[inline]
-    pub(crate) fn set_location(mut self, loc: ErrorLocation) -> Self {
-        self.location = loc;
-        self
-    }
 }
 
 impl<C: Config, D> GErr<C, D> {
@@ -426,6 +419,13 @@ impl<C: Config, D> GErr<C, D> {
             #[cfg(feature = "backtrace")]
             backtrace: self.backtrace,
         }
+    }
+
+    #[allow(dead_code)]
+    #[inline]
+    pub(crate) fn set_location(mut self, loc: ErrorLocation) -> Self {
+        self.location = loc;
+        self
     }
 
     // --- getter ---
