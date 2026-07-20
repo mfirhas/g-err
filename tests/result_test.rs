@@ -86,3 +86,27 @@ fn test_result_ext() {
     let debug = format!("{:#?}", ret);
     assert_eq!(debug, test_result_ext_data::EXPECTED_DEBUG);
 }
+
+fn func1() -> core::result::Result<i32, GErr<ErrAutoIDCode>> {
+    let ret = func2().to_gerr()?;
+    Ok(ret)
+}
+
+use std::num::ParseIntError;
+
+fn func2() -> core::result::Result<i32, ParseIntError> {
+    "qwe".parse::<i32>()
+}
+
+#[test]
+fn test_result_to_gerr() {
+    let expected_line = 91;
+    let expected_column = 23;
+    let gerr = func1().unwrap_err();
+    assert_eq!(gerr.id().unwrap(), &AutoID);
+    assert_eq!(gerr.code().unwrap(), "AutoCode");
+    assert_eq!(gerr.message(), "invalid digit found in string");
+    assert_eq!(gerr.location().file, file!());
+    assert_eq!(gerr.location().line, expected_line);
+    assert_eq!(gerr.location().column, expected_column);
+}

@@ -35,6 +35,9 @@ pub trait ResultExt<T>: sealed::Sealed {
     /// Wrap `E` inside GErr
     #[track_caller]
     fn wrap_err<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D>;
+
+    #[track_caller]
+    fn to_gerr<C: Config, D>(self) -> Result<T, C, D>;
 }
 
 impl<T, E> ResultExt<T> for core::result::Result<T, E>
@@ -65,6 +68,12 @@ where
     #[track_caller]
     fn wrap_err<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D> {
         self.map_err(|err| gerr.add_source(err))
+    }
+
+    #[track_caller]
+    fn to_gerr<C: Config, D>(self) -> Result<T, C, D> {
+        let location = Location::caller();
+        self.map_err(|err| GErr::new_untracked(err.to_string(), location))
     }
 }
 
