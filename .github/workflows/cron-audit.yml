@@ -2,6 +2,7 @@ name: cron-audit
 
 env:
   RUST_VERSION: 1.95.0
+  CACHE_NAME: ${{ github.repository }}-cache-cron-audit
 
 on:
   workflow_dispatch:
@@ -52,9 +53,9 @@ jobs:
             ~/.cargo/git
             ~/.cargo/bin
             target
-          key: ${{ runner.os }}-cron-audit-cache-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ env.CACHE_NAME }}-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cron-audit-cache-
+            ${{ runner.os }}-${{ env.CACHE_NAME }}-
 
       - name: Install stable Rust
         if: steps.schedule.outputs.run == 'true'
