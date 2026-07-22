@@ -75,6 +75,18 @@ pub fn default_with_metadata_macro() -> GErrDefault {
 }
 
 #[inline(always)]
+pub fn default_with_source() -> GErrDefault {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    GErrDefault::new("default with source").add_source(err)
+}
+
+#[inline(always)]
+pub fn default_with_source_macro() -> GErrDefault {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    gerr!("default with source"; source=err)
+}
+
+#[inline(always)]
 pub fn default_with_metadata_source() -> GErrDefault {
     let err = "qwe".parse::<i32>().unwrap_err();
     GErrDefault::new("error with some metadata")
@@ -110,4 +122,16 @@ pub fn anyhow_fmt_builder() -> anyhow::Error {
 #[inline(always)]
 pub fn anyhow_fmt_macro() -> anyhow::Error {
     anyhow::anyhow!("anyhow error message: {}, {}", "asd", 123)
+}
+
+#[inline(always)]
+pub fn anyhow_source_builder() -> anyhow::Error {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    anyhow::Error::new(err)
+}
+
+#[inline(always)]
+pub fn anyhow_source_macro() -> anyhow::Error {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    anyhow::anyhow!(err)
 }

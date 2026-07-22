@@ -44,6 +44,14 @@ pub fn constructor_default_bench(c: &mut Criterion) {
         b.iter(|| black_box(constructor::default_with_metadata_macro()))
     });
 
+    g.bench_function(BenchmarkId::new("default_with_source", "builder"), |b| {
+        b.iter(|| black_box(constructor::default_with_source()))
+    });
+
+    g.bench_function(BenchmarkId::new("default_with_source", "macro"), |b| {
+        b.iter(|| black_box(constructor::default_with_source_macro()))
+    });
+
     g.bench_function(
         BenchmarkId::new("default_with_metadata_source", "builder"),
         |b| b.iter(|| black_box(constructor::default_with_metadata_source())),
@@ -66,6 +74,13 @@ pub fn constructor_default_bench(c: &mut Criterion) {
     });
     g.bench_function(BenchmarkId::new("anyhow_fmt", "macro"), |b| {
         b.iter(|| black_box(constructor::anyhow_fmt_macro()))
+    });
+    g.bench_function(BenchmarkId::new("anyhow_source", "builder"), |b| {
+        b.iter(|| black_box(constructor::anyhow_source_builder()))
+    });
+
+    g.bench_function(BenchmarkId::new("anyhow_source", "macro"), |b| {
+        b.iter(|| black_box(constructor::anyhow_source_macro()))
     });
 
     g.finish();
