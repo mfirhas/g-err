@@ -77,3 +77,33 @@ all:
 	@cargo test -q
 	@cargo test -q --all-features
 	@cargo test -q --doc --all-features
+
+
+# --------------------------------------------------------------------------------
+# -----------------------------------BENCHMARKS-----------------------------------
+# --------------------------------------------------------------------------------
+BENCH_DIR := target/criterion
+BASELINE_DIR := benchmarks
+
+.PHONY: bench-save
+bench-save:
+	@test -n "$(NAME)" || (echo "Usage: make bench-save NAME=<baseline>"; exit 1)
+	cargo bench --bench bench -- --save-baseline $(NAME)
+	mkdir -p $(BASELINE_DIR)
+	cp -a $(BENCH_DIR)/. $(BASELINE_DIR)/
+
+.PHONY: bench-restore
+bench-restore:
+	@test -n "$(NAME)" || (echo "Usage: make bench-restore NAME=<baseline>"; exit 1)
+	mkdir -p $(BENCH_DIR)
+	cp -a $(BASELINE_DIR)/. $(BENCH_DIR)/
+
+.PHONY: bench-compare
+bench-compare:
+	@test -n "$(NAME)" || (echo "Usage: make bench-compare NAME=<baseline>"; exit 1)
+	$(MAKE) bench-restore
+	cargo bench --bench bench -- --baseline $(NAME)
+
+.PHONY: bench-clean
+bench-clean:
+	rm -rf $(BENCH_DIR)
