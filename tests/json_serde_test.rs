@@ -17,7 +17,7 @@ fn test_json_serde() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -77,7 +77,7 @@ fn test_json_serde_noid_nodata() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -129,7 +129,7 @@ fn test_json_serde_failed_deser() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -180,7 +180,7 @@ fn test_json_serde_id_types() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -253,7 +253,7 @@ fn test_json_serde_sources_id_types() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<_, NoData> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<_, NoData> = gerr!("pretty error: {}", req_id;
         config=ErrAutoCode,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -385,7 +385,7 @@ fn test_json_serde_sources_data_types() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoCode, NoData> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -510,7 +510,7 @@ fn test_json_serde_data() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -561,7 +561,7 @@ fn test_json_serialize_data() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -606,7 +606,7 @@ fn test_json_serde_data_failed_deser() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -666,7 +666,7 @@ fn test_json_serde_data_failed_deser_json_data() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<(), Data> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<(), Data> = gerr!("pretty error: {}", req_id;
         config,
         // id=NoID,
         tag="tag1",
@@ -717,7 +717,7 @@ fn test_json_serde_null_code_to_const_code() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<(), NoData> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<(), NoData> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],

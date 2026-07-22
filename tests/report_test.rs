@@ -15,7 +15,7 @@ fn test_pretty_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -56,7 +56,7 @@ fn test_markdown_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -98,7 +98,7 @@ fn test_trace_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoIDCode, Data> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],
@@ -135,7 +135,7 @@ fn test_trace_report() {
     let req_id = "l2k3mr2l3r";
     let input = "qwe";
     let input_err = input.parse::<u64>().unwrap_err();
-    let gerr: GErr<ErrAutoID, Data> = gerr!("pretty error: {req_id}";
+    let gerr: GErr<ErrAutoID, Data> = gerr!("pretty error: {}", req_id;
         config,
         tag="tag1",
         tags=["tag2", "tag3"],

@@ -37,6 +37,27 @@ fn multiple_builder_fields() {
 }
 
 #[test]
+fn test_macro_formatting() {
+    // without formatting
+    let gerr = gerr!("without fmt");
+    assert_eq!(gerr.message(), "without fmt");
+    // with formatting
+    let gerr = gerr!("with fmt: {}, {}", "sdf", 123);
+    assert_eq!(gerr.message(), "with fmt: sdf, 123");
+    // with debug formatting
+    let gerr = gerr!("with fmt: {:?}, {:?}", "sdf", 123);
+    assert_eq!(gerr.message(), "with fmt: \"sdf\", 123");
+    // with pretty debug formatting
+    let gerr = gerr!("with fmt: {:#?}, {:#?}", "sdf", 123);
+    assert_eq!(gerr.message(), "with fmt: \"sdf\", 123");
+    // with formatting(inlined) -> not supported!
+    let _s = "sdf";
+    let _n = 123;
+    let gerr = gerr!("with fmt: {_s} {_n}");
+    assert_eq!(gerr.message(), "with fmt: {_s} {_n}");
+}
+
+#[test]
 fn trailing_comma() {
     let err = gerr!(
         "hello";

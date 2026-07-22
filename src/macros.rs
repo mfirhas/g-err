@@ -4,7 +4,14 @@
 ///
 /// Without metadatas, the default config is [`DefaultConfig`](crate::DefaultConfig) and default data is [`NoData`](`crate::NoData`).
 ///
+/// # Format
+/// - Without formatting and without metadata: `gerr!("error message goes here");`.
+/// - Without formatting and with metadata: `gerr!("error message goes here"; <metadata>)`, metadata are separated by `;`.
+/// - With formatting and with metadata: `gerr!("error message goes here {}", 123; <metadata>)`, formatting args are separated by `,` and metadata by `;`.
+///
 /// Error message and its metadata are separated by `;`.
+///
+/// Metadata's items are separated by `,`.
 ///
 /// # Supported metadata
 /// - `config`: infer auto-generating config type for id and code from return type, and auto-generate both.
@@ -68,12 +75,20 @@ macro_rules! gerr {
     // Message only
     // ==================================================
 
-    // format!-style
-    ($fmt:literal $(, $arg:expr)* $(,)?) => {
+    // string literal (no formatting)
+    ($message:literal $(,)?) => {
         $crate::GErr::<
             $crate::DefaultConfig,
             $crate::NoData,
-        >::new(format!($fmt $(, $arg)*))
+        >::new($message)
+    };
+
+    // format!-style
+    ($fmt:literal, $($arg:expr),+ $(,)?) => {
+        $crate::GErr::<
+            $crate::DefaultConfig,
+            $crate::NoData,
+        >::new(format!($fmt, $($arg),+))
     };
 
     // arbitrary string expression
@@ -88,18 +103,33 @@ macro_rules! gerr {
     // Message + builder args
     // ==================================================
 
+    // string literal + metadata
     (
-        $fmt:literal $(, $arg:expr)* ;
+        $message:literal ;
         $($rest:tt)*
     ) => {{
         let err = $crate::GErr::<
             $crate::DefaultConfig,
             $crate::NoData,
-        >::new(format!($fmt $(, $arg)*));
+        >::new($message);
 
         $crate::gerr!(@build err, $($rest)*)
     }};
 
+    // format!-style + metadata
+    (
+        $fmt:literal, $($arg:expr),+ ;
+        $($rest:tt)*
+    ) => {{
+        let err = $crate::GErr::<
+            $crate::DefaultConfig,
+            $crate::NoData,
+        >::new(format!($fmt, $($arg),+));
+
+        $crate::gerr!(@build err, $($rest)*)
+    }};
+
+    // arbitrary expression + metadata
     (
         $message:expr ;
         $($rest:tt)*
