@@ -1,4 +1,4 @@
-use g_err::{Config, GErrDefault, gerr};
+use g_err::{Config, GErrBox, GErrDefault, gerr};
 use uuid::Uuid;
 
 pub const MSG: &str = "database connection failed";
@@ -42,6 +42,26 @@ pub fn default_macro() -> GErrDefault {
 }
 
 #[inline(always)]
+pub fn default_box() -> GErrBox {
+    GErrDefault::new("default error message").boxed()
+}
+
+#[inline(always)]
+pub fn default_box_macro() -> GErrBox {
+    gerr!("default error message").boxed()
+}
+
+#[inline(always)]
+pub fn default_fmt() -> GErrDefault {
+    GErrDefault::new(format!("default error message: {}, {}", "asd", 123))
+}
+
+#[inline(always)]
+pub fn default_fmt_macro() -> GErrDefault {
+    gerr!("default error message: {}, {}", "asd", 123)
+}
+
+#[inline(always)]
 pub fn default_with_metadata() -> GErrDefault {
     GErrDefault::new("error with some metadata")
         .set_code("CODE")
@@ -69,4 +89,25 @@ pub fn default_with_metadata_source() -> GErrDefault {
 pub fn default_with_metadata_source_macro() -> GErrDefault {
     let err = "qwe".parse::<i32>().unwrap_err();
     gerr!("error with some metadata"; code="CODE", tag="tag1", help="help message here", source=err, gerr=gerr!("gerr source"))
+}
+
+// ########### anyhow ###########
+#[inline(always)]
+pub fn anyhow_builder() -> anyhow::Error {
+    anyhow::Error::msg("anyhow error message")
+}
+
+#[inline(always)]
+pub fn anyhow_macro() -> anyhow::Error {
+    anyhow::anyhow!("anyhow error message")
+}
+
+#[inline(always)]
+pub fn anyhow_fmt_builder() -> anyhow::Error {
+    anyhow::Error::msg(format!("anyhow error message: {}, {}", "asd", 123))
+}
+
+#[inline(always)]
+pub fn anyhow_fmt_macro() -> anyhow::Error {
+    anyhow::anyhow!("anyhow error message: {}, {}", "asd", 123)
 }
