@@ -1,35 +1,42 @@
 use std::hint::black_box;
 
-use criterion::{Criterion, Throughput};
+use criterion::{BenchmarkId, Criterion};
 
 #[path = "constructor.rs"]
 mod constructor;
 
 pub fn bench_all(c: &mut Criterion) {
-    builder_bench(c);
-    macro_bench(c);
+    constructor_default_bench(c);
 }
 
-pub fn builder_bench(c: &mut Criterion) {
-    let mut g = c.benchmark_group("builder");
+pub fn constructor_default_bench(c: &mut Criterion) {
+    let mut g = c.benchmark_group("constructor");
 
-    g.bench_function("default", |b| b.iter(|| black_box(constructor::default())));
-    g.bench_function("default_with_metadata", |b| {
+    g.bench_function(BenchmarkId::new("default", "builder"), |b| {
+        b.iter(|| black_box(constructor::default()))
+    });
+
+    g.bench_function(BenchmarkId::new("default", "macro"), |b| {
+        b.iter(|| black_box(constructor::default_macro()))
+    });
+
+    g.bench_function(BenchmarkId::new("default_with_metadata", "builder"), |b| {
         b.iter(|| black_box(constructor::default_with_metadata()))
     });
 
-    g.finish();
-}
-
-pub fn macro_bench(c: &mut Criterion) {
-    let mut g = c.benchmark_group("macro");
-
-    g.bench_function("default_macro", |b| {
-        b.iter(|| black_box(constructor::default_macro()))
-    });
-    g.bench_function("default_with_metadata_macro", |b| {
+    g.bench_function(BenchmarkId::new("default_with_metadata", "macro"), |b| {
         b.iter(|| black_box(constructor::default_with_metadata_macro()))
     });
+
+    g.bench_function(
+        BenchmarkId::new("default_with_metadata_source", "builder"),
+        |b| b.iter(|| black_box(constructor::default_with_metadata_source())),
+    );
+
+    g.bench_function(
+        BenchmarkId::new("default_with_metadata_source", "macro"),
+        |b| b.iter(|| black_box(constructor::default_with_metadata_source_macro())),
+    );
 
     g.finish();
 }

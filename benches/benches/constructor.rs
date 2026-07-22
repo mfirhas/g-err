@@ -53,3 +53,20 @@ pub fn default_with_metadata() -> GErrDefault {
 pub fn default_with_metadata_macro() -> GErrDefault {
     gerr!("error with some metadata"; code="CODE", tag="tag1", help="help message here")
 }
+
+#[inline(always)]
+pub fn default_with_metadata_source() -> GErrDefault {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    GErrDefault::new("error with some metadata")
+        .set_code("CODE")
+        .add_tag("tag1")
+        .set_help("help message here")
+        .add_source(err)
+        .add_source_gerr(GErrDefault::new("gerr source"))
+}
+
+#[inline(always)]
+pub fn default_with_metadata_source_macro() -> GErrDefault {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    gerr!("error with some metadata"; code="CODE", tag="tag1", help="help message here", source=err, gerr=gerr!("gerr source"))
+}
