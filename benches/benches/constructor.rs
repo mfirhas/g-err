@@ -1,7 +1,5 @@
-use g_err::{Config, GErrBox, GErrDefault, gerr};
+use g_err::{Config, GErr, GErrBox, GErrDefault, gerr};
 use uuid::Uuid;
-
-pub const MSG: &str = "database connection failed";
 
 pub struct ErrI32Code;
 
@@ -25,6 +23,7 @@ impl Config for ErrAutoUUIDCode {
     const TAGS: Option<&'static [&'static str]> = Some(&["tag1", "tag2"]);
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Data {
     user_id: i32,
@@ -101,6 +100,68 @@ pub fn default_with_metadata_source() -> GErrDefault {
 pub fn default_with_metadata_source_macro() -> GErrDefault {
     let err = "qwe".parse::<i32>().unwrap_err();
     gerr!("error with some metadata"; code="CODE", tag="tag1", help="help message here", source=err, gerr=gerr!("gerr source"))
+}
+
+// with configs
+pub fn config_manual_id() -> GErr<ErrI32Code> {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    let gerr = GErrDefault::new("gerr source");
+    GErr::new_with_id(123, "manual id")
+        .set_help("check input")
+        .add_source(err)
+        .add_source_gerr(gerr)
+}
+pub fn config_manual_id_macro() -> GErr<ErrI32Code> {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    let gerr = GErrDefault::new("gerr source");
+    gerr!("manual id"; config, id=123, help="check input", source=err, gerr=gerr)
+}
+pub fn config_auto_id() -> GErr<ErrAutoUUIDCode> {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    let gerr = GErrDefault::new("gerr source");
+    GErr::new("auto id")
+        .set_help("check input")
+        .add_source(err)
+        .add_source_gerr(gerr)
+}
+pub fn config_auto_id_macro() -> GErr<ErrAutoUUIDCode> {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    let gerr = GErrDefault::new("gerr source");
+    gerr!("auto id"; config, help="check input", source=err, gerr=gerr)
+}
+pub fn config_manual_id_with_data() -> GErr<ErrI32Code, Data> {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    let gerr = GErrDefault::new("gerr source");
+    GErr::new_with_id(123, "manual id")
+        .set_help("check input")
+        .add_source(err)
+        .add_source_gerr(gerr)
+        .set_data(Data {
+            user_id: 123,
+            user_name: "zxc".into(),
+        })
+}
+pub fn config_manual_id_with_data_macro() -> GErr<ErrI32Code, Data> {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    let gerr = GErrDefault::new("gerr source");
+    gerr!("manual id"; config, id=123, help="check input", source=err, gerr=gerr, data=Data{user_id: 123, user_name:"zxc".into()})
+}
+pub fn config_auto_id_with_data() -> GErr<ErrAutoUUIDCode, Data> {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    let gerr = GErrDefault::new("gerr source");
+    GErr::new("manual id")
+        .set_help("check input")
+        .add_source(err)
+        .add_source_gerr(gerr)
+        .set_data(Data {
+            user_id: 123,
+            user_name: "zxc".into(),
+        })
+}
+pub fn config_auto_id_with_data_macro() -> GErr<ErrAutoUUIDCode, Data> {
+    let err = "qwe".parse::<i32>().unwrap_err();
+    let gerr = GErrDefault::new("gerr source");
+    gerr!("auto id"; config, help="check input", source=err, gerr=gerr, data=Data{user_id: 123, user_name:"zxc".into()})
 }
 
 // ########### anyhow ###########
