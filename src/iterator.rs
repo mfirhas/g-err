@@ -59,8 +59,11 @@ where
 ///
 /// Contained by [`GErrTree`].
 pub enum GErrNode<'a, C: Config, D> {
+    /// Root of GErr.
     Root(&'a GErr<C, D>),
+    /// non-gerr source node.
     LeafErr(&'a (dyn Error + Send + Sync + 'static)),
+    /// gerr or any error convertible to [`GErrSource`] node.
     LeafGErr(&'a GErrSource),
 }
 

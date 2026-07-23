@@ -76,6 +76,14 @@ There are 3 kinds of serde supported:
 - Serialization only with JSON format using `#[serde(serialize_with = "g_err::serde::display_json::serialize")]`
 - Both serialization and deserialization with JSON format using `#[serde(with = "g_err::serde::json")]`
 
+## Box
+If you think the concrete type is too big for you, box it, or use [`GErrBox`] for boxed GErr.
+
+## Feature flags
+- `default`: std enabled. Disable it for `no_std`.
+- `serde`: for json and serde.
+- `backtrace`: for enabling backtracing.
+
 ## Example
 ```rust
 #[cfg(feature = "serde")]
@@ -205,11 +213,3 @@ assert!(ret.is_some());
     println!("{:#?}", json_data); // json data of GErr.
 }
 ```
-
-## Box
-If you think the concrete type is too big for you, box it, or use [`GErrBox`] for boxed GErr.
-
-## Feature flags
-- `default`: std enabled. Disable it for `no_std`.
-- `serde`: for json and serde.
-- `backtrace`: for enabling backtracing.

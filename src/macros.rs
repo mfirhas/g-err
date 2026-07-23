@@ -14,8 +14,8 @@
 /// Metadata's items are separated by `,`.
 ///
 /// # Supported metadata
-/// - `config`: infer auto-generating config type for id and code from return type, and auto-generate both.
-/// - `config=$type`: set auto-generating config type for id and code, and auto-generate both.
+/// - `config`: infer auto-generating config type from return type.
+/// - `config=$type`: set auto-generating config type.
 /// - `id=$expr`: set id manually with id type as set by `config=$type`.
 /// - `code=$expr`: set code string.
 /// - `data_type`: infer error data type from return type.
@@ -30,7 +30,7 @@
 /// You can override the metadatas, and latest ones will be used.
 ///
 /// ## NOTE
-/// The order of `config` param matters because it calls `.with_config` method which will regenerate id and code.
+/// The order of `config` param matters because it calls `.with_config` method which will regenerate values from new config type.
 ///
 /// # Example
 /// ```rust

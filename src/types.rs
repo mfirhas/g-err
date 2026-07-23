@@ -64,6 +64,7 @@ impl<'de> ::serde::Deserialize<'de> for NoData {
 /// - `Id`: [`NoID`]
 /// - `id()`: returns `None`
 /// - `Code`: `None`
+/// - `Tags`: `None`
 pub struct DefaultConfig;
 
 impl Config for DefaultConfig {
