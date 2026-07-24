@@ -21,6 +21,7 @@ pub mod g_err_bench {
     pub struct ErrU64Auto;
     impl Config for ErrU64Auto {
         type Id = u64;
+        #[inline]
         fn id() -> Option<Self::Id> {
             Some(3434)
         }
