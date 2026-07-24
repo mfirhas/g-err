@@ -293,6 +293,7 @@ impl<C: Config, D> GErr<C, D> {
     /// Add GErr as error source.
     ///
     /// Any errors implementing `Into<GErrSource>` pass.
+    #[must_use]
     #[inline]
     pub fn add_source_gerr<E>(mut self, gerr: E) -> Self
     where
@@ -306,6 +307,7 @@ impl<C: Config, D> GErr<C, D> {
 
     /// Add tag to GErr.
     #[must_use]
+    #[inline]
     pub fn add_tag<T>(mut self, tag: T) -> Self
     where
         T: Into<Cow<'static, str>>,
@@ -316,6 +318,7 @@ impl<C: Config, D> GErr<C, D> {
 
     /// Add multiple tags at once to GErr.
     #[must_use]
+    #[inline]
     pub fn add_tags<I, T>(mut self, tags: I) -> Self
     where
         I: IntoIterator<Item = T>,
