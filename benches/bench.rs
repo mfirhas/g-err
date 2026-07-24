@@ -11,7 +11,7 @@ fn criterion() -> Criterion {
 }
 
 criterion_group! {
-    name = construction;
+    name = g_err;
     config = criterion();
     targets =
         benches::noop_bench,
@@ -19,4 +19,4 @@ criterion_group! {
         benches::result_bench::bench_all,
 }
 
-criterion_main!(construction,);
+criterion_main!(g_err,);
