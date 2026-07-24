@@ -244,6 +244,39 @@ impl<C: Config, D> GErr<C, D> {
     {
         Self::new_with_id_untracked(Some(id), err.to_string(), Location::caller()).add_source(err)
     }
+
+    #[track_caller]
+    #[inline]
+    pub fn from_gerr<E>(gerr: E) -> Self
+    where
+        E: Into<GErrSource> + Send + Sync + 'static,
+    {
+        Self::from_gerr_untracked(gerr, Location::caller())
+    }
+
+    #[inline]
+    pub(crate) fn from_gerr_untracked<E>(gerr: E, location: &'static Location<'static>) -> Self
+    where
+        E: Into<GErrSource> + Send + Sync + 'static,
+    {
+        let gerr = gerr.into();
+        Self {
+            id: C::id(),
+            code: C::CODE.map(Cow::Borrowed),
+            message: gerr.message,
+            sources: gerr.sources,
+            tags: C::TAGS.map(|tags| {
+                tags.iter()
+                    .map(|tag| Cow::Borrowed(*tag))
+                    .collect::<Vec<_>>()
+            }),
+            data: None,
+            help: gerr.help,
+            location: location.into(),
+            #[cfg(feature = "backtrace")]
+            backtrace: Backtrace::capture(),
+        }
+    }
 }
 
 impl<C: Config, D> GErr<C, D> {

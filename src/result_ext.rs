@@ -97,6 +97,10 @@ pub trait GResultExt<T, E>: sealed::Sealed {
     #[track_caller]
     fn wrap_gerr<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D>;
 
+    /// Convert to another GErr
+    #[track_caller]
+    fn to<C2: Config, D2>(self) -> Result<T, C2, D2>;
+
     /// Box `E`
     fn boxed(self) -> core::result::Result<T, Box<E>>;
 }
@@ -126,10 +130,15 @@ where
         })
     }
 
-    /// Wrap `E` inside GErr
     #[track_caller]
     fn wrap_gerr<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D> {
         self.map_err(|err| gerr.add_source_gerr(err))
+    }
+
+    #[track_caller]
+    fn to<C2: Config, D2>(self) -> Result<T, C2, D2> {
+        let location = Location::caller();
+        self.map_err(|gerr| GErr::from_gerr_untracked(gerr, location))
     }
 
     #[inline]

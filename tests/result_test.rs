@@ -1,4 +1,4 @@
-use g_err::*;
+use g_err::{iterator::GErrNode, *};
 #[path = "setup_test.rs"]
 mod setup_test;
 use setup_test::*;
@@ -109,4 +109,59 @@ fn test_result_to_gerr() {
     assert_eq!(gerr.location().file, file!());
     assert_eq!(gerr.location().line, expected_line);
     assert_eq!(gerr.location().column, expected_column);
+}
+
+struct ErrFuncA;
+impl Config for ErrFuncA {
+    type Id = i32;
+    const CODE: Option<&'static str> = Some("CODE_A");
+}
+
+struct ErrFuncB;
+impl Config for ErrFuncB {
+    type Id = u64;
+    fn id() -> Option<Self::Id> {
+        Some(4000)
+    }
+
+    const TAGS: Option<&'static [&'static str]> = Some(&["tag1", "tag2"]);
+}
+
+fn func_a(input: &str) -> core::result::Result<i32, GErr<ErrFuncA, (&'static str, String)>> {
+    let ret = input.parse::<i32>();
+
+    match ret {
+        Ok(num) => Ok(num),
+        Err(err) => GErr::new_with_id(123, "func_a error")
+            .add_source(err)
+            .set_data(("anu", input.into()))
+            .result(),
+    }
+}
+
+fn func_b(input: &str) -> core::result::Result<i64, GErr<ErrFuncB>> {
+    let ret = func_a(input).to()?;
+    Ok(ret as i64)
+}
+
+#[test]
+fn test_result_to() {
+    let input = "qwe";
+    let func_a_ret = func_a(input).unwrap_err();
+    assert_eq!(func_a_ret.id().unwrap(), &123);
+    if let GErrNode::LeafErr(e) = func_a_ret.iter_source::<ParseIntError>().next().unwrap() {
+        assert_eq!(e.to_string(), "invalid digit found in string");
+    }
+    assert_eq!(func_a_ret.data().unwrap(), &("anu", String::from("qwe")));
+    assert!(func_a_ret.tags().is_none());
+    assert_eq!(func_a_ret.location().file, file!());
+
+    let func_b_ret = func_b(input).unwrap_err();
+    assert_eq!(func_b_ret.id().unwrap(), &4000);
+    if let GErrNode::LeafErr(e) = func_b_ret.iter_source::<ParseIntError>().next().unwrap() {
+        assert_eq!(e.to_string(), "invalid digit found in string");
+    }
+    assert!(func_b_ret.data().is_none());
+    assert!(func_b_ret.iter_tags().eq(["tag1", "tag2"]));
+    assert_eq!(func_b_ret.location().file, file!());
 }

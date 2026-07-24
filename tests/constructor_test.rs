@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 use g_err::{GErr, MarkdownReport, NoID, PrettyReport, TraceReport};
 
 #[path = "setup_test.rs"]
@@ -136,4 +138,47 @@ fn test_with_tags() {
     assert!(gerr.id().is_none());
     assert!(gerr.code().is_none());
     assert!(gerr.iter_tags().eq(["http"]));
+}
+
+use g_err::{Config, iterator::GErrNode};
+
+struct ErrFuncA;
+impl Config for ErrFuncA {
+    type Id = i32;
+    const CODE: Option<&'static str> = Some("CODE_A");
+}
+
+struct ErrFuncB;
+impl Config for ErrFuncB {
+    type Id = u64;
+    fn id() -> Option<Self::Id> {
+        Some(4000)
+    }
+
+    const TAGS: Option<&'static [&'static str]> = Some(&["tag1", "tag2"]);
+}
+
+#[test]
+fn test_from_gerr() {
+    let err = "qwe".parse::<i32>().unwrap_err();
+
+    let gerr: GErr<ErrFuncA, (&'static str, String)> = GErr::new_with_id(123, "func_a error")
+        .add_source(err)
+        .set_data(("anu", "qwe".into()));
+    assert_eq!(gerr.id().unwrap(), &123);
+    if let GErrNode::LeafErr(e) = gerr.iter_source::<ParseIntError>().next().unwrap() {
+        assert_eq!(e.to_string(), "invalid digit found in string");
+    }
+    assert_eq!(gerr.data().unwrap(), &("anu", String::from("qwe")));
+    assert!(gerr.tags().is_none());
+    assert_eq!(gerr.location().file, file!());
+
+    let gerr: GErr<ErrFuncB> = GErr::from_gerr(gerr);
+    assert_eq!(gerr.id().unwrap(), &4000);
+    if let GErrNode::LeafErr(e) = gerr.iter_source::<ParseIntError>().next().unwrap() {
+        assert_eq!(e.to_string(), "invalid digit found in string");
+    }
+    assert!(gerr.data().is_none());
+    assert!(gerr.iter_tags().eq(["tag1", "tag2"]));
+    assert_eq!(gerr.location().file, file!());
 }
