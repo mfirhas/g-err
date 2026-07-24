@@ -29,15 +29,6 @@ pub mod g_err_bench {
     }
 
     #[inline(never)]
-    fn func_gerr(input: &str) -> core::result::Result<i32, GErr<ErrI32>> {
-        let ret = input
-            .parse::<i32>()
-            .to_gerr()
-            .map_err(|err| err.set_id(234))?;
-        Ok(ret)
-    }
-
-    #[inline(never)]
     pub fn gerr_to_gerr(input: &str) -> core::result::Result<i32, GErrDefault> {
         let ret = func(input).to_gerr()?;
         Ok(ret)
@@ -62,6 +53,14 @@ pub mod g_err_bench {
     }
 
     // gerr
+    #[inline(never)]
+    fn func_gerr(input: &str) -> core::result::Result<i32, GErr<ErrI32>> {
+        let ret = input.parse::<i32>();
+        match ret {
+            Ok(ret) => Ok(ret),
+            Err(_) => Err(GErr::new_with_id(123, "func_gerr error")),
+        }
+    }
 
     #[inline(never)]
     pub fn gerr_to(input: &str) -> core::result::Result<i32, GErr<ErrU64Auto>> {
