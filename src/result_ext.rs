@@ -44,6 +44,7 @@ impl<T, E> ResultExt<T> for core::result::Result<T, E>
 where
     E: Error + Send + Sync + 'static,
 {
+    #[inline]
     #[track_caller]
     fn context<C: Config, D>(
         self,
@@ -57,6 +58,7 @@ where
         })
     }
 
+    #[inline]
     #[track_caller]
     fn context_auto<C: Config, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, C, D> {
         let location = Location::caller();
@@ -65,11 +67,12 @@ where
         })
     }
 
-    #[track_caller]
+    #[inline]
     fn wrap_err<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D> {
         self.map_err(|err| gerr.add_source(err))
     }
 
+    #[inline]
     #[track_caller]
     fn to_gerr<C: Config, D>(self) -> Result<T, C, D> {
         let location = Location::caller();
@@ -109,6 +112,7 @@ impl<T, E> GResultExt<T, E> for core::result::Result<T, E>
 where
     E: Into<GErrSource> + Error + Send + Sync + 'static,
 {
+    #[inline]
     #[track_caller]
     fn gerr<C: Config, D>(
         self,
@@ -122,6 +126,7 @@ where
         })
     }
 
+    #[inline]
     #[track_caller]
     fn gerr_auto<C: Config, D>(self, message: impl Into<Cow<'static, str>>) -> Result<T, C, D> {
         let location = Location::caller();
@@ -130,11 +135,12 @@ where
         })
     }
 
-    #[track_caller]
+    #[inline]
     fn wrap_gerr<C: Config, D>(self, gerr: GErr<C, D>) -> Result<T, C, D> {
         self.map_err(|err| gerr.add_source_gerr(err))
     }
 
+    #[inline]
     #[track_caller]
     fn to<C2: Config, D2>(self) -> Result<T, C2, D2> {
         let location = Location::caller();
